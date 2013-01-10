@@ -2,6 +2,15 @@
 
 FC := gfortran
 FFLAGS := -Wall -g -fbounds-check
+LIBS :=
+
+# program targets
+
+all: test
+
+TEST_OBJS = test.o graphviz.o tree.o dof.o base.o
+test: $(TEST_OBJS)
+	$(FC) -o $@ $(TEST_OBJS) $(LIBS)
 
 # build rules
 
@@ -12,6 +21,9 @@ FFLAGS := -Wall -g -fbounds-check
 	@true
 
 # module dependencies
+
+test.o: \
+    base.mod dof.mod tree.mod
 
 tuckerdecomp.o: \
     base.mod linear.mod modeutil.mod
@@ -24,6 +36,9 @@ tree.o: \
 
 dof.o: \
     base.mod
+
+graphviz.o: \
+    dof.mod tree.mod
 
 # others
 
