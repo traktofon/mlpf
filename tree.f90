@@ -4,6 +4,10 @@ module tree
    use base
    use dof
    implicit none
+   private
+
+   public :: node_t, node_tp, tree_t
+   public :: make_leaf, make_node, make_tree
 
    type :: node_t
       !--- Local node-related data ---
@@ -33,9 +37,11 @@ module tree
       type(node_t),pointer  :: topnode => null()      ! the top node
       integer               :: numnodes               ! total number of nodes in tree
       integer               :: numdofs                ! total number of DOFs in tree
+      integer               :: numleaves              ! total number of leaves in tree
       integer               :: numlayers              ! number of layers in tree
       type(node_tp),pointer :: preorder(:) => null()  ! nodes in pre-order
       type(node_tp),pointer :: postorder(:) => null() ! nodes in post-order
+      type(node_tp),pointer :: leaves(:) => null()    ! leaf nodes
    end type tree_t
 
    contains
@@ -88,16 +94,17 @@ module tree
       implicit none
       type(tree_t),pointer              :: tree                
       type(node_t),target,intent(inout) :: topnode             
-      integer                           :: numnodes,numdofs,numlayers
-      integer                           :: idx,m
+      integer                           :: numnodes,numdofs,numleaves,numlayers
+      integer                           :: idx,m,f
       type(node_t),pointer              :: node
       allocate(tree)
       ! Set the top node.
       tree%topnode => topnode
       ! Count number of nodes and dofs in whole tree.
-      call count_nodes(topnode,numnodes,numdofs,numlayers)
+      call count_nodes(topnode,numnodes,numdofs,numleaves,numlayers)
       tree%numnodes  = numnodes
       tree%numdofs   = numdofs
+      tree%numleaves = numleaves
       tree%numlayers = numlayers
       ! Record the pre-/post-order sequence of the nodes.
       allocate(tree%preorder(numnodes))
@@ -106,6 +113,16 @@ module tree
       allocate(tree%postorder(numnodes))
       idx = 1
       call set_postorder(topnode,tree%postorder,idx)
+      ! Record leaves.
+      allocate(tree%leaves(numleaves))
+      f = 1
+      do m=1,numnodes
+         node => tree%preorder(m)%p
+         if (node%isleaf) then
+            tree%leaves(f)%p => node
+            f = f+1
+         endif
+      enddo
       ! Set tree-related data in nodes.
       do m=1,numnodes
          node => tree%preorder(m)%p
@@ -117,29 +134,32 @@ module tree
 
 
    !--------------------------------------------------------------------
-   recursive subroutine count_nodes(node,numnodes,numdofs,numlayers)
+   recursive subroutine count_nodes(node,numnodes,numdofs,numleaves,numlayers)
    !--------------------------------------------------------------------
-   ! Counts the total number of nodes, dofs, and layers below a certain
-   ! node, itself included.
+   ! Counts the total number of nodes, dofs, leaves, and layers below
+   ! a certain node, itself included.
    !--------------------------------------------------------------------
       implicit none
       type(node_t),intent(in) :: node            
-      integer,intent(out)     :: numnodes,numdofs,numlayers
+      integer,intent(out)     :: numnodes,numdofs,numleaves,numlayers
       type(node_t),pointer    :: child           
-      integer                 :: m,chnodes,chdofs,chlayers
+      integer                 :: m,chnodes,chdofs,chleaves,chlayers
       if (node%isleaf) then
          numnodes  = 1
          numdofs   = node%nmodes
+         numleaves = 1
          numlayers = 1
       else
          numnodes  = 1
          numdofs   = 0
+         numleaves = 0
          numlayers = 1
          do m=1,node%nmodes
             child => node%modes(m)%p
-            call count_nodes(child,chnodes,chdofs,chlayers)
-            numnodes  = numnodes + chnodes
-            numdofs   = numdofs  + chdofs
+            call count_nodes(child,chnodes,chdofs,chleaves,chlayers)
+            numnodes  = numnodes  + chnodes
+            numdofs   = numdofs   + chdofs
+            numleaves = numleaves + chleaves
             numlayers = max(numlayers,chlayers+1)
          enddo
       endif

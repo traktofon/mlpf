@@ -3,18 +3,46 @@
 FC := gfortran
 FFLAGS := -Wall -g -fbounds-check
 DEPFLAGS := -cpp -MM
-LIBS :=
+LIBS := -llapack -lblas
 
 SOURCES := \
-   base.f90 dof.f90 genpot.f90 graphviz.f90 linear.f90 modeutil.f90 test.f90 tree.f90 tuckerdecomp.f90
+   base.f90 \
+   dof.f90 \
+   genpot.f90 \
+   graphviz.f90 \
+   linear.f90 \
+   modeutil.f90 \
+   test.f90 \
+   tree.f90 \
+   tuckerdecomp.f90 \
+   testfunc.f90
 MODULES := \
-   base.mod dof.mod genpot.mod graphviz.mod linear.mod modeutil.mod tree.mod tuckerdecomp.mod
+   base.mod \
+   dof.mod \
+   genpot.mod \
+   testfunc.mod \
+   linear.mod \
+   modeutil.mod \
+   tree.mod \
+   graphviz.mod \
+   tuckerdecomp.mod
 
 # program targets
 
 all: test
 
-TEST_OBJS = test.o graphviz.o tree.o dof.o base.o
+TEST_OBJS = \
+    test.o \
+    tuckerdecomp.o \
+    modeutil.o \
+    linear.o \
+    graphviz.o \
+    tree.o \
+    dof.o \
+    genpot.o \
+    testfunc.o \
+    base.o
+
 test: $(TEST_OBJS)
 	$(FC) -o $@ $(TEST_OBJS) $(LIBS)
 
@@ -32,7 +60,7 @@ allmod: $(MODULES)
 
 dep: deps.mk
 
-deps.mk: $(MODULES)
+deps.mk: $(MODULES) $(SOURCES)
 	$(FC) $(DEPFLAGS) $(SOURCES) > deps.mk
 
 include deps.mk
