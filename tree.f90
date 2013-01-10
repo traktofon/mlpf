@@ -1,0 +1,212 @@
+! vim: set ts=3 sw=3 :
+module tree
+
+   use base
+   use dof
+   implicit none
+
+   type :: node_t
+      !--- Local node-related data ---
+      logical               :: isleaf               ! .true. => children are dofs
+      integer               :: nmodes               ! number of submodes/dofs
+      type(node_tp),pointer :: modes(:) => null()   ! pointers to submodes
+      type(dof_tp),pointer  :: dofs(:)  => null()   ! pointers to dofs
+      type(node_t),pointer  :: parent   => null()   ! pointer to parent node
+      !--- Tree-related data ---
+      type(tree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
+      integer               :: num                  ! internal number of this node
+      integer               :: layer                ! layer (level) of this node inside the tree
+      !--- MLPF-related data ----
+      integer               :: nbasis               ! number of basis tensors at this node
+      integer,pointer       :: ndim(:) => null()    ! number of basis tensors/grid points of the children
+      integer               :: plen                 ! product(ndim)
+      real(dbl),pointer     :: basis(:,:) => null() ! basis tensors, dim=(plen,nbasis)
+   end type node_t
+
+
+   type :: node_tp
+      type(node_t),pointer  :: p => null()
+   end type node_tp
+
+
+   type :: tree_t
+      type(node_t),pointer  :: topnode => null()      ! the top node
+      integer               :: numnodes               ! total number of nodes in tree
+      integer               :: numdofs                ! total number of DOFs in tree
+      integer               :: numlayers              ! number of layers in tree
+      type(node_tp),pointer :: preorder(:) => null()  ! nodes in pre-order
+      type(node_tp),pointer :: postorder(:) => null() ! nodes in post-order
+   end type tree_t
+
+   contains
+
+
+   !--------------------------------------------------------------------
+   function make_leaf(dofs) result(leaf)
+   !--------------------------------------------------------------------
+      implicit none
+      type(node_t),pointer    :: leaf   
+      type(dof_tp),intent(in) :: dofs(:)
+      integer                 :: ndofs,f
+      ndofs = size(dofs)
+      allocate(leaf)
+      ! Mark node as leaf.
+      leaf%isleaf = .true.
+      ! Link the dofs into the node.
+      leaf%nmodes = ndofs
+      allocate(leaf%dofs(ndofs))
+      do f=1,ndofs
+         leaf%dofs(f)%p => dofs(f)%p
+      enddo
+   end function make_leaf
+
+
+   !--------------------------------------------------------------------
+   function make_node(children) result(node)
+   !--------------------------------------------------------------------
+      implicit none
+      type(node_t),pointer        :: node       
+      type(node_tp),intent(inout) :: children(:)
+      integer                     :: nmodes,m   
+      nmodes = size(children)
+      allocate(node)
+      ! Mark node as non-leaf.
+      node%isleaf = .false.
+      ! Link the submodes into the node, and set their parent.
+      node%nmodes = nmodes
+      allocate(node%modes(nmodes))
+      do m=1,nmodes
+         node%modes(m)%p => children(m)%p
+         children(m)%p%parent => node
+      enddo
+   end function make_node
+
+
+   !--------------------------------------------------------------------
+   function make_tree(topnode) result(tree)
+   !--------------------------------------------------------------------
+      implicit none
+      type(tree_t),pointer              :: tree                
+      type(node_t),target,intent(inout) :: topnode             
+      integer                           :: numnodes,numdofs,numlayers
+      integer                           :: idx,m
+      type(node_t),pointer              :: node
+      allocate(tree)
+      ! Set the top node.
+      tree%topnode => topnode
+      ! Count number of nodes and dofs in whole tree.
+      call count_nodes(topnode,numnodes,numdofs,numlayers)
+      tree%numnodes  = numnodes
+      tree%numdofs   = numdofs
+      tree%numlayers = numlayers
+      ! Record the pre-/post-order sequence of the nodes.
+      allocate(tree%preorder(numnodes))
+      idx = 1
+      call set_preorder(topnode,tree%preorder,idx)
+      allocate(tree%postorder(numnodes))
+      idx = 1
+      call set_postorder(topnode,tree%postorder,idx)
+      ! Set tree-related data in nodes.
+      do m=1,numnodes
+         node => tree%preorder(m)%p
+         node%tree => tree
+         node%num  =  m
+      enddo
+      call set_layer(topnode,1)
+   end function make_tree
+
+
+   !--------------------------------------------------------------------
+   recursive subroutine count_nodes(node,numnodes,numdofs,numlayers)
+   !--------------------------------------------------------------------
+   ! Counts the total number of nodes, dofs, and layers below a certain
+   ! node, itself included.
+   !--------------------------------------------------------------------
+      implicit none
+      type(node_t),intent(in) :: node            
+      integer,intent(out)     :: numnodes,numdofs,numlayers
+      type(node_t),pointer    :: child           
+      integer                 :: m,chnodes,chdofs,chlayers
+      if (node%isleaf) then
+         numnodes  = 1
+         numdofs   = node%nmodes
+         numlayers = 1
+      else
+         numnodes  = 1
+         numdofs   = 0
+         numlayers = 1
+         do m=1,node%nmodes
+            child => node%modes(m)%p
+            call count_nodes(child,chnodes,chdofs,chlayers)
+            numnodes  = numnodes + chnodes
+            numdofs   = numdofs  + chdofs
+            numlayers = max(numlayers,chlayers+1)
+         enddo
+      endif
+   end subroutine count_nodes
+
+
+   !--------------------------------------------------------------------
+   recursive subroutine set_preorder(node,seq,idx)
+   !--------------------------------------------------------------------
+      implicit none
+      type(node_t),target,intent(in) :: node  
+      type(node_tp),intent(inout)    :: seq(:)
+      integer,intent(inout)          :: idx   
+      type(node_t),pointer           :: child 
+      integer                        :: m     
+      ! First record this node.
+      seq(idx)%p => node
+      idx = idx+1
+      ! Then record all children, if any.
+      if (.not. node%isleaf) then
+         do m=1,node%nmodes
+            child => node%modes(m)%p
+            call set_preorder(child,seq,idx)
+         enddo
+      endif
+   end subroutine set_preorder
+
+
+   !--------------------------------------------------------------------
+   recursive subroutine set_postorder(node,seq,idx)
+   !--------------------------------------------------------------------
+      implicit none
+      type(node_t),target,intent(in) :: node  
+      type(node_tp),intent(inout)    :: seq(:)
+      integer,intent(inout)          :: idx   
+      type(node_t),pointer           :: child 
+      integer                        :: m     
+      ! First record all children, if any.
+      if (.not. node%isleaf) then
+         do m=1,node%nmodes
+            child => node%modes(m)%p
+            call set_postorder(child,seq,idx)
+         enddo
+      endif
+      ! Then record this node.
+      seq(idx)%p => node
+      idx = idx+1
+   end subroutine set_postorder
+
+
+   !--------------------------------------------------------------------
+   recursive subroutine set_layer(node,layer)
+   !--------------------------------------------------------------------
+      implicit none
+      type(node_t),intent(inout) :: node 
+      integer,intent(in)         :: layer
+      type(node_t),pointer       :: child
+      integer                    :: m    
+      ! Set the layer of this node.
+      node%layer = layer
+      ! Set the layer of all its children.
+      if (.not. node%isleaf) then
+         do m=1,node%nmodes
+            child => node%modes(m)%p
+            call set_layer(child,layer+1)
+         enddo
+      endif
+   end subroutine set_layer
+
+end module tree
