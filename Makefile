@@ -2,7 +2,13 @@
 
 FC := gfortran
 FFLAGS := -Wall -g -fbounds-check
+DEPFLAGS := -cpp -MM
 LIBS :=
+
+SOURCES := \
+   base.f90 dof.f90 genpot.f90 graphviz.f90 linear.f90 modeutil.f90 test.f90 tree.f90 tuckerdecomp.f90
+MODULES := \
+   base.mod dof.mod genpot.mod graphviz.mod linear.mod modeutil.mod tree.mod tuckerdecomp.mod
 
 # program targets
 
@@ -22,23 +28,14 @@ test: $(TEST_OBJS)
 
 # module dependencies
 
-test.o: \
-    base.mod dof.mod tree.mod
+allmod: $(MODULES)
 
-tuckerdecomp.o: \
-    base.mod linear.mod modeutil.mod
+dep: deps.mk
 
-linear.o: \
-    base.mod
+deps.mk: $(MODULES)
+	$(FC) $(DEPFLAGS) $(SOURCES) > deps.mk
 
-tree.o: \
-    base.mod dof.mod
-
-dof.o: \
-    base.mod
-
-graphviz.o: \
-    dof.mod tree.mod
+include deps.mk
 
 # others
 

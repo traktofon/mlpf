@@ -78,5 +78,7 @@ program test
    enddo
    write (*,*)
    call mkdot(42,t)
+   write (*,*) 'Wrote graphviz input file to channel 42.'
+   write (*,*)
 
 end program test
