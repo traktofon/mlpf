@@ -10,9 +10,9 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 8
+   integer,parameter         :: ndofs = 11
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 8
+   integer,parameter         :: gdim = 4
    real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
@@ -30,7 +30,7 @@ program test
       write (dofs(f)%p%label, '(a,i0)') '#',f
       allocate(dofs(f)%p%x(gdim))
       do g=1,gdim
-         dofs(f)%p%x(g) = dble(f+g-1)
+         dofs(f)%p%x(g) = 0.1d0*f + g
       enddo
    enddo
 
@@ -128,6 +128,6 @@ program test
 
    ! Do the hierarchical Tucker decomposition.
    write (*,*) 'Generating HT decomposition...'
-   call bla(t,v(1:vlen),vdim,accuracy)
+   call compute_ht(t,v(1:vlen),vdim,accuracy)
 
 end program test
