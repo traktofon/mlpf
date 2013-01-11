@@ -10,8 +10,8 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 11
-   integer,parameter         :: ncomb = 2
+   integer,parameter         :: ndofs = 12
+   integer,parameter         :: ncomb = 3
    integer,parameter         :: gdim = 4
    real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
