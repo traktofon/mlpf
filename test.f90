@@ -38,7 +38,7 @@ program test
    nmodes = ndofs
    allocate(nodes(nmodes))
    do f=1,nmodes
-      nodes(f)%p => make_leaf(dofs(f:f))
+      nodes(f)%p => make_leaf( (/ f /) )
    enddo
 
    ! Combine modes
@@ -91,7 +91,7 @@ program test
       write (*,'(x,i0)',advance="no") t%postorder(m)%p%num
    enddo
    write (*,*)
-   call mkdot(42,t)
+   call mkdot(42,t,dofs)
    write (*,*) 'Wrote graphviz input file to channel 42.'
    write (*,*)
 
