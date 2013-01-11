@@ -35,29 +35,25 @@ module hiertuck
    !--------------------------------------------------------------------
       implicit none
       type(tree_t),intent(in) :: t
-      real(dbl),intent(in),target    :: v(:)
-      integer,intent(in)      :: vdim(:)
+      real(dbl),intent(inout) :: v(:)
+      integer,intent(inout)   :: vdim(:)
       real(dbl),intent(in)    :: limit
       integer                 :: l,m,nc,d1,d2,f
       integer                 :: rank,mdim
       type(node_t),pointer    :: no
-      real(dbl),allocatable   :: u1(:),u2(:)
-      integer                 :: u1dim(size(vdim)),u2dim(size(vdim))
+      integer                 :: udim(size(vdim))
       integer                 :: todo(size(vdim))
       type(node_tp)           :: nnn(size(vdim))
       type(basis_t)           :: basis(size(vdim))
 
       ! On entry, v has rank = t%numleaves.
-      allocate(u1(size(v)))
-      u1 = v
-      u1dim =  vdim
       rank = size(vdim)
       ! Loop over layers from bottom to top.
       do l = t%numlayers-1, 1, -1
          write (*,*) 'LAYER',l
-         write (*,*) 'u1dim =', u1dim(1:rank)
-         d1 = 1 ! counting dimensions of u1
-         d2 = 1 ! counting dimensions of u2
+         write (*,*) 'vdim =', vdim(1:rank)
+         d1 = 1 ! counting dimensions of v without mode-combination
+         d2 = 1 ! counting dimensions of v with mode-combination
          nc = 0 ! counting mode-combinations
          ! Go through all nodes in the current layer, and all leaves above.
          do m = 1, t%numnodes
@@ -65,16 +61,16 @@ module hiertuck
             if (no%layer > l) cycle
             if (no%layer < l .and. .not.no%isleaf) cycle
             if (no%isleaf) then
-               u2dim(d2) = u1dim(d1)
+               udim(d2) = vdim(d1)
                basis(d2)%btyp = btyp_unit
                d1 = d1+1
             else
                allocate(no%ndim(no%nmodes))
                do f=1,no%nmodes
-                  no%ndim(f) = no%modes(f)%p%nbasis ! = u1dim(c+f-1)
+                  no%ndim(f) = no%modes(f)%p%nbasis ! = vdim(c+f-1)
                enddo
                no%plen = product(no%ndim)
-               u2dim(d2) = no%plen
+               udim(d2) = no%plen
                d1 = d1 + no%nmodes
                nc = nc+1
                todo(nc) = d2
@@ -83,27 +79,23 @@ module hiertuck
             d2 = d2+1
          enddo
          rank = d2-1
-         write (*,*) 'u2dim =', u2dim(1:rank)
-         write (*,*) 'todo  =', todo(1:nc)
-         u1dim(1:rank) = u2dim(1:rank)
+         vdim(1:rank) = udim(1:rank)
+         write (*,*) 'vdim =', vdim(1:rank)
+         write (*,*) 'todo =', todo(1:nc)
          ! TODO: l==1 => just store core tensor
          do m = 1,nc
             d2 = todo(m)
-            mdim = u2dim(d2)
-            call compute_basis(u1,u2dim(1:rank),d2,limit,mdim,nnn(m)%p%basis)
+            mdim = vdim(d2)
+            call compute_basis(v,vdim(1:rank),d2,limit,mdim,nnn(m)%p%basis)
             nnn(m)%p%nbasis = mdim
             basis(d2)%btyp = btyp_rect
             basis(d2)%b => nnn(m)%p%basis
-            u1dim(m) = mdim
+            udim(m) = mdim
          enddo
-         write (*,*) 'u1dim =', u1dim(1:rank)
-         call compute_core(u1,u2dim(1:rank),basis,u2,u1dim(1:rank))
-         deallocate(u1)
-         allocate(u1(size(u2)))
-         u1 = u2
-         deallocate(u2)
+         write (*,*) 'udim =', udim(1:rank)
+         call compute_core(v,vdim(1:rank),basis)
       enddo
-      print *,u1(1)
+      print *,v(1)
    end subroutine bla
 
 end module hiertuck
