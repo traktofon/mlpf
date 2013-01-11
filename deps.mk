@@ -6,7 +6,7 @@ linear.o linear.mod: linear.f90 base.mod
 modeutil.o modeutil.mod: modeutil.f90
 test.o: test.f90 dof.mod tree.mod graphviz.mod genpot.mod testfunc.mod \
  tuckerdecomp.mod
-tree.o tree.mod: tree.f90 base.mod dof.mod
+tree.o tree.mod: tree.f90 base.mod
 tuckerdecomp.o tuckerdecomp.mod: tuckerdecomp.f90 base.mod modeutil.mod \
  linear.mod
 testfunc.o testfunc.mod: testfunc.f90 base.mod

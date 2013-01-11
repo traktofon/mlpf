@@ -2,7 +2,6 @@
 module tree
 
    use base
-   use dof
    implicit none
    private
 
@@ -14,7 +13,7 @@ module tree
       logical               :: isleaf               ! .true. => children are dofs
       integer               :: nmodes               ! number of submodes/dofs
       type(node_tp),pointer :: modes(:) => null()   ! pointers to submodes
-      type(dof_tp),pointer  :: dofs(:)  => null()   ! pointers to dofs
+      integer,pointer       :: dofs(:)  => null()   ! list of dofs
       type(node_t),pointer  :: parent   => null()   ! pointer to parent node
       !--- Tree-related data ---
       type(tree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
@@ -51,9 +50,9 @@ module tree
    function make_leaf(dofs) result(leaf)
    !--------------------------------------------------------------------
       implicit none
-      type(node_t),pointer    :: leaf   
-      type(dof_tp),intent(in) :: dofs(:)
-      integer                 :: ndofs,f
+      type(node_t),pointer :: leaf   
+      integer,intent(in)   :: dofs(:)
+      integer              :: ndofs,f
       ndofs = size(dofs)
       allocate(leaf)
       ! Mark node as leaf.
@@ -62,7 +61,7 @@ module tree
       leaf%nmodes = ndofs
       allocate(leaf%dofs(ndofs))
       do f=1,ndofs
-         leaf%dofs(f)%p => dofs(f)%p
+         leaf%dofs(f) = dofs(f)
       enddo
    end function make_leaf
 

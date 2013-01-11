@@ -10,9 +10,9 @@ module modeutil
 
    contains
 
-   ! -------------------------------------------------------------------------------------
+   !--------------------------------------------------------------------
    subroutine vgn_shape(m,gdim,vd,gd,nd)
-   ! -------------------------------------------------------------------------------------
+   !--------------------------------------------------------------------
       implicit none
       integer,intent(in)  :: m
       integer,intent(in)  :: gdim(:)
@@ -27,11 +27,12 @@ module modeutil
    end subroutine vgn_shape
 
 
-   ! -------------------------------------------------------------------------------------
+   !--------------------------------------------------------------------
    subroutine make_mc_shape(gdim,mc,np,mdim)
-   ! Given a shape (gdim) and a list of mode combinations to be performed (mc), returns
-   ! the new number of modes (np) and the new shape (mdim).
-   ! -------------------------------------------------------------------------------------
+   ! Given a shape (gdim) and a list of mode combinations to be
+   ! performed (mc), returns the new number of modes (np) and the new
+   ! shape (mdim).
+   !--------------------------------------------------------------------
       implicit none
       integer,intent(in)          :: gdim(:)
       type(modecomb_t),intent(in) :: mc(:)

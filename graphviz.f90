@@ -8,14 +8,15 @@ module graphviz
    contains
 
    !--------------------------------------------------------------------
-   subroutine mkdot(iout,t)
+   subroutine mkdot(iout,t,dofs)
    ! Creates an input file for graphviz, for visualising the tree.
    !--------------------------------------------------------------------
       implicit none
-      integer,intent(in)      :: iout      ! output channel
-      type(tree_t),intent(in) :: t     ! the tree
-      type(node_t),pointer    :: cnode
-      integer                 :: i,f,ff
+      integer,intent(in)      :: iout    ! output channel
+      type(tree_t),intent(in) :: t       ! the tree
+      type(dof_tp),intent(in) :: dofs(:) ! the DOFs
+      type(node_t),pointer    :: cnode  
+      integer                 :: i,f,idof 
       ! output header
       write(iout,'(5(a,/),a)') &
          'digraph G {', &
@@ -25,7 +26,6 @@ module graphviz
          'edge  [fontname=Arial]', &
          '// the rest describes the ML tree'
       ! loop over nodes
-      ff=1
       do i=1,t%numnodes
          cnode => t%preorder(i)%p
          ! output this node (label by number)
@@ -36,14 +36,14 @@ module graphviz
          if (cnode%isleaf) then
             ! loop over primitive subnodes
             do f=1,cnode%nmodes
+               idof = cnode%dofs(f)
                ! output subnode
-               write (iout,'(a,i0,3a)') 'f', ff, &
-                  ' [shape=box,label="', trim(cnode%dofs(f)%p%label), '"]'
+               write (iout,'(a,i0,3a)') 'f', idof, &
+                  ' [shape=box,label="', trim(dofs(idof)%p%label), '"]'
                ! output edge
                write (iout,'(a,i0,a,i0,a)') &
-                  'f', ff, ' -> n', cnode%num, &
+                  'f', idof, ' -> n', cnode%num, &
                   ' [dir=none]'
-               ff = ff+1
             end do
          endif
          ! output edge to parent
