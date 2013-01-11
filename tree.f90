@@ -20,9 +20,9 @@ module tree
       integer               :: num                  ! internal number of this node
       integer               :: layer                ! layer (level) of this node inside the tree
       !--- MLPF-related data ----
-      integer               :: nbasis               ! number of basis tensors at this node
       integer,pointer       :: ndim(:) => null()    ! number of basis tensors/grid points of the children
       integer               :: plen                 ! product(ndim)
+      integer               :: nbasis               ! number of basis tensors at this node
       real(dbl),pointer     :: basis(:,:) => null() ! basis tensors, dim=(plen,nbasis)
    end type node_t
 

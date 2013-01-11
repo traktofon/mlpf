@@ -7,6 +7,7 @@ program test
    use genpot
    use testfunc
    use tuckerdecomp
+   use hiertuck
    implicit none
 
    integer,parameter         :: ndofs = 6
@@ -16,10 +17,10 @@ program test
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
-   integer                   :: f,g,nmodes,nleft,m,vdim,mdim
-   integer,allocatable       :: ndim(:)
-   real(dbl),allocatable     :: v(:)
-   type(node_t),pointer      :: no
+   integer                   :: f,g,nmodes,nleft,m,vlen,mdim
+   integer,allocatable       :: vdim(:),udim(:)
+   real(dbl),allocatable     :: v(:),u(:)
+   type(basis_t),allocatable :: basis(:)
 
    ! Make DOF grids.
    allocate(dofs(ndofs))
@@ -95,24 +96,35 @@ program test
    write (*,*)
 
    ! Generate potential.
-   vdim = 1
+   vlen = 1
    do f=1,ndofs
-      vdim = vdim*dofs(f)%p%gdim
+      vlen = vlen*dofs(f)%p%gdim
    enddo
-   allocate(v(vdim))
-   write (*,*) 'Generating potential, size =',vdim,'...'
+   allocate(v(vlen))
+   write (*,*) 'Generating potential, size =',vlen,'...'
    call buildpot(coulomb,dofs,v)
 
    ! Generate initial Potfit (basis tensors + core tensor)
-   nmodes = t%numdofs
-   allocate(ndim(nmodes))
-   ndim(:) = gdim
+   call init_leaves(t,dofs)
+   nmodes = t%numleaves
+   allocate(vdim(nmodes))
+   allocate(udim(nmodes))
+   allocate(basis(nmodes))
+   do m=1,nmodes
+      vdim(m) = t%leaves(m)%p%plen
+   enddo
    write (*,*) 'Computing basis tensors...'
    do m=1,nmodes
-      mdim = gdim
-      call compute_basis(v, ndim, m, accuracy, mdim, t%leaves(m)%p%basis)
-      write (*,*) m, mdim
+      mdim = vdim(m)
+      basis(m)%btyp = btyp_rect
+      basis(m)%b => t%leaves(m)%p%basis
+      call compute_basis(v, vdim, m, accuracy, mdim, basis(m)%b)
+      t%leaves(m)%p%nbasis = mdim
+      udim(m) = mdim
+      write (*,'(a,i0,a,i0,a)') '  mode ',m,' needs ',mdim,' basis tensors'
    enddo
+   write (*,*) 'Computing core tensor...'
+   call compute_core(v,vdim,basis,u,udim)
 
    ! Do the hierarchical Tucker decomposition.
 

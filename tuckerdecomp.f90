@@ -76,7 +76,7 @@ module tuckerdecomp
       real(dbl),intent(in)     :: v(:)     ! input tensor
       integer,intent(in)       :: vdim(:)  ! shape of v
       type(basis_t),intent(in) :: basis(:) ! rank-1 basis tensors for all modes
-      real(dbl),pointer        :: u(:)     ! output core tensor (allocated here)
+      real(dbl),allocatable    :: u(:)     ! output core tensor (allocated here)
       integer,intent(in)       :: udim(:)  ! shape of u
       integer                  :: nmodes,m,vloc,plen,vd,gd,nd            
       real(dbl),allocatable    :: tmp1(:),tmp2(:)                        
