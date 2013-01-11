@@ -18,8 +18,8 @@ program test
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
    integer                   :: f,g,nmodes,nleft,m,vlen,mdim
-   integer,allocatable       :: vdim(:),udim(:)
-   real(dbl),allocatable     :: v(:),u(:)
+   integer,allocatable       :: vdim(:)
+   real(dbl),allocatable     :: v(:)
    type(basis_t),allocatable :: basis(:)
 
    ! Make DOF grids.
@@ -108,7 +108,6 @@ program test
    call init_leaves(t,dofs)
    nmodes = t%numleaves
    allocate(vdim(nmodes))
-   allocate(udim(nmodes))
    allocate(basis(nmodes))
    do m=1,nmodes
       vdim(m) = t%leaves(m)%p%plen
@@ -120,15 +119,15 @@ program test
       basis(m)%b => t%leaves(m)%p%basis
       call compute_basis(v, vdim, m, accuracy, mdim, basis(m)%b)
       t%leaves(m)%p%nbasis = mdim
-      udim(m) = mdim
       write (*,'(a,i0,a,i0,a)') '  mode ',m,' needs ',mdim,' basis tensors'
    enddo
    write (*,*) 'Computing core tensor...'
-   call compute_core(v,vdim,basis,u,udim)
+   call compute_core(v,vdim,basis)
+   vlen = product(vdim)
    write (*,*)
 
    ! Do the hierarchical Tucker decomposition.
    write (*,*) 'Generating HT decomposition...'
-   call bla(t,u,udim,accuracy)
+   call bla(t,v(1:vlen),vdim,accuracy)
 
 end program test

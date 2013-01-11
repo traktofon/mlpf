@@ -69,21 +69,23 @@ module tuckerdecomp
 
 
    !--------------------------------------------------------------------
-   subroutine compute_core(v, vdim, basis, u, udim)
+   subroutine compute_core(v, vdim, basis)
    ! Computes the core tensor for a Tucker decomposition of the tensor v.
+   ! v and vdim will be overwritten!
    !--------------------------------------------------------------------
       implicit none
-      real(dbl),intent(in)     :: v(:)     ! input tensor
-      integer,intent(in)       :: vdim(:)  ! shape of v
+      real(dbl),intent(inout)  :: v(:)     ! input tensor/core tensor
+      integer,intent(inout)    :: vdim(:)  ! initial/final shape of v
       type(basis_t),intent(in) :: basis(:) ! rank-1 basis tensors for all modes
-      real(dbl),allocatable    :: u(:)     ! output core tensor (allocated here)
-      integer,intent(in)       :: udim(:)  ! shape of u
-      integer                  :: nmodes,m,vloc,plen,vd,gd,nd            
-      real(dbl),allocatable    :: tmp1(:),tmp2(:)                        
-      integer                  :: tmp1dim(size(vdim)),tmp2dim(size(vdim))
+      integer                  :: nmodes,m,vloc,vlen,ulen,vd,gd,nd            
+      real(dbl),allocatable    :: u(:)     ! temporary tensor
+      integer                  :: udim(size(vdim))
 
       nmodes = size(vdim)
       vloc = 0
+      vlen = size(v)
+      ! TODO: effort can be saved by performing the projections in an
+      !       order depending on the basis sizes.
       do m=1,nmodes
          ! Project the input tensor onto the basis of mode m.
          ! But if the basis is unit, then nothing needs to be done.
@@ -92,50 +94,31 @@ module tuckerdecomp
          ! current tensor is stored, and store the transformed tensor
          ! in an unused array.
          if (vloc==0) then
-            ! Source is v, target is tmp1.
-            tmp1dim = vdim
-            tmp1dim(m) = udim(m)
-            plen = product(tmp1dim)
-            allocate(tmp1(plen))
+            ! Source is v, target is u.
+            udim = vdim
+            udim(m) = size(basis(m)%b,2) ! number of basis columns
+            ulen = product(udim)
+            allocate(u(ulen))
             call vgn_shape(m, vdim, vd, gd, nd)
-            call matrix_tensor(basis(m)%b, v, tmp1, vd, gd, nd, udim(m))
+            call matrix_tensor(basis(m)%b, v(1:vlen), u(1:ulen), vd, gd, nd, udim(m))
             vloc = 1
          elseif (vloc==1) then
-            ! Source is tmp1, target is tmp2.
-            tmp2dim = tmp1dim
-            tmp2dim(m) = udim(m)
-            plen = product(tmp2dim)
-            allocate(tmp2(plen))
-            call vgn_shape(m, tmp1dim, vd, gd, nd)
-            call matrix_tensor(basis(m)%b, tmp1, tmp2, vd, gd, nd, udim(m))
-            deallocate(tmp1)
-            vloc = 2
-         else
-            ! Source is tmp2, target is tmp1.
-            tmp1dim = tmp2dim
-            tmp1dim(m) = udim(m)
-            plen = product(tmp1dim)
-            allocate(tmp1(plen))
-            call vgn_shape(m, tmp2dim, vd, gd, nd)
-            call matrix_tensor(basis(m)%b, tmp2, tmp1, vd, gd, nd, udim(m))
-            deallocate(tmp2)
-            vloc = 1
+            ! Source is u, target is v.
+            vdim = udim
+            vdim(m) = size(basis(m)%b,2) ! number of basis columns
+            vlen = product(vdim)
+            call vgn_shape(m, udim, vd, gd, nd)
+            call matrix_tensor(basis(m)%b, u(1:ulen), v(1:vlen), vd, gd, nd, vdim(m))
+            deallocate(u)
+            vloc = 0
          endif
       enddo
-      ! Copy result to u.
-      plen = product(udim)
-      allocate(u(plen))
-      if (vloc==0) then
-         ! Source is v... shouldn't actually happen.
-         u = v
-      elseif (vloc==1) then
-         ! Source is tmp1.
-         u = tmp1
-         deallocate(tmp1)
-      else
-         ! Source is tmp2
-         u = tmp2
-         deallocate(tmp2)
+      ! Copy result to v, if necessary
+      if (vloc==1) then
+         ! Source is u.
+         vdim = udim
+         v(1:ulen) = u(:)
+         deallocate(u)
       endif
    end subroutine compute_core
 
