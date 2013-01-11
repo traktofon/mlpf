@@ -45,7 +45,7 @@ module genpot
             goto 10
          endif
       enddo
-      print *, sqrt(v2sum)
+      write (*,'(a,g22.15)') '||v|| = ', sqrt(v2sum)
    end subroutine buildpot
 
 end module genpot
