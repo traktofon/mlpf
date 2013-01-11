@@ -10,9 +10,9 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 6
+   integer,parameter         :: ndofs = 8
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 15
+   integer,parameter         :: gdim = 8
    real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
@@ -125,7 +125,10 @@ program test
    enddo
    write (*,*) 'Computing core tensor...'
    call compute_core(v,vdim,basis,u,udim)
+   write (*,*)
 
    ! Do the hierarchical Tucker decomposition.
+   write (*,*) 'Generating HT decomposition...'
+   call bla(t,u,udim,accuracy)
 
 end program test

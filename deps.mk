@@ -9,5 +9,6 @@ test.o: test.f90 dof.mod tree.mod graphviz.mod genpot.mod testfunc.mod \
 tree.o tree.mod: tree.f90 base.mod
 tuckerdecomp.o tuckerdecomp.mod: tuckerdecomp.f90 base.mod modeutil.mod \
  linear.mod
-hiertuck.o hiertuck.mod: hiertuck.f90 dof.mod tree.mod
+hiertuck.o hiertuck.mod: hiertuck.f90 dof.mod tree.mod modeutil.mod \
+ tuckerdecomp.mod
 testfunc.o testfunc.mod: testfunc.f90 base.mod
