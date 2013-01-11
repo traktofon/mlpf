@@ -37,7 +37,7 @@ module hiertuck
       real(dbl),intent(inout) :: v(:)
       integer,intent(inout)   :: vdim(:)
       real(dbl),intent(in)    :: limit
-      integer                 :: l,m,nc,d1,d2,f
+      integer                 :: l,m,nc,d1,d2,f,i
       integer                 :: rank,mdim,vlen
       type(node_t),pointer    :: no
       integer                 :: udim(size(vdim))
@@ -52,10 +52,10 @@ module hiertuck
       ! The bottom-most layer is skipped as the initial potfit has
       ! already been computed before.
       do l = t%numlayers-1, 1, -1
-         write (*,*) '*** LAYER',l
-         write (*,*) 'vdim =', vdim(1:rank)
+         write (*,'(/,a,i0,a)') '*** LAYER ',l,' ***'
+         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,rank)
          vlen = product(vdim(1:rank))
-         write (*,*) 'vlen =', vlen
+         write (*,'(a,i0)') 'vlen = ', vlen
 
          d1 = 1 ! counting dimensions of v, without mode-combination
          d2 = 1 ! counting dimensions of v, with mode-combination
@@ -100,8 +100,7 @@ module hiertuck
          ! Now forget about the old shape of v.
          rank = d2-1
          vdim(1:rank) = udim(1:rank)
-         write (*,*) 'vdim =', vdim(1:rank)
-         write (*,*) 'xmode =', xmode(1:nc)
+         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,rank)
 
          ! For the top layer, there can be only one mode left,
          ! i.e. rank=1.  Instead of computing a basis for this
@@ -111,7 +110,7 @@ module hiertuck
             no%nbasis = 1
             allocate(no%basis(no%plen,1))
             no%basis(:,1) = v(1:vlen)
-            write (*,*) '||v|| =', sqrt(sum(v(1:vlen)**2))
+            write (*,'(/,a,g22.15)') '||v|| = ', sqrt(sum(v(1:vlen)**2))
 
          ! Otherwise, compute the basis tensors for the combined modes.
          else
@@ -132,7 +131,7 @@ module hiertuck
             ! Project the previous core tensor onto the bases.
             call compute_core(v(1:vlen),vdim(1:rank),basis)
             ! v and vdim have been overwritten.
-            write (*,*) 'vdim =', vdim(1:rank)
+            write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,rank)
          endif
       enddo
    end subroutine compute_ht
