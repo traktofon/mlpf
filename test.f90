@@ -30,7 +30,7 @@ program test
       write (dofs(f)%p%label, '(a,i0)') '#',f
       allocate(dofs(f)%p%x(gdim))
       do g=1,gdim
-         dofs(f)%p%x(g) = dble(g)
+         dofs(f)%p%x(g) = dble(f+g-1)
       enddo
    enddo
 
