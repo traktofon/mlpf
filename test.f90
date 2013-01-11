@@ -16,9 +16,8 @@ program test
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
-   integer                   :: f,g,nmodes,nleft,m,vdim
-   integer,allocatable       :: ndim(:),mdim(:)
-   type(basis_t),allocatable :: basis(:)
+   integer                   :: f,g,nmodes,nleft,m,vdim,mdim
+   integer,allocatable       :: ndim(:)
    real(dbl),allocatable     :: v(:)
    type(node_t),pointer      :: no
 
@@ -107,13 +106,13 @@ program test
    ! Generate initial Potfit (basis tensors + core tensor)
    nmodes = t%numdofs
    allocate(ndim(nmodes))
-   allocate(mdim(nmodes))
-   allocate(basis(nmodes))
    ndim(:) = gdim
-   mdim(:) = gdim
    write (*,*) 'Computing basis tensors...'
-   call compute_basis(v, ndim, accuracy, mdim, basis)
-   write (*,*) mdim
+   do m=1,nmodes
+      mdim = gdim
+      call compute_basis(v, ndim, m, accuracy, mdim, t%leaves(m)%p%basis)
+      write (*,*) m, mdim
+   enddo
 
    ! Do the hierarchical Tucker decomposition.
 
