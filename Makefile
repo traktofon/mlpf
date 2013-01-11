@@ -15,6 +15,7 @@ SOURCES := \
    test.f90 \
    tree.f90 \
    tuckerdecomp.f90 \
+   hiertuck.f90 \
    testfunc.f90
 MODULES := \
    base.mod \
@@ -25,7 +26,8 @@ MODULES := \
    modeutil.mod \
    tree.mod \
    graphviz.mod \
-   tuckerdecomp.mod
+   tuckerdecomp.mod \
+   hiertuck.mod
 
 # program targets
 
@@ -33,6 +35,7 @@ all: test
 
 TEST_OBJS = \
     test.o \
+    hiertuck.o \
     tuckerdecomp.o \
     modeutil.o \
     linear.o \
