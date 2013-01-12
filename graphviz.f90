@@ -41,16 +41,16 @@ module graphviz
                write (iout,'(a,i0,3a)') 'f', idof, &
                   ' [shape=box,label="', trim(dofs(idof)%p%label), '"]'
                ! output edge
-               write (iout,'(a,i0,a,i0,a)') &
+               write (iout,'(a,i0,a,i0,a,i0,a)') &
                   'f', idof, ' -> n', cnode%num, &
-                  ' [dir=none]'
+                  ' [dir=none,label=', cnode%nbasis, ']'
             end do
          endif
          ! output edge to parent
          if (associated(cnode%parent)) then
-            write (iout,'(a,i0,a,i0,a)') &
+            write (iout,'(a,i0,a,i0,a,i0,a)') &
                'n', cnode%num, ' -> n', cnode%parent%num, &
-               ' [dir=none]'
+               ' [dir=none,label=', cnode%nbasis, ']'
          endif
       end do
       ! output footer

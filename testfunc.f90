@@ -18,4 +18,17 @@ module testfunc
       v = 1/sqrt(r)
    end function coulomb
 
+
+   function gauss(x) result(v)
+      real(dbl),intent(in) :: x(:)
+      real(dbl)            :: v
+      integer              :: f
+      real(dbl)            :: r
+      r = 0.d0
+      do f=1,size(x)
+         r = r + x(f)**2
+      enddo
+      v = exp(-r)
+   end function gauss
+
 end module testfunc

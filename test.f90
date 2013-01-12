@@ -10,9 +10,9 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 12
-   integer,parameter         :: ncomb = 3
-   integer,parameter         :: gdim = 4
+   integer,parameter         :: ndofs = 9
+   integer,parameter         :: ncomb = 2
+   integer,parameter         :: gdim = 6
    real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
@@ -30,7 +30,7 @@ program test
       write (dofs(f)%p%label, '(a,i0)') '#',f
       allocate(dofs(f)%p%x(gdim))
       do g=1,gdim
-         dofs(f)%p%x(g) = 0.1d0*f + g
+         dofs(f)%p%x(g) = dble(g)/gdim
       enddo
    enddo
 
@@ -91,9 +91,6 @@ program test
       write (*,'(x,i0)',advance="no") t%postorder(m)%p%num
    enddo
    write (*,*)
-   call mkdot(42,t,dofs)
-   write (*,*) 'Wrote graphviz input file to channel 42.'
-   write (*,*)
 
    ! Generate potential.
    vlen = 1
@@ -102,7 +99,7 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(coulomb,dofs,v)
+   call buildpot(gauss,dofs,v)
 
    ! Generate initial Potfit (basis tensors + core tensor)
    call init_leaves(t,dofs)
@@ -129,5 +126,9 @@ program test
    ! Do the hierarchical Tucker decomposition.
    write (*,*) 'Generating HT decomposition...'
    call compute_ht(t,v(1:vlen),vdim,accuracy)
+
+   call mkdot(42,t,dofs)
+   write (*,*)
+   write (*,*) 'Wrote graphviz input file to channel 42.'
 
 end program test
