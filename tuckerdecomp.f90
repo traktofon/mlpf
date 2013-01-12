@@ -134,15 +134,19 @@ module tuckerdecomp
       integer,intent(in)    :: vd,gd,nd
       real(dbl),intent(out) :: dm(gd,gd)
       integer               :: a,b,vi,ni
-      do b=1,gd
-         do a=b,gd
-            dm(a,b) = 0.d0
-            do ni=1,nd
+      dm = 0.d0
+      do ni=1,nd
+         do b=1,gd
+            do a=b,gd
                do vi=1,vd
                   dm(a,b) = dm(a,b) + v(vi,a,ni)*v(vi,b,ni)
                enddo
             enddo
-            if (a /= b)  dm(b,a) = dm(a,b)
+         enddo
+      enddo
+      do b=1,gd
+         do a=1,b-1
+            dm(a,b) = dm(b,a)
          enddo
       enddo
    end subroutine build_dmat
