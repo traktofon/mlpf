@@ -8,7 +8,7 @@ module genpot
    contains
 
    !--------------------------------------------------------------------
-   subroutine buildpot(fn,dofs,v)
+   subroutine buildpot(fn,dofs,v,vnorm)
    !--------------------------------------------------------------------
       implicit none
       interface
@@ -19,7 +19,8 @@ module genpot
          end function fn
       end interface
       type(dof_tp),intent(in) :: dofs(:)        
-      real(dbl),intent(out)   :: v(:)           
+      real(dbl),intent(out)   :: v(:)
+      real(dbl),intent(out)   :: vnorm
       integer                 :: j,f,ndofs      
       integer                 :: idx(size(dofs))
       real(dbl)               :: x(size(dofs))  
@@ -45,7 +46,7 @@ module genpot
             goto 10
          endif
       enddo
-      write (*,'(a,g22.15)') '||v|| = ', sqrt(v2sum)
+      vnorm = sqrt(v2sum)
    end subroutine buildpot
 
 end module genpot

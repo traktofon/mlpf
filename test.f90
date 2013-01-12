@@ -11,9 +11,9 @@ program test
    implicit none
 
    integer,parameter         :: ndofs = 9
-   integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 6
-   real(dbl),parameter       :: accuracy = 1.d-8
+   integer,parameter         :: ncomb = 3
+   integer,parameter         :: gdim = 7
+   real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
@@ -21,6 +21,7 @@ program test
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:)
    type(basis_t),allocatable :: basis(:)
+   real(dbl)                 :: vnorm
 
    ! Make DOF grids.
    allocate(dofs(ndofs))
@@ -30,7 +31,7 @@ program test
       write (dofs(f)%p%label, '(a,i0)') '#',f
       allocate(dofs(f)%p%x(gdim))
       do g=1,gdim
-         dofs(f)%p%x(g) = dble(g)/gdim
+         dofs(f)%p%x(g) = dble(g-1)/dble(gdim-1)
       enddo
    enddo
 
@@ -99,7 +100,8 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(gauss,dofs,v)
+   call buildpot(coulomb3,dofs,v,vnorm)
+   write (*,'(a,g22.15)') '||v|| = ', vnorm
 
    ! Generate initial Potfit (basis tensors + core tensor)
    call init_leaves(t,dofs)
@@ -114,7 +116,7 @@ program test
       mdim = vdim(m)
       basis(m)%btyp = btyp_rect
       basis(m)%b => t%leaves(m)%p%basis
-      call compute_basis(v, vdim, m, accuracy, mdim, basis(m)%b)
+      call compute_basis(v, vdim, m, accuracy*vnorm, mdim, basis(m)%b)
       t%leaves(m)%p%nbasis = mdim
       write (*,'(a,i0,a,i0,a)') '  mode ',m,' needs ',mdim,' basis tensors'
    enddo
@@ -125,7 +127,7 @@ program test
 
    ! Do the hierarchical Tucker decomposition.
    write (*,*) 'Generating HT decomposition...'
-   call compute_ht(t,v(1:vlen),vdim,accuracy)
+   call compute_ht(t, v(1:vlen), vdim, accuracy*vnorm)
 
    call mkdot(42,t,dofs)
    write (*,*)
