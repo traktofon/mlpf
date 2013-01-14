@@ -18,7 +18,7 @@ module tuckerdecomp
 
    !--------------------------------------------------------------------
    subroutine compute_basis(v, gdim, m, limit, mdim, basis)
-   ! Computes the rank-1 basis tensors for a Tucker decomposition of the
+   ! Computes the 1-dim. basis tensors for a Tucker decomposition of the
    ! tensor v along its m-th dimension.
    !--------------------------------------------------------------------
    ! The number of basis tensors to be returned is specified as follows:
@@ -76,7 +76,7 @@ module tuckerdecomp
       implicit none
       real(dbl),intent(inout)  :: v(:)     ! input tensor/core tensor
       integer,intent(inout)    :: vdim(:)  ! initial/final shape of v
-      type(basis_t),intent(in) :: basis(:) ! rank-1 basis tensors for all modes
+      type(basis_t),intent(in) :: basis(:) ! 1-dim. basis tensors for all modes
       integer                  :: nmodes,m,vloc,vlen,ulen,vd,gd,nd            
       real(dbl),allocatable    :: u(:)     ! temporary tensor
       integer                  :: udim(size(vdim))
@@ -127,7 +127,7 @@ module tuckerdecomp
    !--------------------------------------------------------------------
    subroutine build_dmat(v, vd, gd, nd, dm)
    ! Generate the density matrix along the middle dimension of a
-   ! rank-3 tensor.
+   ! 3-dim. tensor.
    !--------------------------------------------------------------------
       implicit none
       real(dbl),intent(in)  :: v(vd,gd,nd)
