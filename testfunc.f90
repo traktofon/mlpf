@@ -11,11 +11,12 @@ module testfunc
       real(dbl)            :: v
       integer              :: f
       real(dbl)            :: r
+      real(dbl),parameter  :: eps = 1.d-8
       r = 0.d0
       do f=1,size(x)
          r = r + x(f)**2
       enddo
-      v = 1/sqrt(r)
+      v = 1/sqrt(r+eps)
    end function coulomb
 
 
