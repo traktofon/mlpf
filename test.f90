@@ -162,7 +162,7 @@ program test
       write (*,'(a,i0,a,i0,a)') '  mode ',m,' needs ',mdim,' basis tensors'
    enddo
    write (*,*) 'Computing core tensor...'
-   call compute_core(v,vdim,basis)
+   call contract_core(v,vdim,basis)
    vlen = product(vdim)
    write (*,*)
 

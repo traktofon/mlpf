@@ -129,7 +129,7 @@ module hiertuck
                basis(d2)%b => no%basis
             enddo
             ! Project the previous core tensor onto the bases.
-            call compute_core(v(1:vlen),vdim(1:order),basis)
+            call contract_core(v(1:vlen),vdim(1:order),basis)
             ! v and vdim have been overwritten.
             write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
          endif
