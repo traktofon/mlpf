@@ -2,6 +2,6 @@
 
 FC := gfortran
 FFLAGS := -Wall -g -fbounds-check
-FFLAGS := -O2
+#FFLAGS := -O2
 DEPFLAGS := -cpp -MM
 LIBS := -llapack -lblas
