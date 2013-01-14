@@ -36,13 +36,15 @@ module testfunc
    function coulombn(x) result(v)
       real(dbl),intent(in) :: x(:)
       real(dbl)            :: v
-      real(dbl),allocatable:: r(:)
+      real(dbl),allocatable:: r(:),qq(:)
       real(dbl),parameter  :: eps = 1.d-6
       integer              :: np,i,j,k,nk,c
+      integer              :: qi,qj
       np = size(x)/3
       ! x = (x_1 ... x_np y_1 ... y_np z_1 ... z_np)
       nk = (np*(np-1))/2
       allocate(r(nk))
+      allocate(qq(nk))
       r = eps
       k = 1
       do i=1,np
@@ -50,10 +52,13 @@ module testfunc
             do c=0,2 ! x,y,z
                r(k) = r(k) + (x(np*c+i) - x(np*c+j))**2
             enddo
+            qi = (-1)**i
+            qj = (-1)**j
+            qq(k) = dble(qi*qj)
             k = k+1
          enddo
       enddo
-      v = sum(1.d0/sqrt(r))
+      v = sum(qq/sqrt(r))
       deallocate(r)
    end function coulombn
 

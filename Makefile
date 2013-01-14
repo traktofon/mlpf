@@ -13,7 +13,6 @@ SOURCES := \
    graphviz.f90 \
    linear.f90 \
    modeutil.f90 \
-   test.f90 \
    tree.f90 \
    tuckerdecomp.f90 \
    hiertuck.f90 \
