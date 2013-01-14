@@ -79,7 +79,7 @@ module tuckerdecomp
       real(dbl),intent(inout)  :: v(:)     ! input tensor/core tensor
       integer,intent(inout)    :: vdim(:)  ! initial/final shape of v
       type(basis_t),intent(in) :: basis(:) ! 1-dim. basis tensors for all modes
-      integer                  :: nmodes,m,vloc,vlen,ulen,vd,gd,nd            
+      integer                  :: nmodes,m,vloc,vlen,ulen,vd,gd,nd
       real(dbl),allocatable    :: u(:)     ! temporary tensor
       integer                  :: udim(size(vdim))
 
@@ -102,7 +102,7 @@ module tuckerdecomp
             ulen = product(udim)
             allocate(u(ulen))
             call vgn_shape(m, vdim, vd, gd, nd)
-            call matrix_tensor(basis(m)%b, v(1:vlen), u(1:ulen), vd, gd, nd, udim(m))
+            call matrix_tensor_tp(basis(m)%b, v(1:vlen), u(1:ulen), vd, gd, nd, udim(m))
             vloc = 1
          elseif (vloc==1) then
             ! Source is u, target is v.
@@ -110,7 +110,7 @@ module tuckerdecomp
             vdim(m) = size(basis(m)%b,2) ! number of basis columns
             vlen = product(vdim)
             call vgn_shape(m, udim, vd, gd, nd)
-            call matrix_tensor(basis(m)%b, u(1:ulen), v(1:vlen), vd, gd, nd, vdim(m))
+            call matrix_tensor_tp(basis(m)%b, u(1:ulen), v(1:vlen), vd, gd, nd, vdim(m))
             deallocate(u)
             vloc = 0
          endif
@@ -123,6 +123,76 @@ module tuckerdecomp
          deallocate(u)
       endif
    end subroutine contract_core
+
+
+
+   !--------------------------------------------------------------------
+   subroutine expand_core(v, vdim, basis, u1, u1dim)
+   ! Expands the core tensor given by v (shape in vdim) by using the
+   ! set of 1-dim. basis tensors.  Resulting tensor is returned in
+   ! u1 (allocate here, shape in u1dim).
+   !--------------------------------------------------------------------
+      implicit none
+      real(dbl),intent(in)     :: v(:)
+      integer,intent(in)       :: vdim(:)
+      type(basis_t),intent(in) :: basis(:)
+      real(dbl),allocatable    :: u1(:)
+      integer,intent(out)      :: u1dim(size(vdim))
+      integer                  :: nmodes,m,vloc,plen,vd,gd,nd
+      real(dbl),allocatable    :: u2(:)
+      integer                  :: u2dim(size(vdim))
+
+      nmodes = size(vdim)
+      vloc = 0
+      do m=1,nmodes
+         if (basis(m)%btyp == btyp_unit) cycle
+         if (vloc==0) then
+            ! Source is v, target is u1.
+            u1dim = vdim
+            u1dim(m) = size(basis(m)%b,1)
+            plen = product(u1dim)
+            allocate(u1(plen))
+            call vgn_shape(m, vdim, vd, gd, nd)
+            call matrix_tensor_nt(basis(m)%b, v, u1, vd, gd, nd, u1dim(m))
+            vloc = 1
+         elseif (vloc==1) then
+            ! Source is u1, target is u2.
+            u2dim = u1dim
+            u2dim(m) = size(basis(m)%b,1)
+            plen = product(u2dim)
+            allocate(u2(plen))
+            call vgn_shape(m, u1dim, vd, gd, nd)
+            call matrix_tensor_nt(basis(m)%b, u1, u2, vd, gd, nd, u2dim(m))
+            deallocate(u1)
+            vloc = 2
+         else
+            ! Source is u2, target is u1.
+            u1dim = u2dim
+            u1dim(m) = size(basis(m)%b,1)
+            plen = product(u1dim)
+            allocate(u1(plen))
+            call vgn_shape(m, u2dim, vd, gd, nd)
+            call matrix_tensor_nt(basis(m)%b, u2, u1, vd, gd, nd, u1dim(m))
+            deallocate(u2)
+            vloc = 1
+         endif
+      enddo
+      ! Copy result to u1, if necessary
+      if (vloc==0) then
+         ! Nothing happened. This shouldn't happen.
+         u1dim = vdim
+         plen = product(u1dim)
+         allocate(u1(plen))
+         u1 = v
+      elseif (vloc==2) then
+         ! Move data from u2 to u1.
+         u1dim = u2dim
+         plen = product(u1dim)
+         allocate(u1(plen))
+         u1 = u2
+         deallocate(u2)
+      endif
+   end subroutine expand_core
 
 
 
