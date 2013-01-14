@@ -69,8 +69,10 @@ module tuckerdecomp
 
 
    !--------------------------------------------------------------------
-   subroutine compute_core(v, vdim, basis)
-   ! Computes the core tensor for a Tucker decomposition of the tensor v.
+   subroutine contract_core(v, vdim, basis)
+   ! Contracts the core tensor for a Tucker decomposition of the tensor v
+   ! using the given list of 1-dim. basis tensors.
+   !--------------------------------------------------------------------
    ! v and vdim will be overwritten!
    !--------------------------------------------------------------------
       implicit none
@@ -120,7 +122,7 @@ module tuckerdecomp
          v(1:ulen) = u(:)
          deallocate(u)
       endif
-   end subroutine compute_core
+   end subroutine contract_core
 
 
 
