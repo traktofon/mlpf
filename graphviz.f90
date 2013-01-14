@@ -43,7 +43,7 @@ module graphviz
                ! output edge
                write (iout,'(a,i0,a,i0,a,i0,a)') &
                   'f', idof, ' -> n', cnode%num, &
-                  ' [dir=none,label=', cnode%nbasis, ']'
+                  ' [dir=none,label=', cnode%ndim(f), ']'
             end do
          endif
          ! output edge to parent
