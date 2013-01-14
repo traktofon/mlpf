@@ -10,14 +10,14 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 5
+   integer,parameter         :: ndofs = 23
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 20
+   integer,parameter         :: gdim = 2
    real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
-   integer                   :: f,g,nmodes,nleft,m,vlen,mdim
+   integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:)
    type(basis_t),allocatable :: basis(:)
@@ -43,19 +43,39 @@ program test
    enddo
 
    ! Combine modes
+   ll = 0
    do while (nmodes > 1)
       nleft  = mod(nmodes,ncomb)
       nmodes = nmodes/ncomb
-      do m=1,nmodes
-         nodes(m)%p => make_node(nodes(ncomb*(m-1)+1:ncomb*m))
-      enddo
-      if (nleft>1) then
-         nodes(nmodes+1)%p => make_node(nodes(ncomb*nmodes+1:ncomb*nmodes+nleft))
-         nmodes = nmodes+1
-      elseif (nleft==1) then
-         nodes(nmodes+1)%p => nodes(ncomb*nmodes+1)%p
-         nmodes = nmodes+1
+      if (mod(ll,2)==0) then
+         ! extra nodes on right
+         do m=1,nmodes
+            nodes(m)%p => make_node(nodes(ncomb*(m-1)+1:ncomb*m))
+         enddo
+         if (nleft>1) then
+            nodes(nmodes+1)%p => make_node(nodes(ncomb*nmodes+1:ncomb*nmodes+nleft))
+            nmodes = nmodes+1
+         elseif (nleft==1) then
+            nodes(nmodes+1)%p => nodes(ncomb*nmodes+1)%p
+            nmodes = nmodes+1
+         endif
+      else
+         ! extra nodes on left
+         m=1
+         if (nleft>1) then
+            nodes(m)%p => make_node(nodes(1:nleft))
+            m=2
+         elseif (nleft==1) then
+            ! nodes(1)%p => nodes(1)%p
+            m=2
+         endif
+         do i=1,nmodes
+            nodes(m)%p => make_node(nodes(nleft+ncomb*(i-1)+1 : nleft+ncomb*i))
+            m=m+1
+         enddo
+         if (nleft/=0) nmodes=nmodes+1
       endif
+      ll = ll+1
    enddo
 
    ! Build tree.
