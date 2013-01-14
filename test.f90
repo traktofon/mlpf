@@ -10,9 +10,9 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 85
+   integer,parameter         :: ndofs = 12
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 1
+   integer,parameter         :: gdim = 4
    real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
@@ -141,7 +141,7 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(coulomb,dofs,v,vnorm)
+   call buildpot(coulombn,dofs,v,vnorm)
    write (*,'(a,g22.15)') '||v|| = ', vnorm
 
    ! Generate initial Potfit (basis tensors + core tensor)
