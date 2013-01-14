@@ -10,14 +10,14 @@ program test
    use hiertuck
    implicit none
 
-   integer,parameter         :: ndofs = 23
+   integer,parameter         :: ndofs = 85
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 2
+   integer,parameter         :: gdim = 1
    real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
-   integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim
+   integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:)
    type(basis_t),allocatable :: basis(:)
@@ -47,7 +47,7 @@ program test
    do while (nmodes > 1)
       nleft  = mod(nmodes,ncomb)
       nmodes = nmodes/ncomb
-      if (mod(ll,2)==0) then
+      if (mod(ll,4)==0) then
          ! extra nodes on right
          do m=1,nmodes
             nodes(m)%p => make_node(nodes(ncomb*(m-1)+1:ncomb*m))
@@ -59,6 +59,27 @@ program test
             nodes(nmodes+1)%p => nodes(ncomb*nmodes+1)%p
             nmodes = nmodes+1
          endif
+      elseif (mod(ll,2)==1) then
+         ! extra modes in middle
+         m=1
+         nmod1 = nmodes/2
+         nmod1 = nmod1 + mod(ll/2,2)*mod(nmodes,2)
+         do i=1,nmod1
+            nodes(m)%p => make_node(nodes( ncomb*(i-1)+1 : ncomb*i ))
+            m=m+1
+         enddo
+         if (nleft>1) then
+            nodes(m)%p => make_node(nodes( ncomb*nmod1+1 : ncomb*nmod1+nleft ))
+            m=m+1
+         elseif (nleft==1) then
+            nodes(m)%p => nodes(ncomb*nmod1+1)%p
+            m=m+1
+         endif
+         do i = nmod1+1, nmodes
+            nodes(m)%p => make_node(nodes( nleft+ncomb*(i-1)+1 : nleft+ncomb*i ))
+            m=m+1
+         enddo
+         if (nleft/=0) nmodes=nmodes+1
       else
          ! extra nodes on left
          m=1
