@@ -136,4 +136,64 @@ module hiertuck
       enddo
    end subroutine compute_ht
 
+
+   !--------------------------------------------------------------------
+   subroutine expand_ht(t,v)
+   !--------------------------------------------------------------------
+      implicit none
+      type(tree_t),intent(in) :: t
+      real(dbl),allocatable   :: v(:)
+      real(dbl),allocatable   :: u(:)
+      type(node_t),pointer    :: no
+      integer                 :: vdim(t%numdofs)
+      integer                 :: udim(t%numdofs)
+      integer                 :: xdim(t%numdofs)
+      type(basis_t)           :: basis(t%numdofs)
+      integer                 :: order,l,m,d1,d2,i,f
+
+      ! Start with top-level core tensor.
+      no => t%topnode
+      order = no%nmodes
+      vdim(1:order)  = no%ndim(:)
+      allocate(v(no%plen))
+      v(:) = no%basis(:,1)
+
+      ! Go through remaining layers from top to bottom.
+      do l=2,t%numlayers
+         write (*,'(/,a,i0,a)') '*** LAYER ',l,' ***'
+         d1 = 1
+         d2 = 1
+         ! Go through all nodes in the current layer, and all leaves above.
+         do m = 1, t%numnodes
+            no => t%preorder(m)%p
+            if (no%layer > l) cycle
+            if (no%layer == l) then
+               basis(d2)%btyp = btyp_rect
+               basis(d2)%b => no%basis
+               do f=1,no%nmodes
+                  xdim(d1) = no%ndim(f)
+                  d1 = d1+1
+               enddo
+               d2 = d2+1
+            elseif (no%isleaf) then
+               basis(d2)%btyp = btyp_unit
+               xdim(d1) = vdim(d2)
+               d1 = d1+1
+               d2 = d2+1
+            endif
+         enddo
+         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+         call expand_core(v, vdim(1:order), basis(1:order), u, udim(1:order))
+         write (*,'(a,99(x,i0))') 'udim =', (udim(i), i=1,order)
+         deallocate(v)
+         allocate(v(size(u)))
+         v = u
+         deallocate(u)
+         order = d1-1
+         vdim(1:order) = xdim(1:order)
+         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+      enddo
+
+   end subroutine expand_ht
+
 end module hiertuck

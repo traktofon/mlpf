@@ -8,18 +8,19 @@ program test
    use testfunc
    use tuckerdecomp
    use hiertuck
+   use linear
    implicit none
 
-   integer,parameter         :: ndofs = 12
+   integer,parameter         :: ndofs = 5
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 4
-   real(dbl),parameter       :: accuracy = 1.d-6
+   integer,parameter         :: gdim = 24
+   real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
    integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
    integer,allocatable       :: vdim(:)
-   real(dbl),allocatable     :: v(:)
+   real(dbl),allocatable     :: v(:),v1(:),v0(:)
    type(basis_t),allocatable :: basis(:)
    real(dbl)                 :: vnorm
 
@@ -141,8 +142,10 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(coulombn,dofs,v,vnorm)
+   call buildpot(coulomb,dofs,v,vnorm)
    write (*,'(a,g22.15)') '||v|| = ', vnorm
+   allocate(v0(vlen))
+   v0 = v
 
    ! Generate initial Potfit (basis tensors + core tensor)
    call init_leaves(t,dofs)
@@ -155,10 +158,10 @@ program test
    write (*,*) 'Computing basis tensors...'
    do m=1,nmodes
       mdim = vdim(m)
+      call compute_basis(v, vdim, m, accuracy*vnorm, mdim, t%leaves(m)%p%basis)
+      t%leaves(m)%p%nbasis = mdim
       basis(m)%btyp = btyp_rect
       basis(m)%b => t%leaves(m)%p%basis
-      call compute_basis(v, vdim, m, accuracy*vnorm, mdim, basis(m)%b)
-      t%leaves(m)%p%nbasis = mdim
       write (*,'(a,i0,a,i0,a)') '  mode ',m,' needs ',mdim,' basis tensors'
    enddo
    write (*,*) 'Computing core tensor...'
@@ -171,7 +174,12 @@ program test
    call compute_ht(t, v(1:vlen), vdim, accuracy*vnorm)
 
    call mkdot(42,t,dofs)
+   call flush(42)
    write (*,*)
    write (*,*) 'Wrote graphviz input file to channel 42.'
+
+   ! Expand it again.
+   call expand_ht(t,v1)
+   call compare(v0,v1)
 
 end program test

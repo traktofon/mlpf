@@ -54,4 +54,22 @@ module linear
    end subroutine matrix_tensor_nt
 
 
+   subroutine compare(u,v)
+      implicit none
+      real(dbl),intent(in) :: u(:)
+      real(dbl),intent(in) :: v(:)
+      integer :: n,i
+      real(dbl) :: dlt,dlt2sum,maxdlt
+      n = size(u)
+      maxdlt = 0.d0
+      dlt2sum = 0.d0
+      do i=1,n
+         dlt = abs(u(i)-v(i))
+         maxdlt = max(dlt,maxdlt)
+         dlt2sum = dlt2sum + dlt**2
+      enddo
+      write (*,'(a,g22.15)') 'delta_max = ', maxdlt
+      write (*,'(a,g22.15)') '||delta|| = ', sqrt(dlt2sum)
+   end subroutine compare
+
 end module linear
