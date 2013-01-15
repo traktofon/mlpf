@@ -149,10 +149,8 @@ module hiertuck
       implicit none
       type(tree_t),intent(in) :: t
       real(dbl),allocatable   :: v(:)
-      real(dbl),allocatable   :: u(:)
       type(node_t),pointer    :: no
       integer                 :: vdim(t%numdofs)
-      integer                 :: udim(t%numdofs)
       integer                 :: xdim(t%numdofs)
       type(basis_t)           :: basis(t%numdofs)
       integer                 :: order,l,m,d1,d2,i,f
@@ -189,12 +187,8 @@ module hiertuck
             endif
          enddo
          write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
-         call expand_core(v, vdim(1:order), basis(1:order), u, udim(1:order))
-         write (*,'(a,99(x,i0))') 'udim =', (udim(i), i=1,order)
-         deallocate(v)
-         allocate(v(size(u)))
-         v = u
-         deallocate(u)
+         call expand_core(v, vdim(1:order), basis(1:order))
+         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
          order = d1-1
          vdim(1:order) = xdim(1:order)
          write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)

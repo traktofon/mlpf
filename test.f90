@@ -13,7 +13,7 @@ program test
 
    integer,parameter         :: ndofs = 6
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 12
+   integer,parameter         :: gdim = 11
    real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
@@ -142,7 +142,7 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(coulombn,dofs,v,vnorm)
+   call buildpot(coulomb,dofs,v,vnorm)
    write (*,'(a,g22.15)') '||v|| = ', vnorm
    allocate(v0(vlen))
    v0 = v
