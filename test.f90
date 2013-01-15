@@ -161,7 +161,7 @@ program test
    error2 = 0.d0
    do m=1,nmodes
       mdim = vdim(m)
-      call compute_basis(v, vdim, m, limit, mdim, t%leaves(m)%p%basis, ee2)
+      call compute_basis_svd(v, vdim, m, limit, mdim, t%leaves(m)%p%basis, ee2)
       t%leaves(m)%p%nbasis = mdim
       basis(m)%btyp = btyp_rect
       basis(m)%b => t%leaves(m)%p%basis

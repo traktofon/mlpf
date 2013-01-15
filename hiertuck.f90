@@ -125,7 +125,7 @@ module hiertuck
                ! TODO: in future this might be stored in the tree
                mdim = vdim(d2)
                ! Compute the basis and store it in the node.
-               call compute_basis(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis, ee2)
+               call compute_basis_svd(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis, ee2)
                write (*,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',ee2
                no%nbasis = mdim
                ! Add this mode's basis to the list, for later projection.
