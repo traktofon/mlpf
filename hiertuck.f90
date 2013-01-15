@@ -30,13 +30,14 @@ module hiertuck
 
 
    !--------------------------------------------------------------------
-   subroutine compute_ht(t,v,vdim,limit)
+   subroutine compute_ht(t,v,vdim,limit,err2)
    !--------------------------------------------------------------------
       implicit none
       type(tree_t),intent(in) :: t
       real(dbl),intent(inout) :: v(:)
       integer,intent(inout)   :: vdim(:)
       real(dbl),intent(in)    :: limit
+      real(dbl),intent(out)   :: err2
       integer                 :: l,m,nc,d1,d2,f,i
       integer                 :: order,mdim,vlen
       type(node_t),pointer    :: no
@@ -44,9 +45,11 @@ module hiertuck
       integer                 :: xmode(size(vdim))
       type(node_tp)           :: xnode(size(vdim))
       type(basis_t)           :: basis(size(vdim))
+      real(dbl)               :: ee2
 
       ! On entry, v has order = t%numleaves (number of dimensions)
       order = size(vdim)
+      ee2 = 0.d0
 
       ! Loop over layers from bottom to top.
       ! The bottom-most layer is skipped as the initial potfit has
@@ -122,11 +125,13 @@ module hiertuck
                ! TODO: in future this might be stored in the tree
                mdim = vdim(d2)
                ! Compute the basis and store it in the node.
-               call compute_basis(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis)
+               call compute_basis(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis, ee2)
                no%nbasis = mdim
                ! Add this mode's basis to the list, for later projection.
                basis(d2)%btyp = btyp_rect
                basis(d2)%b => no%basis
+               ! Accumulate estimated error^2.
+               err2 = err2 + ee2
             enddo
             ! Project the previous core tensor onto the bases.
             call contract_core(v(1:vlen),vdim(1:order),basis)
