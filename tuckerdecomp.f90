@@ -104,19 +104,19 @@ module tuckerdecomp
       real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
       real(dbl),allocatable :: vmat(:,:)  ! matricization of v
       real(dbl),allocatable :: sval(:),work(:)
-      integer               :: vd,gd,nd,lwork,info,nw
+      integer               :: vd,gd,nd,lwork,info,nw,i
       real(dbl)             :: rdum,lworkr
       ! Allocate and build matricization of v.
       call vgn_shape(m,gdim,vd,gd,nd)
-      allocate(vmat(gd,vd*nd))
+      allocate(vmat(vd*nd,gd))
       call build_vmat(v,vmat)
       ! Compute SVD and left singular vectors.
       allocate(sval(min(gd,vd*nd)))
-      call dgesvd('O', 'N', gd, vd*nd, vmat, gd, sval, &
+      call dgesvd('N', 'O', vd*nd, gd, vmat, vd*nd, sval, &
                   rdum, 1, rdum, 1, lworkr, -1, info) ! workspace query
       lwork = int(lworkr)
       allocate(work(lwork))
-      call dgesvd('O', 'N', gd, vd*nd, vmat, gd, sval, &
+      call dgesvd('N', 'O', vd*nd, gd, vmat, vd*nd, sval, &
                   rdum, 1, rdum, 1, work, lwork, info)
       if (info /= 0) then
          write (*,*) "ERROR: DGESVD returned info = ",info
@@ -129,7 +129,9 @@ module tuckerdecomp
       nw = min(mdim,nw)
       ! Copy the important basis tensors.
       allocate(basis(gd,nw))
-      basis(:,1:nw) = vmat(:,1:nw)
+      do i=1,nw
+         basis(:,i) = vmat(i,:)
+      enddo
       mdim = nw
       ! Free unneeded memory.
       deallocate(sval)
@@ -139,15 +141,15 @@ module tuckerdecomp
    
       subroutine build_vmat(x,xmat)
          real(dbl),intent(in)  :: x(vd,gd,nd)
-         real(dbl),intent(out) :: xmat(gd,vd,nd)
+         real(dbl),intent(out) :: xmat(vd,nd,gd)
          integer               :: i,j,k
-         if (vd==1) then
-            xmat(:,1,:) = x(1,:,:)
+         if (nd==1) then
+            xmat(:,1,:) = x(:,:,1)
          else
             do k=1,nd
                do j=1,gd
                   do i=1,vd
-                     xmat(j,i,k) = x(i,j,k)
+                     xmat(i,k,j) = x(i,j,k)
                   enddo
                enddo
             enddo
