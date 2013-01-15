@@ -163,7 +163,7 @@ module hiertuck
       v(:) = no%basis(:,1)
 
       ! Go through remaining layers from top to bottom.
-      do l=2,t%numlayers
+      do l = 2, t%numlayers
          write (*,'(/,a,i0,a)') '*** LAYER ',l,' ***'
          d1 = 1
          d2 = 1
@@ -171,7 +171,15 @@ module hiertuck
          do m = 1, t%numnodes
             no => t%preorder(m)%p
             if (no%layer > l) cycle
-            if (no%layer == l) then
+            ! Don't expand leaves until the end.
+            if (l < t%numlayers .and. no%isleaf) then
+               basis(d2)%btyp = btyp_unit
+               xdim(d1) = vdim(d2)
+               d1 = d1+1
+               d2 = d2+1
+            ! Expand inner nodes of this layer,
+            ! as well as leaves at the bottom layer.
+            elseif (no%layer == l .or. no%isleaf) then
                basis(d2)%btyp = btyp_rect
                basis(d2)%b => no%basis
                do f=1,no%nmodes
@@ -179,12 +187,7 @@ module hiertuck
                   d1 = d1+1
                enddo
                d2 = d2+1
-            elseif (no%isleaf) then
-               basis(d2)%btyp = btyp_unit
-               xdim(d1) = vdim(d2)
-               d1 = d1+1
-               d2 = d2+1
-            endif
+           endif
          enddo
          write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
          call expand_core(v, vdim(1:order), basis(1:order))
