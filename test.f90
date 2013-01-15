@@ -20,7 +20,7 @@ program test
    type(tree_t),pointer      :: t
    integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
    integer,allocatable       :: vdim(:)
-   real(dbl),allocatable     :: v(:),v1(:),v0(:)
+   real(dbl),allocatable     :: v(:),v0(:)
    type(basis_t),allocatable :: basis(:)
    real(dbl)                 :: vnorm,limit,ee2,error2
 
@@ -180,6 +180,8 @@ program test
    write (*,'(a,es22.15)') 'err^2 = ', error2
    write (*,'(a,es22.15)') 'error = ', sqrt(error2)
    write (*,'(a,es22.15)') 'accu. = ', sqrt(error2)/vnorm
+   ! v was destroyed
+   deallocate(v)
 
    call mkdot(42,t,dofs)
    call flush(42)
@@ -189,10 +191,10 @@ program test
    ! Expand it again.
    write (*,*)
    write (*,*) 'Expanding HT representation...'
-   call expand_ht(t,v1)
+   call expand_ht(t,v)
    write (*,*)
    write (*,*) 'Comparing original and expanded tensor:'
    write (*,*)
-   call compare(v0,v1)
+   call compare(v0,v)
 
 end program test
