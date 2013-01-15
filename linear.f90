@@ -68,8 +68,8 @@ module linear
          maxdlt = max(dlt,maxdlt)
          dlt2sum = dlt2sum + dlt**2
       enddo
-      write (*,'(a,g22.15)') 'delta_max = ', maxdlt
-      write (*,'(a,g22.15)') '||delta|| = ', sqrt(dlt2sum)
+      write (*,'(a,es22.15)') 'delta_max = ', maxdlt
+      write (*,'(a,es22.15)') '||delta|| = ', sqrt(dlt2sum)
    end subroutine compare
 
 end module linear

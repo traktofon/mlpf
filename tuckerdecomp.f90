@@ -17,7 +17,7 @@ module tuckerdecomp
    contains
 
    !--------------------------------------------------------------------
-   subroutine compute_basis(v, gdim, m, limit, mdim, basis)
+   subroutine compute_basis(v, gdim, m, limit, mdim, basis, ee2)
    ! Computes the 1-dim. basis tensors for a Tucker decomposition of the
    ! tensor v along its m-th dimension.
    !--------------------------------------------------------------------
@@ -32,6 +32,7 @@ module tuckerdecomp
       real(dbl),intent(in)  :: limit      ! accuracy limit for keeping the basis tensors
       integer,intent(inout) :: mdim       ! in:maximum/out:actual number of basis tensors
       real(dbl),pointer     :: basis(:,:) ! the computed basis tensors (allocated here)
+      real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
       integer               :: vd,gd,nd,lwork,info,nw,i
       real(dbl)             :: lworkr
       real(dbl),allocatable :: dmat(:,:),eval(:),work(:)
@@ -53,7 +54,7 @@ module tuckerdecomp
       deallocate(work)
       ! eval contains the natural weights in ascending order.
       ! Determine how many basis tensors to keep.
-      call get_basis_size(eval, limit, nw)
+      call get_basis_size(eval, limit, nw, ee2)
       nw = min(mdim,nw)
       ! Copy the important basis tensors.
       allocate(basis(gd,nw))
@@ -226,12 +227,13 @@ module tuckerdecomp
 
 
    !--------------------------------------------------------------------
-   subroutine get_basis_size(wghts, limit, bsz)
+   subroutine get_basis_size(wghts, limit, bsz, ee2)
    !--------------------------------------------------------------------
       implicit none
       real(dbl),intent(in) :: wghts(:) ! list of weights in ascending order
       real(dbl),intent(in) :: limit    ! parameter for determing how many weights to keep
       integer,intent(out)  :: bsz      ! result: number of weights to keep
+      real(dbl),intent(out):: ee2      ! error estimate based on neglected weights
       integer   :: nwghts,i
       real(dbl) :: wsum
       ! Sum up all weights until limit is reached.
@@ -241,6 +243,7 @@ module tuckerdecomp
       i = 0
       do while (wsum < limit .and. i < nwghts)
          i = i+1
+         ee2 = wsum
          wsum = wsum + max(0.d0,wghts(i)) ! ignore negative weights
       enddo
       bsz = nwghts - i + 1

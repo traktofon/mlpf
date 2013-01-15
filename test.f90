@@ -13,8 +13,8 @@ program test
 
    integer,parameter         :: ndofs = 5
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 24
-   real(dbl),parameter       :: accuracy = 1.d-8
+   integer,parameter         :: gdim = 20
+   real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
@@ -22,7 +22,7 @@ program test
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v1(:),v0(:)
    type(basis_t),allocatable :: basis(:)
-   real(dbl)                 :: vnorm
+   real(dbl)                 :: vnorm,limit,ee2,error2
 
    ! Make DOF grids.
    allocate(dofs(ndofs))
@@ -32,7 +32,7 @@ program test
       write (dofs(f)%p%label, '(a,i0)') '#',f
       allocate(dofs(f)%p%x(gdim))
       do g=1,gdim
-         dofs(f)%p%x(g) = dble(g-1)/dble(gdim-1)
+         dofs(f)%p%x(g) = dble(g-1)/max(dble(gdim-1),1.d0)
       enddo
    enddo
 
@@ -146,6 +146,8 @@ program test
    write (*,'(a,g22.15)') '||v|| = ', vnorm
    allocate(v0(vlen))
    v0 = v
+   limit = (accuracy*vnorm)**2
+   write (*,'(a,es22.15)') 'limit = ', limit
 
    ! Generate initial Potfit (basis tensors + core tensor)
    call init_leaves(t,dofs)
@@ -156,13 +158,15 @@ program test
       vdim(m) = t%leaves(m)%p%plen
    enddo
    write (*,*) 'Computing basis tensors...'
+   error2 = 0.d0
    do m=1,nmodes
       mdim = vdim(m)
-      call compute_basis(v, vdim, m, accuracy*vnorm, mdim, t%leaves(m)%p%basis)
+      call compute_basis(v, vdim, m, limit, mdim, t%leaves(m)%p%basis, ee2)
       t%leaves(m)%p%nbasis = mdim
       basis(m)%btyp = btyp_rect
       basis(m)%b => t%leaves(m)%p%basis
-      write (*,'(a,i0,a,i0,a)') '  mode ',m,' needs ',mdim,' basis tensors'
+      write (*,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',ee2
+      error2 = error2 + ee2
    enddo
    write (*,*) 'Computing core tensor...'
    call contract_core(v,vdim,basis)
@@ -171,7 +175,11 @@ program test
 
    ! Do the hierarchical Tucker decomposition.
    write (*,*) 'Generating HT decomposition...'
-   call compute_ht(t, v(1:vlen), vdim, accuracy*vnorm)
+   call compute_ht(t, v(1:vlen), vdim, limit, ee2)
+   error2 = error2 + ee2
+   write (*,'(a,es22.15)') 'err^2 = ', error2
+   write (*,'(a,es22.15)') 'error = ', sqrt(error2)
+   write (*,'(a,es22.15)') 'accu. = ', sqrt(error2)/vnorm
 
    call mkdot(42,t,dofs)
    call flush(42)
@@ -179,7 +187,12 @@ program test
    write (*,*) 'Wrote graphviz input file to channel 42.'
 
    ! Expand it again.
+   write (*,*)
+   write (*,*) 'Expanding HT representation...'
    call expand_ht(t,v1)
+   write (*,*)
+   write (*,*) 'Comparing original and expanded tensor:'
+   write (*,*)
    call compare(v0,v1)
 
 end program test

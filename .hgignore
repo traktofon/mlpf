@@ -2,4 +2,8 @@ syntax:glob
 
 *.o
 *.mod
+*.swp
+*.orig
+empty.f90
 test
+fort.42
