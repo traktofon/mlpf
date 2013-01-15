@@ -11,9 +11,9 @@ program test
    use linear
    implicit none
 
-   integer,parameter         :: ndofs = 5
+   integer,parameter         :: ndofs = 6
    integer,parameter         :: ncomb = 2
-   integer,parameter         :: gdim = 20
+   integer,parameter         :: gdim = 12
    real(dbl),parameter       :: accuracy = 1.d-6
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
@@ -142,7 +142,7 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(coulomb,dofs,v,vnorm)
+   call buildpot(coulombn,dofs,v,vnorm)
    write (*,'(a,g22.15)') '||v|| = ', vnorm
    allocate(v0(vlen))
    v0 = v
