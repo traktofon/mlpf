@@ -54,7 +54,7 @@ module tuckerdecomp
       deallocate(work)
       ! eval contains the natural weights in ascending order.
       ! Determine how many basis tensors to keep.
-      call get_basis_size(eval, limit, nw, ee2)
+      call get_basis_size(eval,nw)
       nw = min(mdim,nw)
       ! Copy the important basis tensors.
       allocate(basis(gd,nw))
@@ -65,7 +65,114 @@ module tuckerdecomp
       ! Free unneeded memory.
       deallocate(eval)
       deallocate(dmat)
+
+   contains
+
+      subroutine get_basis_size(wghts, bsz)
+         implicit none
+         real(dbl),intent(in) :: wghts(:) ! list of weights in ascending order
+         integer,intent(out)  :: bsz      ! result: number of weights to keep
+         integer              :: nwghts,i
+         real(dbl)            :: wsum
+         ! Sum up all weights until limit is reached.
+         ! The remaining weights are those we want to keep.
+         nwghts = size(wghts)
+         wsum = 0.d0
+         i = 0
+         do while (wsum < limit .and. i < nwghts)
+            i = i+1
+            ee2 = wsum
+            wsum = wsum + max(0.d0,wghts(i)) ! ignore negative weights
+         enddo
+         bsz = nwghts - i + 1
+      end subroutine get_basis_size
+
    end subroutine compute_basis
+
+
+
+   !--------------------------------------------------------------------
+   subroutine compute_basis_svd(v, gdim, m, limit, mdim, basis, ee2)
+   !--------------------------------------------------------------------
+      implicit none
+      real(dbl),intent(in)  :: v(:)       ! input tensor
+      integer,intent(in)    :: gdim(:)    ! shape of v
+      integer,intent(in)    :: m          ! mode for which basis should be computed
+      real(dbl),intent(in)  :: limit      ! accuracy limit for keeping the basis tensors
+      integer,intent(inout) :: mdim       ! in:maximum/out:actual number of basis tensors
+      real(dbl),pointer     :: basis(:,:) ! the computed basis tensors (allocated here)
+      real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
+      real(dbl),allocatable :: vmat(:,:)  ! matricization of v
+      real(dbl),allocatable :: sval(:),work(:)
+      integer               :: vd,gd,nd,lwork,info,nw
+      real(dbl)             :: rdum,lworkr
+      ! Allocate and build matricization of v.
+      call vgn_shape(m,gdim,vd,gd,nd)
+      allocate(vmat(gd,vd*nd))
+      call build_vmat(v,vmat)
+      ! Compute SVD and left singular vectors.
+      allocate(sval(min(gd,vd*nd)))
+      call dgesvd('O', 'N', gd, vd*nd, vmat, gd, sval, &
+                  rdum, 1, rdum, 1, lworkr, -1, info) ! workspace query
+      lwork = int(lworkr)
+      allocate(work(lwork))
+      call dgesvd('O', 'N', gd, vd*nd, vmat, gd, sval, &
+                  rdum, 1, rdum, 1, work, lwork, info)
+      if (info /= 0) then
+         write (*,*) "ERROR: DGESVD returned info = ",info
+         stop 1
+      endif
+      deallocate(work)
+      ! sval contains the singular values in descending order.
+      ! Determine how many basis tensors to keep.
+      call get_basis_size(sval,nw)
+      nw = min(mdim,nw)
+      ! Copy the important basis tensors.
+      allocate(basis(gd,nw))
+      basis(:,1:nw) = vmat(:,1:nw)
+      mdim = nw
+      ! Free unneeded memory.
+      deallocate(sval)
+      deallocate(vmat)
+
+   contains
+   
+      subroutine build_vmat(x,xmat)
+         real(dbl),intent(in)  :: x(vd,gd,nd)
+         real(dbl),intent(out) :: xmat(gd,vd,nd)
+         integer               :: i,j,k
+         if (vd==1) then
+            xmat(:,1,:) = x(1,:,:)
+         else
+            do k=1,nd
+               do j=1,gd
+                  do i=1,vd
+                     xmat(j,i,k) = x(i,j,k)
+                  enddo
+               enddo
+            enddo
+         endif
+      end subroutine build_vmat
+
+      subroutine get_basis_size(sval, bsz)
+         implicit none
+         real(dbl),intent(in) :: sval(:) ! list of singular values in descending order
+         integer,intent(out)  :: bsz     ! number of weights to keep
+         integer              :: i
+         real(dbl)            :: wsum
+         ! Sum up all weights until limit is reached.
+         ! The remaining weights are those we want to keep.
+         wsum = 0.d0
+         i = size(sval)
+         do while (wsum < limit .and. i > 0)
+            ee2 = wsum
+            wsum = wsum + max(0.d0,sval(i))**2 ! ignore negative singular values
+            i = i-1
+         enddo
+         bsz = i+1
+      end subroutine get_basis_size
+
+   end subroutine compute_basis_svd
 
 
 
@@ -209,28 +316,5 @@ module tuckerdecomp
    end subroutine build_dmat
 
 
-
-   !--------------------------------------------------------------------
-   subroutine get_basis_size(wghts, limit, bsz, ee2)
-   !--------------------------------------------------------------------
-      implicit none
-      real(dbl),intent(in) :: wghts(:) ! list of weights in ascending order
-      real(dbl),intent(in) :: limit    ! parameter for determing how many weights to keep
-      integer,intent(out)  :: bsz      ! result: number of weights to keep
-      real(dbl),intent(out):: ee2      ! error estimate based on neglected weights
-      integer   :: nwghts,i
-      real(dbl) :: wsum
-      ! Sum up all weights until limit is reached.
-      ! The remaining weights are those we want to keep.
-      nwghts = size(wghts)
-      wsum = 0.d0
-      i = 0
-      do while (wsum < limit .and. i < nwghts)
-         i = i+1
-         ee2 = wsum
-         wsum = wsum + max(0.d0,wghts(i)) ! ignore negative weights
-      enddo
-      bsz = nwghts - i + 1
-   end subroutine get_basis_size
 
 end module tuckerdecomp
