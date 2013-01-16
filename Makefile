@@ -27,10 +27,9 @@ MODULES := \
 
 # program targets
 
-all: test
+all: test test_pes3c
 
-TEST_OBJS = \
-    test.o \
+LIB_OBJS = \
     hiertuck.o \
     tuckerdecomp.o \
     modeutil.o \
@@ -40,10 +39,18 @@ TEST_OBJS = \
     dof.o \
     genpot.o \
     testfunc.o \
+    pes3cvpd.o \
     base.o
+
+TEST_OBJS = test.o $(LIB_OBJS)
 
 test: $(TEST_OBJS)
 	$(FC) -o $@ $(TEST_OBJS) $(LIBS)
+
+TEST_PES3C_OBJS = test_pes3c.o $(LIB_OBJS)
+
+test_pes3c: $(TEST_PES3C_OBJS)
+	$(FC) -o $@ $(TEST_PES3C_OBJS) $(LIBS)
 
 # build rules
 
