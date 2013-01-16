@@ -8,7 +8,7 @@ module genpot
    contains
 
    !--------------------------------------------------------------------
-   subroutine buildpot(fn,dofs,v,vnorm)
+   subroutine buildpot(fn,dofs,v,vnorm,vmax,vmin)
    !--------------------------------------------------------------------
       implicit none
       interface
@@ -18,15 +18,17 @@ module genpot
             real(dbl)            :: fn
          end function fn
       end interface
-      type(dof_tp),intent(in) :: dofs(:)        
+      type(dof_tp),intent(in) :: dofs(:)
       real(dbl),intent(out)   :: v(:)
-      real(dbl),intent(out)   :: vnorm
-      integer                 :: j,f,ndofs      
+      real(dbl),intent(out)   :: vnorm,vmax,vmin
+      integer                 :: j,f,ndofs
       integer                 :: idx(size(dofs))
-      real(dbl)               :: x(size(dofs))  
-      real(dbl)               :: v2sum          
+      real(dbl)               :: x(size(dofs))
+      real(dbl)               :: v2sum
 
       v2sum  = 0.d0
+      vmax   = -1.d99
+      vmin   =  1.d99
       ndofs  = size(dofs)
       j      = 1
       idx(:) = 1
@@ -34,6 +36,8 @@ module genpot
          x(f) = dofs(f)%p%x(idx(f))
       enddo
   10  v(j) = fn(x)
+      vmax = max(v(j),vmax)
+      vmin = min(v(j),vmin)
       v2sum = v2sum + v(j)**2
       j    = j+1
       do f=1,ndofs

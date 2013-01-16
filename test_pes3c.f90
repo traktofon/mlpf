@@ -1,5 +1,5 @@
 ! vim: set ts=3 sw=3 :
-program test
+program test_pes3c
 
    use dof
    use tree
@@ -11,31 +11,87 @@ program test
    use linear
    implicit none
 
-   integer,parameter         :: ndofs = 27
-   integer,parameter         :: ncomb = 3
-   integer,parameter         :: gdim = 2
-   real(dbl),parameter       :: accuracy = 1.d-6
-   type(dof_tp),allocatable  :: dofs(:)  
-   type(node_tp),allocatable :: nodes(:) 
+   integer,parameter         :: ndofs = 9
+   real(dbl),parameter       :: accuracy = 1.d-3
+   real(dbl),parameter       :: gfac = 1.5
+   type(dof_tp)              :: dofs(ndofs)
+   type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
-   integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
+   integer                   :: f,nmodes,m,vlen,mdim
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    type(basis_t),allocatable :: basis(:)
    real(dbl)                 :: vnorm,vmax,vmin
    real(dbl)                 :: limit,ee2,error2
+   real(dbl)                 :: xi,xf
+   integer                   :: gdim
+   character(len=16)         :: lbl
 
    ! Make DOF grids.
-   allocate(dofs(ndofs))
-   do f=1,ndofs
-      allocate(dofs(f)%p)
-      dofs(f)%p%gdim = gdim
-      write (dofs(f)%p%label, '(a,i0)') '#',f
-      allocate(dofs(f)%p%x(gdim))
-      do g=1,gdim
-         dofs(f)%p%x(g) = dble(g-1)/max(dble(gdim-1),1.d0)
-      enddo
-   enddo
+   f=0
+
+   f = f+1
+   lbl  = "dr1"
+   gdim = int(11/gfac)
+   xi   = 1.4d0
+   xf   = 2.4d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "dr2"
+   gdim = int(11/gfac)
+   xi   = 1.4d0
+   xf   = 2.4d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "dr4"
+   gdim = int(11/gfac)
+   xi   = 4.2d0
+   xf   = 5.5d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "zpp"
+   gdim = int(15/gfac)
+   xi   = -0.5d0
+   xf   =  0.5d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "r3x"
+   gdim = int(9/gfac)
+   xi   = -0.8d0
+   xf   =  0.8d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "r3y"
+   gdim = int(9/gfac)
+   xi   = -0.8d0
+   xf   =  0.8d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "phi"
+   gdim = int(15/gfac)
+   xi   = 0.0d0
+   xf   = 6.28318530718*(gdim-1)/gdim
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "u1"
+   gdim = int(11/gfac)
+   xi   = -0.8d0
+   xf   =  0.35d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+
+   f = f+1
+   lbl  = "u2"
+   gdim = int(11/gfac)
+   xi   = -0.35d0
+   xf   =  0.8d0
+   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
 
    ! Make leaf nodes.
    nmodes = ndofs
@@ -45,61 +101,34 @@ program test
    enddo
 
    ! Combine modes
-   ll = 0
-   do while (nmodes > 1)
-      nleft  = mod(nmodes,ncomb)
-      nmodes = nmodes/ncomb
-      if (mod(ll,4)==0) then
-         ! extra nodes on right
-         do m=1,nmodes
-            nodes(m)%p => make_node(nodes(ncomb*(m-1)+1:ncomb*m))
-         enddo
-         if (nleft>1) then
-            nodes(nmodes+1)%p => make_node(nodes(ncomb*nmodes+1:ncomb*nmodes+nleft))
-            nmodes = nmodes+1
-         elseif (nleft==1) then
-            nodes(nmodes+1)%p => nodes(ncomb*nmodes+1)%p
-            nmodes = nmodes+1
-         endif
-      elseif (mod(ll,2)==1) then
-         ! extra modes in middle
-         m=1
-         nmod1 = nmodes/2
-         nmod1 = nmod1 + mod(ll/2,2)*mod(nmodes,2)
-         do i=1,nmod1
-            nodes(m)%p => make_node(nodes( ncomb*(i-1)+1 : ncomb*i ))
-            m=m+1
-         enddo
-         if (nleft>1) then
-            nodes(m)%p => make_node(nodes( ncomb*nmod1+1 : ncomb*nmod1+nleft ))
-            m=m+1
-         elseif (nleft==1) then
-            nodes(m)%p => nodes(ncomb*nmod1+1)%p
-            m=m+1
-         endif
-         do i = nmod1+1, nmodes
-            nodes(m)%p => make_node(nodes( nleft+ncomb*(i-1)+1 : nleft+ncomb*i ))
-            m=m+1
-         enddo
-         if (nleft/=0) nmodes=nmodes+1
-      else
-         ! extra nodes on left
-         m=1
-         if (nleft>1) then
-            nodes(m)%p => make_node(nodes(1:nleft))
-            m=2
-         elseif (nleft==1) then
-            ! nodes(1)%p => nodes(1)%p
-            m=2
-         endif
-         do i=1,nmodes
-            nodes(m)%p => make_node(nodes(nleft+ncomb*(i-1)+1 : nleft+ncomb*i))
-            m=m+1
-         enddo
-         if (nleft/=0) nmodes=nmodes+1
-      endif
-      ll = ll+1
-   enddo
+   m = 0
+   ! (dr1,dr2)
+   m = m+1
+   nodes(m)%p => make_node(nodes(1:2))
+   ! (dr4,zpp)
+   m = m+1
+   nodes(m)%p => make_node(nodes(3:4))
+   ! (r3x,r3y,phi)
+   m = m+1
+   nodes(m)%p => make_node(nodes(5:7))
+   ! (u1,u2)
+   m = m+1
+   nodes(m)%p => make_node(nodes(8:9))
+
+   nmodes = m
+   m = 0
+   ! ( (dr1,dr2) , (dr4,zpp) )
+   m = m+1
+   nodes(m)%p => make_node(nodes(1:2))
+   ! ( (r3x,r3y,phi) , (u1,u2) )
+   m = m+1
+   nodes(m)%p => make_node(nodes(3:4))
+
+   nmodes = m
+   m = 0
+   ! ( ( (dr1,dr2) , (dr4,zpp) ) , ( (r3x,r3y,phi) , (u1,u2) ) )
+   m = m+1
+   nodes(m)%p => make_node(nodes(1:2))
 
    ! Build tree.
    t => make_tree(nodes(1)%p)
@@ -143,7 +172,7 @@ program test
    enddo
    allocate(v(vlen))
    write (*,*) 'Generating potential, size =',vlen,'...'
-   call buildpot(coulombn,dofs,v,vnorm,vmax,vmin)
+   call buildpot(pes3c,dofs,v,vnorm,vmax,vmin)
    write (*,'(a,g22.15)') '||v|| = ', vnorm
    write (*,'(a,g22.15)') 'v_max = ', vmax
    write (*,'(a,g22.15)') 'v_min = ', vmin
@@ -200,4 +229,4 @@ program test
    write (*,*)
    call compare(v0,v)
 
-end program test
+end program test_pes3c
