@@ -11,14 +11,15 @@ program test
    use linear
    implicit none
 
-   integer,parameter         :: ndofs = 27
-   integer,parameter         :: ncomb = 3
-   integer,parameter         :: gdim = 2
-   real(dbl),parameter       :: accuracy = 1.d-6
+   integer,parameter         :: ndofs = 12
+   integer,parameter         :: ncomb = 2
+   integer,parameter         :: gdim1 = 3
+   integer,parameter         :: gdim2 = 6
+   real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
    type(tree_t),pointer      :: t
-   integer                   :: f,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
+   integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    type(basis_t),allocatable :: basis(:)
@@ -28,6 +29,7 @@ program test
    ! Make DOF grids.
    allocate(dofs(ndofs))
    do f=1,ndofs
+      gdim = gdim1 + mod(f,gdim2-gdim1+1)
       allocate(dofs(f)%p)
       dofs(f)%p%gdim = gdim
       write (dofs(f)%p%label, '(a,i0)') '#',f
