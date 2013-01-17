@@ -1,13 +1,10 @@
 syntax:glob
 
+empty.f90
+local.mk
 *.o
 *.mod
 *.swp
 *.orig
-empty.f90
 test
 test_pes3c
-fort.42
-output
-timing
-*.job
