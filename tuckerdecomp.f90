@@ -21,6 +21,12 @@ module tuckerdecomp
    ! Computes the 1-dim. basis tensors for a Tucker decomposition of the
    ! tensor v along its m-th dimension.
    !--------------------------------------------------------------------
+   ! This routine builds a potential density matrix and diagonalizes it.
+   ! THIS IS NOT VERY ACCURATE. Eigenvalues that are small compared to
+   ! the maximum eigenvalue will be noisy and might become negative.
+   ! (I tried to improve the accuracy of the generated density matrix by
+   ! using Kahan summation, but it didn't help.)
+   !--------------------------------------------------------------------
    ! The number of basis tensors to be returned is specified as follows:
    ! at most mdim basis tensors are returned, but if the accuracy
    ! limit is reached with less basis tensors, mdim is reduced accordingly.
@@ -106,6 +112,23 @@ module tuckerdecomp
 
    !--------------------------------------------------------------------
    subroutine compute_basis_svd(v, gdim, m, limit, mdim, basis, ee2)
+   !--------------------------------------------------------------------
+   ! Computes the 1-dim. basis tensors for a Tucker decomposition of the
+   ! tensor v along its m-th dimension.
+   !--------------------------------------------------------------------
+   ! This routine builds a matrizication of the tensor (i.e. reshaping
+   ! the tensor into [ rest x gdim(m) ]) and computes an SVD to obtain
+   ! the basis from the right singular vectors.  While mathematically
+   ! equivalent to the density matrix approach, the SVD approach is far
+   ! more accurate and can be faster (for large tensors, and when using
+   ! an optimized LAPACK).
+   ! Alternatively, one might build the transposed matricization and use
+   ! the left singular vectors. This works too, but proved to be slower
+   ! (~2x) in my tests (using ACML).
+   !--------------------------------------------------------------------
+   ! The number of basis tensors to be returned is specified as follows:
+   ! at most mdim basis tensors are returned, but if the accuracy
+   ! limit is reached with less basis tensors, mdim is reduced accordingly.
    !--------------------------------------------------------------------
       implicit none
       real(dbl),intent(in)  :: v(:)       ! input tensor
