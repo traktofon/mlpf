@@ -32,14 +32,14 @@ module hiertuck
 
 
    !--------------------------------------------------------------------
-   subroutine compute_ht(t,v,vdim,limit,err2)
+   subroutine compute_ht(t,v,vdim,limit,acesq)
    !--------------------------------------------------------------------
       implicit none
       type(tree_t),intent(in) :: t
       real(dbl),intent(inout) :: v(:)
       integer,intent(inout)   :: vdim(:)
       real(dbl),intent(in)    :: limit
-      real(dbl),intent(out)   :: err2
+      real(dbl),intent(out)   :: acesq
       integer                 :: l,m,nc,d1,d2,f,i
       integer                 :: order,mdim,vlen
       type(node_t),pointer    :: no
@@ -47,11 +47,16 @@ module hiertuck
       integer                 :: xmode(size(vdim))
       type(node_tp)           :: xnode(size(vdim))
       type(basis_t)           :: basis(size(vdim))
-      real(dbl)               :: ee2
+      real(dbl)               :: esq,limitleft,layerlimit
+      integer                 :: nodesleft
 
       ! On entry, v has order = t%numleaves (number of dimensions)
       order = size(vdim)
-      ee2 = 0.d0
+
+      ! Initialize error tracking.
+      acesq = 0.d0                             ! accumulated squared error (estimate)
+      nodesleft = t%numnodes - t%numleaves - 1 ! leaves have been processed already, and topnode won't be processed
+      limitleft = limit
 
       ! Loop over layers from bottom to top.
       ! The bottom-most layer is skipped as the initial potfit has
@@ -119,6 +124,10 @@ module hiertuck
 
          ! Otherwise, compute the basis tensors for the combined modes.
          else
+            ! Set the targeted accuracy for this layer.
+            layerlimit = limitleft/nodesleft
+            write (*,'(a,es22.15)') 'l.lim = ', layerlimit
+            print *, ':DEBUG:', 'nodes left =', nodesleft
             do m = 1,nc
                ! Recall the mode number, and the node.
                d2 = xmode(m)
@@ -127,19 +136,22 @@ module hiertuck
                mdim = vdim(d2)
                if (no%maxnbasis > 0)  mdim = min(mdim, no%maxnbasis)
                ! Compute the basis and store it in the node.
-               call compute_basis_svd(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis, ee2)
-               write (*,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',ee2
+               call compute_basis_svd(v(1:vlen), vdim(1:order), d2, layerlimit, mdim, no%basis, esq)
+               write (*,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',esq
                no%nbasis = mdim
                ! Add this mode's basis to the list, for later projection.
                basis(d2)%btyp = btyp_rect
                basis(d2)%b => no%basis
                ! Accumulate estimated error^2.
-               err2 = err2 + ee2
+               acesq = acesq + esq
+               nodesleft = nodesleft-1
             enddo
             ! Project the previous core tensor onto the bases.
             call contract_core(v(1:vlen),vdim(1:order),basis)
             ! v and vdim have been overwritten.
             write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+            ! Update the error tracking.
+            limitleft = limitleft - acesq
          endif
       enddo
    end subroutine compute_ht

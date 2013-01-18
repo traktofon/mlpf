@@ -69,7 +69,7 @@ module linear
          dlt2sum = dlt2sum + dlt**2
       enddo
       write (*,'(a,es22.15)') 'delta_max = ', maxdlt
-      write (*,'(a,es22.15)') '||delta|| = ', sqrt(dlt2sum)
+      write (*,'(a,es22.15)') 'RMSE      = ', sqrt(dlt2sum/n)
    end subroutine compare
 
 end module linear
