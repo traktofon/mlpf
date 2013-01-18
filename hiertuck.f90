@@ -49,6 +49,7 @@ module hiertuck
       type(basis_t)           :: basis(size(vdim))
       real(dbl)               :: esq,limitleft,layerlimit
       integer                 :: nodesleft
+      logical                 :: lhosvd
 
       ! On entry, v has order = t%numleaves (number of dimensions)
       order = size(vdim)
@@ -127,9 +128,11 @@ module hiertuck
             ! Set the targeted accuracy for this layer.
             if (nodesleft==2) then
                ! normal SVD
+               lhosvd = .false.
                layerlimit = limitleft
             else
                ! HOSVD
+               lhosvd = .true.
                layerlimit = limitleft/nodesleft
             endif
             write (*,'(a,es22.15)') 'l.lim = ', layerlimit
@@ -148,7 +151,9 @@ module hiertuck
                basis(d2)%btyp = btyp_rect
                basis(d2)%b => no%basis
                ! Accumulate estimated error^2.
-               acesq = acesq + esq
+               if (lhosvd .or. m==1) then
+                  acesq = acesq + esq
+               endif
                nodesleft = nodesleft-1
             enddo
             ! Project the previous core tensor onto the bases.
