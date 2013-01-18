@@ -12,18 +12,18 @@ program test_pes3c
    implicit none
 
    integer,parameter         :: ndofs = 9
-   real(dbl),parameter       :: accuracy = 1.d-3
-   real(dbl),parameter       :: gfac = 1.5
+   real(dbl),parameter       :: acc = 2.27817e-05 ! 5.0 cm^-1
+   real(dbl),parameter       :: gfac = 2.0
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
    type(node_t),pointer      :: no
    type(tree_t),pointer      :: t
-   integer                   :: f,nmodes,m,vlen,mdim
+   integer                   :: f,nmodes,m,vlen,vlen0,mdim
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    type(basis_t),allocatable :: basis(:)
    real(dbl)                 :: vnorm,vmax,vmin
-   real(dbl)                 :: limit,ee2,error2
+   real(dbl)                 :: limit,layerlimit,esq,acesq
    real(dbl)                 :: xi,xf
    integer                   :: gdim
    character(len=16)         :: lbl
@@ -99,7 +99,7 @@ program test_pes3c
    allocate(nodes(nmodes))
    do f=1,nmodes
       nodes(f)%p => make_leaf( (/ f /) )
-      call init_leaf(nodes(f)%p, dofs, dofs(f)%p%gdim-1) ! limit basis size TEST
+      call init_leaf(nodes(f)%p, dofs)
    enddo
 
    ! Combine modes
@@ -180,10 +180,14 @@ program test_pes3c
    write (*,'(a,g22.15)') 'v_min = ', vmin
    allocate(v0(vlen))
    v0 = v
-   limit = (accuracy*vnorm)**2
+   vlen0 = vlen
+   limit = vlen0 * acc**2
    write (*,'(a,es22.15)') 'limit = ', limit
 
    ! Generate initial Potfit (basis tensors + core tensor)
+   acesq = 0.d0                      ! accumulated squared error (estimate)
+   layerlimit = limit/(t%numnodes-1) ! divide limit by number of unprocessed nodes
+   write (*,'(a,es22.15)') 'l.lim = ', layerlimit
    nmodes = t%numleaves
    allocate(vdim(nmodes))
    allocate(basis(nmodes))
@@ -191,17 +195,17 @@ program test_pes3c
       vdim(m) = t%leaves(m)%p%plen
    enddo
    write (*,*) 'Computing basis tensors...'
-   error2 = 0.d0
+   acesq = 0.d0
    do m=1,nmodes
       no => t%leaves(m)%p
       mdim = vdim(m)
       if (no%maxnbasis>0) mdim=min(mdim,no%maxnbasis)
-      call compute_basis_svd(v, vdim, m, limit, mdim, no%basis, ee2)
+      call compute_basis_svd(v, vdim, m, layerlimit, mdim, no%basis, esq)
       no%nbasis = mdim
       basis(m)%btyp = btyp_rect
       basis(m)%b => no%basis
-      write (*,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',ee2
-      error2 = error2 + ee2
+      write (*,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',esq
+      acesq = acesq + esq
    enddo
    write (*,*) 'Computing core tensor...'
    call contract_core(v,vdim,basis)
@@ -210,11 +214,10 @@ program test_pes3c
 
    ! Do the hierarchical Tucker decomposition.
    write (*,*) 'Generating HT decomposition...'
-   call compute_ht(t, v(1:vlen), vdim, limit, ee2)
-   error2 = error2 + ee2
-   write (*,'(a,es22.15)') 'err^2 = ', error2
-   write (*,'(a,es22.15)') 'error = ', sqrt(error2)
-   write (*,'(a,es22.15)') 'accu. = ', sqrt(error2)/vnorm
+   call compute_ht(t, v(1:vlen), vdim, limit-acesq, esq)
+   acesq = acesq + esq
+   write (*,'(a,es22.15)') 'err^2 = ', acesq
+   write (*,'(a,es22.15)') 'RMSE <= ', sqrt(acesq/vlen0)
    ! v was destroyed
    deallocate(v)
 
