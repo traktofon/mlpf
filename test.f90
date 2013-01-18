@@ -14,10 +14,11 @@ program test
    integer,parameter         :: ndofs = 12
    integer,parameter         :: ncomb = 2
    integer,parameter         :: gdim1 = 3
-   integer,parameter         :: gdim2 = 6
+   integer,parameter         :: gdim2 = 5
    real(dbl),parameter       :: accuracy = 1.d-8
    type(dof_tp),allocatable  :: dofs(:)  
    type(node_tp),allocatable :: nodes(:) 
+   type(node_t),pointer      :: no
    type(tree_t),pointer      :: t
    integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
    integer,allocatable       :: vdim(:)
@@ -161,15 +162,18 @@ program test
    allocate(basis(nmodes))
    do m=1,nmodes
       vdim(m) = t%leaves(m)%p%plen
+      t%leaves(m)%p%maxnbasis = 4 ! hard-limit basis size
    enddo
    write (*,*) 'Computing basis tensors...'
    error2 = 0.d0
    do m=1,nmodes
+      no => t%leaves(m)%p
       mdim = vdim(m)
-      call compute_basis_svd(v, vdim, m, limit, mdim, t%leaves(m)%p%basis, ee2)
-      t%leaves(m)%p%nbasis = mdim
+      if (no%maxnbasis > 0)  mdim=min(mdim,no%maxnbasis)
+      call compute_basis_svd(v, vdim, m, limit, mdim, no%basis, ee2)
+      no%nbasis = mdim
       basis(m)%btyp = btyp_rect
-      basis(m)%b => t%leaves(m)%p%basis
+      basis(m)%b => no%basis
       write (*,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',ee2
       error2 = error2 + ee2
    enddo

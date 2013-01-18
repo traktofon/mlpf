@@ -122,8 +122,10 @@ module hiertuck
                d2 = xmode(m)
                no => xnode(m)%p
                ! Set maximum allowed basis size.
-               ! TODO: in future this might be stored in the tree
                mdim = vdim(d2)
+               if (no%maxnbasis > 0) then
+                  mdim = min(mdim, no%maxnbasis)
+               endif
                ! Compute the basis and store it in the node.
                call compute_basis_svd(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis, ee2)
                write (*,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',ee2
