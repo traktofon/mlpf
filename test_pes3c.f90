@@ -16,6 +16,7 @@ program test_pes3c
    real(dbl),parameter       :: gfac = 1.5
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
+   type(node_t),pointer      :: no
    type(tree_t),pointer      :: t
    integer                   :: f,nmodes,m,vlen,mdim
    integer,allocatable       :: vdim(:)
@@ -98,6 +99,7 @@ program test_pes3c
    allocate(nodes(nmodes))
    do f=1,nmodes
       nodes(f)%p => make_leaf( (/ f /) )
+      call init_leaf(nodes(f)%p, dofs, dofs(f)%p%gdim-1) ! limit basis size TEST
    enddo
 
    ! Combine modes
@@ -182,7 +184,6 @@ program test_pes3c
    write (*,'(a,es22.15)') 'limit = ', limit
 
    ! Generate initial Potfit (basis tensors + core tensor)
-   call init_leaves(t,dofs)
    nmodes = t%numleaves
    allocate(vdim(nmodes))
    allocate(basis(nmodes))
@@ -192,11 +193,13 @@ program test_pes3c
    write (*,*) 'Computing basis tensors...'
    error2 = 0.d0
    do m=1,nmodes
+      no => t%leaves(m)%p
       mdim = vdim(m)
-      call compute_basis_svd(v, vdim, m, limit, mdim, t%leaves(m)%p%basis, ee2)
-      t%leaves(m)%p%nbasis = mdim
+      if (no%maxnbasis>0) mdim=min(mdim,no%maxnbasis)
+      call compute_basis_svd(v, vdim, m, limit, mdim, no%basis, ee2)
+      no%nbasis = mdim
       basis(m)%btyp = btyp_rect
-      basis(m)%b => t%leaves(m)%p%basis
+      basis(m)%b => no%basis
       write (*,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',ee2
       error2 = error2 + ee2
    enddo

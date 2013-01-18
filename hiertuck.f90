@@ -9,24 +9,26 @@ module hiertuck
    contains
 
    !--------------------------------------------------------------------
-   subroutine init_leaves(t,dofs)
+   subroutine init_leaf(no,dofs,maxnbasis)
    !--------------------------------------------------------------------
       implicit none
-      type(tree_t),intent(in) :: t
-      type(dof_tp),intent(in) :: dofs(:)
-      type(node_t),pointer    :: no
-      integer :: l,ndofs,f,idof
-      do l=1,t%numleaves
-         no => t%leaves(l)%p
-         ndofs = no%nmodes
-         allocate(no%ndim(ndofs))
-         do f=1,ndofs
-            idof = no%dofs(f)
-            no%ndim(f) = dofs(idof)%p%gdim
-         enddo
-         no%plen = product(no%ndim)
+      type(node_t),intent(inout)  :: no
+      type(dof_tp),intent(in)     :: dofs(:)
+      integer,intent(in),optional :: maxnbasis
+      integer                     :: ndofs,f,idof
+      ndofs = no%nmodes
+      allocate(no%ndim(ndofs))
+      do f=1,ndofs
+         idof = no%dofs(f)
+         no%ndim(f) = dofs(idof)%p%gdim
       enddo
-   end subroutine
+      no%plen = product(no%ndim)
+      if (present(maxnbasis)) then
+         no%maxnbasis = maxnbasis
+      else
+         no%maxnbasis = 0
+      endif
+   end subroutine init_leaf
 
 
    !--------------------------------------------------------------------
@@ -123,9 +125,7 @@ module hiertuck
                no => xnode(m)%p
                ! Set maximum allowed basis size.
                mdim = vdim(d2)
-               if (no%maxnbasis > 0) then
-                  mdim = min(mdim, no%maxnbasis)
-               endif
+               if (no%maxnbasis > 0)  mdim = min(mdim, no%maxnbasis)
                ! Compute the basis and store it in the node.
                call compute_basis_svd(v(1:vlen), vdim(1:order), d2, limit, mdim, no%basis, ee2)
                write (*,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',ee2
