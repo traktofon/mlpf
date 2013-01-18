@@ -20,7 +20,7 @@ program test
    type(node_tp),allocatable :: nodes(:) 
    type(node_t),pointer      :: no
    type(tree_t),pointer      :: t
-   integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,mdim,nmod1
+   integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,vlen0,mdim,nmod1
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    type(basis_t),allocatable :: basis(:)
@@ -153,7 +153,8 @@ program test
    write (*,'(a,g22.15)') 'v_min = ', vmin
    allocate(v0(vlen))
    v0 = v
-   limit = sqrt(1.d0*vlen)*acc
+   vlen0 = vlen
+   limit = vlen0 * acc**2
    write (*,'(a,es22.15)') 'limit = ', limit
 
    ! Generate initial Potfit (basis tensors + core tensor)
@@ -188,7 +189,7 @@ program test
    call compute_ht(t, v(1:vlen), vdim, limit-acesq, esq)
    acesq = acesq + esq
    write (*,'(a,es22.15)') 'err^2 = ', acesq
-   write (*,'(a,es22.15)') 'RMSE <= ', sqrt(acesq/vlen)
+   write (*,'(a,es22.15)') 'RMSE <= ', sqrt(acesq/vlen0)
    ! v was destroyed
    deallocate(v)
 
