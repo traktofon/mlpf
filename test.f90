@@ -45,6 +45,7 @@ program test
    allocate(nodes(nmodes))
    do f=1,nmodes
       nodes(f)%p => make_leaf( (/ f /) )
+      call init_leaf(nodes(f)%p, dofs)
    enddo
 
    ! Combine modes
@@ -156,7 +157,6 @@ program test
    write (*,'(a,es22.15)') 'limit = ', limit
 
    ! Generate initial Potfit (basis tensors + core tensor)
-   call init_leaves(t,dofs)
    nmodes = t%numleaves
    allocate(vdim(nmodes))
    allocate(basis(nmodes))
