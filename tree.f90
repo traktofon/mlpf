@@ -22,7 +22,8 @@ module tree
       !--- MLPF-related data ----
       integer,pointer       :: ndim(:) => null()    ! number of basis tensors/grid points of the children
       integer               :: plen                 ! product(ndim)
-      integer               :: nbasis               ! number of basis tensors at this node
+      integer               :: nbasis               ! actual number of basis tensors at this node
+      integer               :: maxnbasis = 0        ! maximum number of basis tensors at this node
       real(dbl),pointer     :: basis(:,:) => null() ! basis tensors, dim=(plen,nbasis)
    end type node_t
 

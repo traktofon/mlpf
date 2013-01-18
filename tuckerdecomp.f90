@@ -52,10 +52,11 @@ module tuckerdecomp
          stop 1
       endif
       deallocate(work)
-      ! eval contains the natural weights in ascending order.
+      ! eval contains the natural weights in *ascending* order.
       ! Determine how many basis tensors to keep.
       call get_basis_size(eval,nw)
-      nw = min(mdim,nw)
+      nw  = min(mdim,nw)
+      ee2 = basis_error_sq(eval,nw)
       ! Copy the important basis tensors.
       allocate(basis(gd,nw))
       do i=1,nw
@@ -86,6 +87,18 @@ module tuckerdecomp
          enddo
          bsz = nwghts - i + 1
       end subroutine get_basis_size
+
+      pure function basis_error_sq(wghts, bsz) result (esq)
+         implicit none
+         real(dbl),intent(in) :: wghts(:)
+         integer,intent(in)   :: bsz
+         real(dbl)            :: esq
+         integer              :: i
+         esq = 0.d0
+         do i = 1, size(wghts)-bsz
+            esq = esq + max(0.d0,wghts(i))
+         enddo
+      end function basis_error_sq
 
    end subroutine compute_basis
 
@@ -123,10 +136,11 @@ module tuckerdecomp
          stop 1
       endif
       deallocate(work)
-      ! sval contains the singular values in descending order.
+      ! sval contains the singular values in *descending* order.
       ! Determine how many basis tensors to keep.
       call get_basis_size(sval,nw)
-      nw = min(mdim,nw)
+      nw  = min(mdim,nw)
+      ee2 = basis_error_sq(sval,nw)
       ! Copy the important basis tensors.
       allocate(basis(gd,nw))
       do i=1,nw
@@ -167,12 +181,23 @@ module tuckerdecomp
          wsum = 0.d0
          i = size(sval)
          do while (wsum < limit .and. i > 0)
-            ee2 = wsum
             wsum = wsum + max(0.d0,sval(i))**2 ! ignore negative singular values
             i = i-1
          enddo
          bsz = i+1
       end subroutine get_basis_size
+
+      pure function basis_error_sq(sval, bsz) result (esq)
+         implicit none
+         real(dbl),intent(in) :: sval(:)
+         integer,intent(in)   :: bsz
+         real(dbl)            :: esq
+         integer              :: i
+         esq = 0.d0
+         do i = size(sval), bsz+1, -1
+            esq = esq + max(0.d0,sval(i))**2
+         enddo
+      end function basis_error_sq
 
    end subroutine compute_basis_svd
 
