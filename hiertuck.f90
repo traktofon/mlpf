@@ -125,9 +125,14 @@ module hiertuck
          ! Otherwise, compute the basis tensors for the combined modes.
          else
             ! Set the targeted accuracy for this layer.
-            layerlimit = limitleft/nodesleft
+            if (nodesleft==2) then
+               ! normal SVD
+               layerlimit = limitleft
+            else
+               ! HOSVD
+               layerlimit = limitleft/nodesleft
+            endif
             write (*,'(a,es22.15)') 'l.lim = ', layerlimit
-            print *, ':DEBUG:', 'nodes left =', nodesleft
             do m = 1,nc
                ! Recall the mode number, and the node.
                d2 = xmode(m)
