@@ -126,7 +126,7 @@ module hiertuck
          ! Otherwise, compute the basis tensors for the combined modes.
          else
             ! Set the targeted accuracy for this layer.
-            if (nodesleft==2) then
+            if (l==2 .and. t%topnode%nmodes==2) then
                ! normal SVD
                lhosvd = .false.
                layerlimit = limitleft
