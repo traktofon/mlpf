@@ -2,9 +2,8 @@ syntax:glob
 
 empty.f90
 local.mk
-*.o
-*.mod
 *.swp
 *.orig
-test
-test_pes3c
+obj/
+test/test
+pes3c/pes3ctest
