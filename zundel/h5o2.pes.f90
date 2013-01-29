@@ -1402,8 +1402,7 @@
 
         ma=2512 ; mb=1332
 
-        open(20,file='/home/oriol/Code/python/packages/h5o2/h5o2Bowman/h
-     +5o2.dms4B.coeff.com.dat',status='old')
+        open(20,file='h5o2.dms4B.coeff.com.dat',status='old')
 
         read(20,*)
         read(20,*)dip_dc0
