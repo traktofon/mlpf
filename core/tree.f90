@@ -30,7 +30,6 @@ module tree
 
    type :: node_tp
       type(node_t),pointer  :: p => null()
-      integer :: test
    end type node_tp
 
 
