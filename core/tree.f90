@@ -6,7 +6,7 @@ module tree
    private
 
    public :: node_t, node_tp, tree_t
-   public :: make_leaf, make_node, make_tree
+   public :: make_leaf, make_node, make_tree, examine_tree
 
    type :: node_t
       !--- Local node-related data ---
@@ -30,6 +30,7 @@ module tree
 
    type :: node_tp
       type(node_t),pointer  :: p => null()
+      integer :: test
    end type node_tp
 
 
@@ -228,5 +229,48 @@ module tree
          enddo
       endif
    end subroutine set_layer
+
+
+   !--------------------------------------------------------------------
+   subroutine examine_tree(t,iout)
+   !--------------------------------------------------------------------
+   ! Print various information about the tree structure.
+   ! Mainly for debugging.
+   !--------------------------------------------------------------------
+      implicit none
+      type(tree_t),intent(in) :: t
+      integer,intent(in)      :: iout
+      integer                 :: m
+      write (iout,*) 'Tree has:'
+      write (iout,*) t%numnodes, ' nodes'
+      write (iout,*) t%numdofs, ' dofs'
+      write (iout,*) t%numleaves, ' leaves'
+      write (iout,*) t%numlayers, ' layers'
+      write (iout,*) 'Levels are:'
+      do m=1,t%numnodes
+         write (iout,'(x,i0)',advance="no") t%preorder(m)%p%layer
+      enddo
+      write (iout,*)
+      write (iout,*) 'Leaves?'
+      do m=1,t%numnodes
+         write (iout,'(x,l)',advance="no") t%preorder(m)%p%isleaf
+      enddo
+      write (iout,*)
+      write (iout,*) 'Leaves are:'
+      do m=1,t%numleaves
+         write (iout,'(x,i0)',advance="no") t%leaves(m)%p%num
+      enddo
+      write (iout,*)
+      write (iout,*) 'Pre-order is:'
+      do m=1,t%numnodes
+         write (iout,'(x,i0)',advance="no") t%preorder(m)%p%num
+      enddo
+      write (iout,*)
+      write (iout,*) 'Post-order is:'
+      do m=1,t%numnodes
+         write (iout,'(x,i0)',advance="no") t%postorder(m)%p%num
+      enddo
+      write (iout,*)
+   end subroutine examine_tree
 
 end module tree

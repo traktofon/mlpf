@@ -5,10 +5,10 @@ program test
    use tree
    use graphviz
    use genpot
-   use testfunc
    use tuckerdecomp
    use hiertuck
    use linear
+   use testfunc
    implicit none
 
    integer,parameter         :: ndofs = 12
@@ -108,37 +108,8 @@ program test
    ! Build tree.
    t => make_tree(nodes(1)%p)
    
-   ! Examine everything.
-   write (*,*) 'Tree has:'
-   write (*,*) t%numnodes, ' nodes'
-   write (*,*) t%numdofs, ' dofs'
-   write (*,*) t%numleaves, ' leaves'
-   write (*,*) t%numlayers, ' layers'
-   write (*,*) 'Levels are:'
-   do m=1,t%numnodes
-      write (*,'(x,i0)',advance="no") t%preorder(m)%p%layer
-   enddo
-   write (*,*)
-   write (*,*) 'Leaves?'
-   do m=1,t%numnodes
-      write (*,'(x,l)',advance="no") t%preorder(m)%p%isleaf
-   enddo
-   write (*,*)
-   write (*,*) 'Leaves are:'
-   do m=1,t%numleaves
-      write (*,'(x,i0)',advance="no") t%leaves(m)%p%num
-   enddo
-   write (*,*)
-   write (*,*) 'Pre-order is:'
-   do m=1,t%numnodes
-      write (*,'(x,i0)',advance="no") t%preorder(m)%p%num
-   enddo
-   write (*,*)
-   write (*,*) 'Post-order is:'
-   do m=1,t%numnodes
-      write (*,'(x,i0)',advance="no") t%postorder(m)%p%num
-   enddo
-   write (*,*)
+   ! Check it.
+   call examine_tree(t,6)
 
    ! Generate potential.
    vlen = 1
