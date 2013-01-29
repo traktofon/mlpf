@@ -12,6 +12,8 @@ dd := test
 include $(dd)/Rules.mk
 dd := pes3c
 include $(dd)/Rules.mk
+dd := zundel
+include $(dd)/Rules.mk
 
 # where to look for source files
 
@@ -19,6 +21,7 @@ vpath %.f90 core
 vpath %.f90 test
 vpath %.f90 pes3c
 vpath %.f   pes3c
+vpath %.f90 zundel
 
 # general build rules
 
