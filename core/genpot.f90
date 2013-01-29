@@ -29,7 +29,7 @@ module genpot
       real(dbl)               :: x(size(dofs))
       real(dbl)               :: v2sum
 
-      call get_logger(logid,"potential")
+      call get_logger(logid,"data")
       write (msg,'(a,i0)') 'Full potential size = ',size(v)
       call write_log(logid, LOGLEVEL_INFO, msg)
 
