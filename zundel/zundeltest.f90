@@ -13,7 +13,7 @@ program test_pes3c
 
    integer,parameter         :: ndofs = 15
    real(dbl),parameter       :: acc = 2.27817e-05 ! 5.0 cm^-1 (target RMSE)
-   real(dbl),parameter       :: gfac = 2.5
+   real(dbl),parameter       :: gfac = 3.5
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
@@ -31,10 +31,10 @@ program test_pes3c
    integer                   :: idot,ilog
 
    ! Set up logging
-   !call open_logfile(ilog,"output")
-   !call set_logger("data", LOGLEVEL_INFO, ilog)
-   !call set_logger("tree", LOGLEVEL_INFO, ilog)
-   !call set_logger("progress", LOGLEVEL_INFO)
+   call open_logfile(ilog,"output")
+   call set_logger("data", LOGLEVEL_INFO, ilog)
+   call set_logger("tree", LOGLEVEL_DEBUG, ilog)
+   call set_logger("progress", LOGLEVEL_INFO)
    call get_logger(logid_progress, "progress")
    call get_logger(logid_data, "data")
 
