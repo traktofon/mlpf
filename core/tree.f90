@@ -6,7 +6,7 @@ module tree
    private
 
    public :: node_t, node_tp, tree_t
-   public :: make_leaf, make_node, make_tree, examine_tree
+   public :: make_leaf, make_node, make_tree, examine_tree, leaf_shape
 
    type :: node_t
       !--- Local node-related data ---
@@ -230,9 +230,26 @@ module tree
    end subroutine set_layer
 
 
-   !--------------------------------------------------------------------
+   !-------------------------------------------------------------------
+   subroutine leaf_shape(t,vdim,vlen)
+   ! Returns the potential's shape according to the leaf-layer.
+   !-------------------------------------------------------------------
+      implicit none
+      type(tree_t),intent(in) :: t
+      integer,allocatable     :: vdim(:)
+      integer,intent(out)     :: vlen
+      integer                 :: nmodes,m
+      nmodes = t%numleaves
+      allocate(vdim(nmodes))
+      do m=1,nmodes
+         vdim(m) = t%leaves(m)%p%plen
+      enddo
+      vlen = product(vdim)
+   end subroutine leaf_shape
+
+
+   !-------------------------------------------------------------------
    subroutine examine_tree(t,iout)
-   !--------------------------------------------------------------------
    ! Print various information about the tree structure.
    ! Mainly for debugging.
    !--------------------------------------------------------------------

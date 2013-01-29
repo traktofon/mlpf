@@ -4,6 +4,7 @@ DEP := $(dd)/Deps.mk
 
 SOURCES := \
    base.f90 \
+   logging.f90 \
    dof.f90 \
    genpot.f90 \
    linear.f90 \

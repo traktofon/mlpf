@@ -1,6 +1,7 @@
 ! vim: set ts=3 sw=3 :
 module hiertuck
 
+   use logging
    use dof
    use tree
    use tuckerdecomp
@@ -29,6 +30,73 @@ module hiertuck
          no%maxnbasis = 0
       endif
    end subroutine init_leaf
+
+
+   !--------------------------------------------------------------------
+   subroutine potfit_from_v(t,v,vdim,limit,acesq)
+   ! Generate initial Potfit (basis tensors + core tensor) from an
+   ! in-memory tensor v.
+   !--------------------------------------------------------------------
+      implicit none
+      type(tree_t),intent(in) :: t
+      real(dbl),intent(inout) :: v(:)
+      integer,intent(inout)   :: vdim(:)
+      real(dbl),intent(in)    :: limit      ! total allowed err^2
+      real(dbl),intent(out)   :: acesq      ! accumulated squared error (estimate)
+      type(node_t),pointer    :: no
+      real(dbl)               :: layerlimit ! allowed err^2 for each node of this layer
+      real(dbl)               :: esq
+      integer,save            :: logid_data=0
+      integer,save            :: logid_progress=0
+      character(len=160)      :: msg
+      integer                 :: nmodes,m,mdim
+      type(basis_t)           :: basis(size(vdim))
+
+      ! Set up logging.
+      call get_logger(logid_data,"data")
+      call get_logger(logid_progress,"progress")
+
+      ! Initialize error control.
+      ! So far, no nodes have been processed, so we set the allowed err^2 for
+      ! each node by dividing the total allowed err^2 by the number of nodes
+      ! that will have to be processed. Note that the top node is not processed.
+      acesq = 0.d0
+      layerlimit = limit/(t%numnodes-1) ! divide limit by number of unprocessed nodes
+      write (msg,'(a,es22.15)') 'initial potfit: err^2 limit = ', layerlimit
+      call write_log(logid_data, LOGLEVEL_INFO, msg)
+
+      ! Set up the shape array.
+      nmodes = t%numleaves
+      do m=1,nmodes
+         vdim(m) = t%leaves(m)%p%plen
+      enddo
+
+      ! First compute the basis tensors.
+      call write_log(logid_progress, LOGLEVEL_INFO, '  Computing basis tensors...')
+      do m=1,nmodes
+         no => t%leaves(m)%p
+         ! Set the maximum number of basis tensors we want.
+         mdim = vdim(m)
+         if (no%maxnbasis > 0)  mdim=min(mdim,no%maxnbasis)
+         ! Compute basis for this mode, store the basis tensors directly in the node.
+         call compute_basis_svd(v, vdim, m, layerlimit, mdim, no%basis, esq)
+         no%nbasis = mdim
+         ! Add the basis to the list, for later contraction.
+         basis(m)%btyp = btyp_rect
+         basis(m)%b => no%basis
+         ! Keep track of error.
+         write (msg,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',esq
+         call write_log(logid_data, LOGLEVEL_INFO, msg)
+         acesq = acesq + esq
+      enddo
+
+      ! Now compute the core tensor.
+      call write_log(logid_progress, LOGLEVEL_INFO, '  Computing core tensor...')
+      call contract_core(v,vdim,basis)
+      ! v and vdim have been overwritten!
+
+   end subroutine potfit_from_v
+
 
 
    !--------------------------------------------------------------------
@@ -222,5 +290,6 @@ module hiertuck
       enddo
 
    end subroutine expand_ht
+
 
 end module hiertuck

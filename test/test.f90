@@ -1,6 +1,7 @@
 ! vim: set ts=3 sw=3 :
 program test
 
+   use logging
    use dof
    use tree
    use graphviz
@@ -15,9 +16,9 @@ program test
    integer,parameter         :: ncomb = 2
    integer,parameter         :: gdim1 = 3
    integer,parameter         :: gdim2 = 5
-   real(dbl),parameter       :: acc = 1.d-3
-   type(dof_tp),allocatable  :: dofs(:)  
-   type(node_tp),allocatable :: nodes(:) 
+   real(dbl),parameter       :: acc = 1.d-3 ! target RMSE
+   type(dof_tp),allocatable  :: dofs(:)
+   type(node_tp),allocatable :: nodes(:)
    type(node_t),pointer      :: no
    type(tree_t),pointer      :: t
    integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,vlen0,mdim,nmod1
@@ -26,6 +27,14 @@ program test
    type(basis_t),allocatable :: basis(:)
    real(dbl)                 :: vnorm,vmax,vmin
    real(dbl)                 :: limit,layerlimit,esq,acesq
+   integer                   :: logid_progress = 0
+   integer                   :: logid_data = 0
+   character(len=160)        :: msg
+   integer                   :: idot
+
+   ! Set up logging
+   call get_logger(logid_progress, "progress")
+   call get_logger(logid_data, "data")
 
    ! Make DOF grids.
    allocate(dofs(ndofs))
@@ -112,70 +121,53 @@ program test
    call examine_tree(t,6)
 
    ! Generate potential.
-   vlen = 1
-   do f=1,ndofs
-      vlen = vlen*dofs(f)%p%gdim
-   enddo
+   call write_log(logid_progress, LOGLEVEL_INFO, "Generating potential...")
+   call leaf_shape(t,vdim,vlen)
    allocate(v(vlen))
-   write (*,*) 'Generating potential, size =',vlen,'...'
    call buildpot(coulombn,dofs,v,vnorm,vmax,vmin)
-   write (*,'(a,g22.15)') '||v|| = ', vnorm
-   write (*,'(a,g22.15)') 'v_max = ', vmax
-   write (*,'(a,g22.15)') 'v_min = ', vmin
+
+   ! Keep a copy for later verification.
    allocate(v0(vlen))
    v0 = v
    vlen0 = vlen
-   limit = vlen0 * acc**2
-   write (*,'(a,es22.15)') 'limit = ', limit
 
-   ! Generate initial Potfit (basis tensors + core tensor)
-   acesq = 0.d0                      ! accumulated squared error (estimate)
-   layerlimit = limit/(t%numnodes-1) ! divide limit by number of unprocessed nodes
-   write (*,'(a,es22.15)') 'l.lim = ', layerlimit
-   nmodes = t%numleaves
-   allocate(vdim(nmodes))
-   allocate(basis(nmodes))
-   do m=1,nmodes
-      vdim(m) = t%leaves(m)%p%plen
-   enddo
-   write (*,*) 'Computing basis tensors...'
-   do m=1,nmodes
-      no => t%leaves(m)%p
-      mdim = vdim(m)
-      if (no%maxnbasis > 0)  mdim=min(mdim,no%maxnbasis)
-      call compute_basis_svd(v, vdim, m, layerlimit, mdim, no%basis, esq)
-      no%nbasis = mdim
-      basis(m)%btyp = btyp_rect
-      basis(m)%b => no%basis
-      write (*,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',esq
-      acesq = acesq + esq
-   enddo
-   write (*,*) 'Computing core tensor...'
-   call contract_core(v,vdim,basis)
+   ! Set error limit.
+   limit = vlen0 * acc**2
+   write (msg,'(a,es22.15)') 'Total err^2 limit = ', limit
+   call write_log(logid_data, LOGLEVEL_INFO, msg)
+
+   ! Generate initial Potfit (basis tensors + core tensor).
+   call write_log(logid_progress, LOGLEVEL_INFO, 'Generating initial potfit...')
+   call potfit_from_v(t, v, vdim, limit, acesq)
+   ! v is the new core tensor, size has changed!
    vlen = product(vdim)
-   write (*,*)
 
    ! Do the hierarchical Tucker decomposition.
-   write (*,*) 'Generating HT decomposition...'
+   call write_log(logid_progress, LOGLEVEL_INFO, 'Generating HT decomposition...')
    call compute_ht(t, v(1:vlen), vdim, limit-acesq, esq)
-   acesq = acesq + esq
-   write (*,'(a,es22.15)') 'err^2 = ', acesq
-   write (*,'(a,es22.15)') 'RMSE <= ', sqrt(acesq/vlen0)
    ! v was destroyed
    deallocate(v)
 
-   call mkdot(42,t,dofs)
-   call flush(42)
-   write (*,*)
-   write (*,*) 'Wrote graphviz input file to channel 42.'
+   ! Error information.
+   acesq = acesq + esq
+   write (msg,'(a,es22.15)') 'Estimated total err^2 = ', acesq
+   call write_log(logid_data, LOGLEVEL_INFO, msg)
+   write (msg,'(a,es22.15)') 'Estimated RMSE <= ', sqrt(acesq/vlen0)
+   call write_log(logid_data, LOGLEVEL_INFO, msg)
 
-   ! Expand it again.
-   write (*,*)
-   write (*,*) 'Expanding HT representation...'
+   ! Produce graphviz input file.
+   call write_log(logid_progress, LOGLEVEL_INFO, 'Writing input file for graphviz...')
+   call open_logfile(idot,"tree.dot")
+   call mkdot(idot,t,dofs)
+   call flush(idot)
+   call close_logfile(idot)
+
+   ! Expand the HT decomposition again.
+   call write_log(logid_progress, LOGLEVEL_INFO, 'Expanding HT representation...')
    call expand_ht(t,v)
-   write (*,*)
-   write (*,*) 'Comparing original and expanded tensor:'
-   write (*,*)
+
+   ! And compare.
+   call write_log(logid_progress, LOGLEVEL_INFO, 'Comparing original and expanded tensor...')
    call compare(v0,v)
 
 end program test

@@ -2,6 +2,7 @@
 module genpot
 
    use base
+   use logging
    use dof
    implicit none
 
@@ -21,10 +22,16 @@ module genpot
       type(dof_tp),intent(in) :: dofs(:)
       real(dbl),intent(out)   :: v(:)
       real(dbl),intent(out)   :: vnorm,vmax,vmin
+      integer,save            :: logid=0
+      character(len=160)      :: msg
       integer                 :: j,f,ndofs
       integer                 :: idx(size(dofs))
       real(dbl)               :: x(size(dofs))
       real(dbl)               :: v2sum
+
+      call get_logger(logid,"potential")
+      write (msg,'(a,i0)') 'Full potential size = ',size(v)
+      call write_log(logid, LOGLEVEL_INFO, msg)
 
       v2sum  = 0.d0
       vmax   = -1.d99
@@ -51,6 +58,15 @@ module genpot
          endif
       enddo
       vnorm = sqrt(v2sum)
+
+      write (msg,'(a,g22.15)') '||v|| = ',vnorm
+      call write_log(logid, LOGLEVEL_INFO, msg)
+      write (msg,'(a,g22.15)') 'v_max = ',vmax
+      call write_log(logid, LOGLEVEL_INFO, msg)
+      write (msg,'(a,g22.15)') 'v_min = ',vmin
+      call write_log(logid, LOGLEVEL_INFO, msg)
+
    end subroutine buildpot
+
 
 end module genpot
