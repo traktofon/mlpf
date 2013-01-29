@@ -13,11 +13,11 @@ program test_pes3c
 
    integer,parameter         :: ndofs = 15
    real(dbl),parameter       :: acc = 2.27817e-05 ! 5.0 cm^-1 (target RMSE)
-   real(dbl),parameter       :: gfac = 5.0
+   real(dbl),parameter       :: gfac = 2.5
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
-   integer                   :: f,nmodes,m,vlen,vlen0
+   integer                   :: f,nmodes,vlen,vlen0
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax
