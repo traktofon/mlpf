@@ -54,22 +54,27 @@ module linear
    end subroutine matrix_tensor_nt
 
 
-   subroutine compare(u,v)
+   !--------------------------------------------------------------------
+   subroutine compare(u,v,dnorm,dmax)
+   ! Compares to arrays of the same size. The maximum delta is returned
+   ! in dmax, and the 2-norm of the difference vector is returned in
+   ! dnorm.
+   !--------------------------------------------------------------------
       implicit none
-      real(dbl),intent(in) :: u(:)
-      real(dbl),intent(in) :: v(:)
-      integer :: n,i
-      real(dbl) :: dlt,dlt2sum,maxdlt
+      real(dbl),intent(in)  :: u(:)
+      real(dbl),intent(in)  :: v(:)
+      real(dbl),intent(out) :: dnorm,dmax
+      integer               :: n,i
+      real(dbl)             :: dlt,dlt2sum
       n = size(u)
-      maxdlt = 0.d0
+      dmax = 0.d0
       dlt2sum = 0.d0
       do i=1,n
          dlt = abs(u(i)-v(i))
-         maxdlt = max(dlt,maxdlt)
+         dmax = max(dlt,dmax)
          dlt2sum = dlt2sum + dlt**2
       enddo
-      write (*,'(a,es22.15)') 'delta_max = ', maxdlt
-      write (*,'(a,es22.15)') 'RMSE      = ', sqrt(dlt2sum/n)
+      dnorm = sqrt(dlt2sum)
    end subroutine compare
 
 end module linear

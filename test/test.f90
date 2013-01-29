@@ -19,22 +19,24 @@ program test
    real(dbl),parameter       :: acc = 1.d-3 ! target RMSE
    type(dof_tp),allocatable  :: dofs(:)
    type(node_tp),allocatable :: nodes(:)
-   type(node_t),pointer      :: no
    type(tree_t),pointer      :: t
-   integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,vlen0,mdim,nmod1
+   integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,vlen0,nmod1
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
-   type(basis_t),allocatable :: basis(:)
-   real(dbl)                 :: vnorm,vmax,vmin
-   real(dbl)                 :: limit,layerlimit,esq,acesq
+   real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax
+   real(dbl)                 :: limit,esq,acesq
    integer                   :: logid_progress = 0
    integer                   :: logid_data = 0
    character(len=160)        :: msg
-   integer                   :: idot
+   integer                   :: idot,ilog
 
    ! Set up logging
-   call get_logger(logid_progress, "progress")
+   call open_logfile(ilog,"output")
+   call set_logger("data", LOGLEVEL_INFO, ilog)
+   call set_logger("tree", LOGLEVEL_INFO, ilog)
+   call set_logger("progress", LOGLEVEL_INFO)
    call get_logger(logid_data, "data")
+   call get_logger(logid_progress, "progress")
 
    ! Make DOF grids.
    allocate(dofs(ndofs))
@@ -118,7 +120,7 @@ program test
    t => make_tree(nodes(1)%p)
    
    ! Check it.
-   call examine_tree(t,6)
+   call examine_tree(t)
 
    ! Generate potential.
    call write_log(logid_progress, LOGLEVEL_INFO, "Generating potential...")
@@ -168,6 +170,13 @@ program test
 
    ! And compare.
    call write_log(logid_progress, LOGLEVEL_INFO, 'Comparing original and expanded tensor...')
-   call compare(v0,v)
+   call compare(v0,v,dnorm,dmax)
+   write (msg,'(a,es22.15)') 'Maximum error = ', dmax
+   call write_log(logid_data, LOGLEVEL_INFO, msg)
+   write (msg,'(a,es22.15)') 'RMSE = ', dnorm/sqrt(1.d0*vlen0)
+   call write_log(logid_data, LOGLEVEL_INFO, msg)
+
+   ! Clean up.
+   call close_logfile(ilog)
 
 end program test

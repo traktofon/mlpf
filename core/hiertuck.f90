@@ -118,6 +118,13 @@ module hiertuck
       real(dbl)               :: esq,limitleft,layerlimit
       integer                 :: nodesleft
       logical                 :: lhosvd
+      integer,save            :: logid_data=0
+      integer,save            :: logid_progress=0
+      character(len=160)      :: msg
+
+      ! Set up logging.
+      call get_logger(logid_data,"data")
+      call get_logger(logid_progress,"progress")
 
       ! On entry, v has order = t%numleaves (number of dimensions)
       order = size(vdim)
@@ -131,10 +138,14 @@ module hiertuck
       ! The bottom-most layer is skipped as the initial potfit has
       ! already been computed before.
       do l = t%numlayers-1, 1, -1
-         write (*,'(/,a,i0,a)') '*** LAYER ',l,' ***'
-         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
          vlen = product(vdim(1:order))
-         write (*,'(a,i0)') 'vlen = ', vlen
+
+         write (msg,'(a,i0,a)') '  compute_ht: LAYER ',l
+         call write_log(logid_progress, LOGLEVEL_INFO, msg)
+         write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
+         call write_log(logid_data, LOGLEVEL_DEBUG, msg)
+         write (msg,'(a,i0,a,i0)') '  layer ',l,': vlen = ', vlen
+         call write_log(logid_data, LOGLEVEL_DEBUG, msg)
 
          d1 = 1 ! counting dimensions of v, without mode-combination
          d2 = 1 ! counting dimensions of v, with mode-combination
@@ -179,7 +190,8 @@ module hiertuck
          ! Now forget about the old shape of v.
          order = d2-1
          vdim(1:order) = udim(1:order)
-         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+         write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
+         call write_log(logid_data, LOGLEVEL_DEBUG, msg)
 
          ! For the top layer, there can be only one mode left,
          ! i.e. order=1.  Instead of computing a basis for this
@@ -189,7 +201,8 @@ module hiertuck
             no%nbasis = 1
             allocate(no%basis(no%plen,1))
             no%basis(:,1) = v(1:vlen)
-            write (*,'(/,a,g22.15)') '||v|| = ', sqrt(sum(v(1:vlen)**2))
+            write (msg,'(a,g22.15)') '||v~|| = ', sqrt(sum(v(1:vlen)**2))
+            call write_log(logid_data, LOGLEVEL_DEBUG, msg)
 
          ! Otherwise, compute the basis tensors for the combined modes.
          else
@@ -203,7 +216,8 @@ module hiertuck
                lhosvd = .true.
                layerlimit = limitleft/nodesleft
             endif
-            write (*,'(a,es22.15)') 'l.lim = ', layerlimit
+            write (msg,'(a,i0,a,es22.15)') 'LAYER ',l,': err^2 limit = ', layerlimit
+            call write_log(logid_data, LOGLEVEL_INFO, msg)
             do m = 1,nc
                ! Recall the mode number, and the node.
                d2 = xmode(m)
@@ -213,7 +227,8 @@ module hiertuck
                if (no%maxnbasis > 0)  mdim = min(mdim, no%maxnbasis)
                ! Compute the basis and store it in the node.
                call compute_basis_svd(v(1:vlen), vdim(1:order), d2, layerlimit, mdim, no%basis, esq)
-               write (*,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',esq
+               write (msg,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',esq
+               call write_log(logid_data, LOGLEVEL_INFO, msg)
                no%nbasis = mdim
                ! Add this mode's basis to the list, for later projection.
                basis(d2)%btyp = btyp_rect
@@ -227,7 +242,8 @@ module hiertuck
             ! Project the previous core tensor onto the bases.
             call contract_core(v(1:vlen),vdim(1:order),basis)
             ! v and vdim have been overwritten.
-            write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+            write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
+            call write_log(logid_data, LOGLEVEL_DEBUG, msg)
             ! Update the error tracking.
             limitleft = limitleft - acesq
          endif
@@ -246,6 +262,13 @@ module hiertuck
       integer                 :: xdim(t%numdofs)
       type(basis_t)           :: basis(t%numdofs)
       integer                 :: order,l,m,d1,d2,i,f
+      integer,save            :: logid_data=0
+      integer,save            :: logid_progress=0
+      character(len=160)      :: msg
+
+      ! Set up logging.
+      call get_logger(logid_data,"data")
+      call get_logger(logid_progress,"progress")
 
       ! Start with top-level core tensor.
       no => t%topnode
@@ -256,7 +279,8 @@ module hiertuck
 
       ! Go through remaining layers from top to bottom.
       do l = 2, t%numlayers
-         write (*,'(/,a,i0,a)') '*** LAYER ',l,' ***'
+         write (msg,'(a,i0,a)') '  expand_ht: LAYER ',l
+         call write_log(logid_progress, LOGLEVEL_INFO, msg)
          d1 = 1
          d2 = 1
          ! Go through all nodes in the current layer, and all leaves above.
@@ -281,12 +305,15 @@ module hiertuck
                d2 = d2+1
            endif
          enddo
-         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+         write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
+         call write_log(logid_data, LOGLEVEL_DEBUG, msg)
          call expand_core(v, vdim(1:order), basis(1:order))
-         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+         write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
+         call write_log(logid_data, LOGLEVEL_DEBUG, msg)
          order = d1-1
          vdim(1:order) = xdim(1:order)
-         write (*,'(a,99(x,i0))') 'vdim =', (vdim(i), i=1,order)
+         write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
+         call write_log(logid_data, LOGLEVEL_DEBUG, msg)
       enddo
 
    end subroutine expand_ht

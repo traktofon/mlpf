@@ -2,6 +2,7 @@
 module tree
 
    use base
+   use logging
    implicit none
    private
 
@@ -249,44 +250,51 @@ module tree
 
 
    !-------------------------------------------------------------------
-   subroutine examine_tree(t,iout)
+   subroutine examine_tree(t)
    ! Print various information about the tree structure.
    ! Mainly for debugging.
    !--------------------------------------------------------------------
       implicit none
       type(tree_t),intent(in) :: t
-      integer,intent(in)      :: iout
       integer                 :: m
-      write (iout,*) 'Tree has:'
-      write (iout,*) t%numnodes, ' nodes'
-      write (iout,*) t%numdofs, ' dofs'
-      write (iout,*) t%numleaves, ' leaves'
-      write (iout,*) t%numlayers, ' layers'
-      write (iout,*) 'Levels are:'
-      do m=1,t%numnodes
-         write (iout,'(x,i0)',advance="no") t%preorder(m)%p%layer
-      enddo
-      write (iout,*)
-      write (iout,*) 'Leaves?'
-      do m=1,t%numnodes
-         write (iout,'(x,l)',advance="no") t%preorder(m)%p%isleaf
-      enddo
-      write (iout,*)
-      write (iout,*) 'Leaves are:'
-      do m=1,t%numleaves
-         write (iout,'(x,i0)',advance="no") t%leaves(m)%p%num
-      enddo
-      write (iout,*)
-      write (iout,*) 'Pre-order is:'
-      do m=1,t%numnodes
-         write (iout,'(x,i0)',advance="no") t%preorder(m)%p%num
-      enddo
-      write (iout,*)
-      write (iout,*) 'Post-order is:'
-      do m=1,t%numnodes
-         write (iout,'(x,i0)',advance="no") t%postorder(m)%p%num
-      enddo
-      write (iout,*)
+      integer,save            :: logid=0
+      character(len=400)      :: msg
+      character,parameter     :: NL = ACHAR(10)
+
+      call get_logger(logid,"tree")
+
+      write (msg,'(a,4(a,i4,a))') &
+         'Tree has:', &
+         NL, t%numnodes, ' nodes', &
+         NL, t%numdofs, ' dofs', &
+         NL, t%numleaves, ' leaves', &
+         NL, t%numlayers, ' layers'
+      call write_log(logid, LOGLEVEL_DEBUG, msg)
+
+      write (msg,'(2a,3x,99(x,i0))') &
+         'Levels are:', NL, &
+         (t%preorder(m)%p%layer, m=1,t%numnodes)
+      call write_log(logid, LOGLEVEL_DEBUG, msg)
+
+      write (msg,'(2a,3x,99(x,l))') &
+         'Leaves?', NL, &
+         (t%preorder(m)%p%isleaf, m=1,t%numnodes)
+      call write_log(logid, LOGLEVEL_DEBUG, msg)
+
+      write (msg,'(2a,3x,99(x,i0))') &
+         'Leaves are:', NL, &
+         (t%leaves(m)%p%num, m=1,t%numleaves)
+      call write_log(logid, LOGLEVEL_DEBUG, msg)
+
+      write (msg,'(2a,3x,99(x,i0))') &
+         'Pre-order is:', NL, &
+         (t%preorder(m)%p%num, m=1,t%numnodes)
+      call write_log(logid, LOGLEVEL_DEBUG, msg)
+
+      write (msg,'(2a,3x,99(x,i0))') &
+         'Post-order is:', NL, &
+         (t%postorder(m)%p%num, m=1,t%numnodes)
+      call write_log(logid, LOGLEVEL_DEBUG, msg)
    end subroutine examine_tree
 
 end module tree

@@ -67,6 +67,7 @@ module logging
       integer,intent(in)          :: level
       integer,intent(in),optional :: lun
       integer                     :: id
+      id = 0
       call get_logger(id,facility)
       loggers(id)%level = level
       if (present(lun))  loggers(id)%lun = lun
@@ -91,7 +92,6 @@ module logging
       implicit none
       character(len=*),intent(in) :: filename
       integer,intent(out)         :: lun
-      character(len=160)          :: errmsg
       integer                     :: ierr
       lun = getlun()
       if (lun < 0) then
