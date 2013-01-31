@@ -55,7 +55,7 @@ program test_coul4
    nodes(1)%p => nodes(1)%p
    nodes(2)%p => make_node(nodes(2:3))
    nodes(3)%p => make_node(nodes(4:5))
-   nodes(4)%p => nodes(4)%p
+   nodes(4)%p => nodes(6)%p
 
    nodes(1)%p => make_node(nodes(1:2))
    nodes(2)%p => make_node(nodes(3:4))
