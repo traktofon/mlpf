@@ -18,7 +18,7 @@ module dof
 
    function new_dof(lbl,gdim,xi,xf) result (p)
       implicit none
-      character(len=16),intent(in) :: lbl
+      character(len=*),intent(in)  :: lbl
       integer,intent(in)           :: gdim
       real(dbl),intent(in)         :: xi,xf
       type(dof_t),pointer          :: p
