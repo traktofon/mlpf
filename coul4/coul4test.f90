@@ -36,7 +36,7 @@ program test_coul4
    call get_logger(logid_data, "data")
 
    ! Make DOF grids.
-   dofs(1)%p => new_dof( "R"  , 24 , 1.0d0, 10.0d0 )
+   dofs(1)%p => new_dof( "R"  , 24 , 0.1d0, 5.0d0 )
    dofs(2)%p => new_dof( "r1" , 24 , 0.1d0, 5.d0 )
    dofs(3)%p => new_dof( "r2" , 24 , 0.1d0, 5.d0 )
    dofs(4)%p => new_dof( "th1", 24 , 0.0d0, 3.1415926d0 )
