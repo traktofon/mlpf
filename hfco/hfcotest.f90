@@ -13,7 +13,6 @@ program test_hfco
 
    integer,parameter         :: ndofs = 6
    real(dbl),parameter       :: acc = 2.27817e-05 ! 5.0 cm^-1 (target RMSE)
-   real(dbl),parameter       :: gfac = 2.0
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
@@ -22,66 +21,26 @@ program test_hfco
    real(dbl),allocatable     :: v(:),v0(:)
    real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax
    real(dbl)                 :: limit,esq,acesq
-   real(dbl)                 :: xi,xf
-   integer                   :: gdim
-   character(len=16)         :: lbl
    integer                   :: logid_progress = 0
    integer                   :: logid_data = 0
    character(len=160)        :: msg
    integer                   :: idot,ilog
 
    ! Set up logging
-   !call open_logfile(ilog,"output")
-   !call set_logger("data", LOGLEVEL_INFO, ilog)
-   !call set_logger("tree", LOGLEVEL_INFO, ilog)
-   !call set_logger("progress", LOGLEVEL_INFO)
+   call open_logfile(ilog,"output")
+   call set_logger("data", LOGLEVEL_INFO, ilog)
+   call set_logger("tree", LOGLEVEL_INFO, ilog)
+   call set_logger("progress", LOGLEVEL_INFO)
    call get_logger(logid_progress, "progress")
    call get_logger(logid_data, "data")
 
    ! Make DOF grids.
-   f=0
-
-   f = f+1
-   lbl  = "rch"
-   gdim = int(16/gfac)
-   xi   = 1.48d0
-   xf   = 3.39d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "ohco"
-   gdim = int(18/gfac)
-   xi   = -0.98d0
-   xf   =  0.12d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "rcf"
-   gdim = int(16/gfac)
-   xi   = 1.98d0
-   xf   = 3.85d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "ofco"
-   gdim = int(18/gfac)
-   xi   = -0.90d0
-   xf   = -0.06d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "rco"
-   gdim = int(25/gfac)
-   xi   =  1.83d0
-   xf   =  2.94d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "phi"
-   gdim = int(25/gfac)
-   xi   =  1.45862d0
-   xf   =  4.82456531d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+   dofs(1)%p => new_dof("rch",  10, 1.48d0, 3.39d0)
+   dofs(2)%p => new_dof("rcf",  10, 1.98d0, 3.85d0)
+   dofs(4)%p => new_dof("ohco", 11,-0.98d0, 0.12d0)
+   dofs(5)%p => new_dof("ofco", 11,-0.90d0,-0.06d0)
+   dofs(6)%p => new_dof("rco",  12, 1.83d0, 2.94d0)
+   dofs(3)%p => new_dof("phi",  12, 1.45862d0, 4.82456531d0)
 
    ! Make leaf nodes.
    nmodes = ndofs
@@ -92,19 +51,9 @@ program test_hfco
    enddo
 
    ! Combine modes
-   ! (rch,ohco)
-   nodes(1)%p => make_node(nodes(1:2))
-   ! (rcf,ofco)
-   nodes(2)%p => make_node(nodes(3:4))
-   ! (rco,phi)
-   nodes(3)%p => make_node(nodes(5:6))
+   nodes(1)%p => make_node(nodes(1:3))
+   nodes(2)%p => make_node(nodes(4:6))
 
-   ! ( (rch,ohco), (rcf,ofco) )
-   nodes(1)%p => make_node(nodes(1:2))
-   ! (rco,phi)
-   nodes(2)%p => nodes(3)%p
-
-   ! ( ( (rch,ohco), (rcf,ofco) ), (rco,phi) )
    nodes(1)%p => make_node(nodes(1:2))
 
    ! Build tree.
@@ -168,6 +117,6 @@ program test_hfco
    call write_log(logid_data, LOGLEVEL_INFO, msg)
 
    ! Clean up.
-   !call close_logfile(ilog)
+   call close_logfile(ilog)
 
 end program test_hfco
