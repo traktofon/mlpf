@@ -39,70 +39,16 @@ program test_pes3c
    call get_logger(logid_data, "data")
 
    ! Make DOF grids.
-   f=0
-
-   f = f+1
-   lbl  = "dr1"
-   gdim = int(11/gfac)
-   xi   = 1.4d0
-   xf   = 2.4d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "dr2"
-   gdim = int(11/gfac)
-   xi   = 1.4d0
-   xf   = 2.4d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "dr4"
-   gdim = int(11/gfac)
-   xi   = 4.2d0
-   xf   = 5.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "zpp"
-   gdim = int(15/gfac)
-   xi   = -0.5d0
-   xf   =  0.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "r3x"
-   gdim = int(9/gfac)
-   xi   = -0.8d0
-   xf   =  0.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "r3y"
-   gdim = int(9/gfac)
-   xi   = -0.8d0
-   xf   =  0.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "phi"
-   gdim = int(15/gfac)
-   xi   = 0.0d0
-   xf   = 6.28318530718*(gdim-1)/gdim
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "u1"
-   gdim = int(11/gfac)
-   xi   = -0.8d0
-   xf   =  0.35d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "u2"
-   gdim = int(11/gfac)
-   xi   = -0.35d0
-   xf   =  0.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+   ! 11/11/11/15/9/9/15/11/11
+   dofs(1)%p => new_dof("dr1", 7, 1.4d0, 2.4d0)
+   dofs(2)%p => new_dof("dr2", 7, 1.4d0, 2.4d0)
+   dofs(3)%p => new_dof("dr4", 7, 4.2d0, 5.5d0)
+   dofs(4)%p => new_dof("zpp",10,-0.5d0, 0.5d0)
+   dofs(5)%p => new_dof("r3x", 6,-0.8d0, 0.8d0)
+   dofs(7)%p => new_dof("r3y", 6,-0.8d0, 0.8d0)
+   dofs(8)%p => new_dof("phi",10, 0.0d0, 6.283185d0)
+   dofs(6)%p => new_dof("u1" , 7,-0.8d0, 0.35d0)
+   dofs(9)%p => new_dof("u2" , 7,-0.35d0,0.8d0)
 
    ! Make leaf nodes.
    nmodes = ndofs
@@ -113,34 +59,15 @@ program test_pes3c
    enddo
 
    ! Combine modes
-   m = 0
-   ! (dr1,dr2)
-   m = m+1
-   nodes(m)%p => make_node(nodes(1:2))
-   ! (dr4,zpp)
-   m = m+1
-   nodes(m)%p => make_node(nodes(3:4))
-   ! (r3x,r3y,phi)
-   m = m+1
-   nodes(m)%p => make_node(nodes(5:7))
-   ! (u1,u2)
-   m = m+1
-   nodes(m)%p => make_node(nodes(8:9))
+   nodes(1)%p => make_node(nodes(1:2))
+   nodes(2)%p => make_node(nodes(3:4))
+   nodes(3)%p => make_node(nodes(5:6))
+   nodes(4)%p => make_node(nodes(7:9))
 
-   nmodes = m
-   m = 0
-   ! ( (dr1,dr2) , (dr4,zpp) )
-   m = m+1
-   nodes(m)%p => make_node(nodes(1:2))
-   ! ( (r3x,r3y,phi) , (u1,u2) )
-   m = m+1
-   nodes(m)%p => make_node(nodes(3:4))
+   nodes(1)%p => make_node(nodes(1:2))
+   nodes(2)%p => make_node(nodes(3:4))
 
-   nmodes = m
-   m = 0
-   ! ( ( (dr1,dr2) , (dr4,zpp) ) , ( (r3x,r3y,phi) , (u1,u2) ) )
-   m = m+1
-   nodes(m)%p => make_node(nodes(1:2))
+   nodes(1)%p => make_node(nodes(1:2))
 
    ! Build tree.
    t => make_tree(nodes(1)%p)
