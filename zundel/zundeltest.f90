@@ -12,8 +12,7 @@ program test_pes3c
    implicit none
 
    integer,parameter         :: ndofs = 15
-   real(dbl),parameter       :: acc = 2.27817e-05 ! 5.0 cm^-1 (target RMSE)
-   real(dbl),parameter       :: gfac = 3.5
+   real(dbl),parameter       :: acc = 4.55634e-05 ! 10.0 cm^-1 (target RMSE)
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
@@ -22,9 +21,6 @@ program test_pes3c
    real(dbl),allocatable     :: v(:),v0(:)
    real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax
    real(dbl)                 :: limit,esq,acesq
-   real(dbl)                 :: xi,xf
-   integer                   :: gdim
-   character(len=16)         :: lbl
    integer                   :: logid_progress = 0
    integer                   :: logid_data = 0
    character(len=160)        :: msg

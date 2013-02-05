@@ -27,13 +27,9 @@ module dof
       p%label = lbl
       p%gdim = gdim
       allocate(p%x(gdim))
-      if (gdim==1) then
-         p%x(1) = 0.5d0*(xi+xf)
-      else
-         do g=1,gdim
-            p%x(g) = xi + (g-1)*(xf-xi)/(gdim-1)
-         enddo
-      endif
+      do g=1,gdim
+         p%x(g) = xi + g*(xf-xi)/(gdim+1)
+      enddo
    end function new_dof
 
 end module dof
