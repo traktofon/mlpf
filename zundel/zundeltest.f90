@@ -39,112 +39,22 @@ program test_pes3c
    call get_logger(logid_data, "data")
 
    ! Make DOF grids.
-   f=0
-
-   f = f+1
-   lbl  = "z"
-   gdim = int(19/gfac)
-   xi   = -0.5d0
-   xf   =  0.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "R"
-   gdim = int(20/gfac)
-   xi   = 3.9d0
-   xf   = 6.0d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "a"
-   gdim = int(17/gfac)
-   xi   = 0.0d0
-   xf   = 6.28318530718*(gdim-1)/gdim
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "x"
-   gdim = int(5/gfac)
-   xi   = -0.8d0
-   xf   =  0.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "y"
-   gdim = int(5/gfac)
-   xi   = -0.8d0
-   xf   =  0.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "la"
-   gdim = int(19/gfac)
-   xi   = 1.3415926535897d0
-   xf   = 4.9415926535897d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "lb"
-   gdim = int(19/gfac)
-   xi   = -1.8d0
-   xf   =  1.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "ua"
-   gdim = int(9/gfac)
-   xi   = -0.5d0
-   xf   =  0.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "ub"
-   gdim = int(9/gfac)
-   xi   = -0.5d0
-   xf   =  0.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "r1a"
-   gdim = int(9/gfac)
-   xi   =  0.5d0
-   xf   =  1.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "r2a"
-   gdim = int(9/gfac)
-   xi   =  2.2d0
-   xf   =  3.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "va"
-   gdim = int(7/gfac)
-   xi   = -0.5d0
-   xf   =  0.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "r1b"
-   gdim = int(9/gfac)
-   xi   =  0.5d0
-   xf   =  1.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "r2b"
-   gdim = int(9/gfac)
-   xi   =  2.2d0
-   xf   =  3.8d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
-
-   f = f+1
-   lbl  = "vb"
-   gdim = int(7/gfac)
-   xi   = -0.5d0
-   xf   =  0.5d0
-   dofs(f)%p => new_dof(lbl,gdim,xi,xf)
+   ! x,ua,ub - y,a - z,r1b - r2b,vb - R,r1a - r2a,va
+   dofs( 1)%p => new_dof("x"  , 3, -0.8d0, 0.8d0)
+   dofs( 4)%p => new_dof("y"  , 3, -0.8d0, 0.8d0)
+   dofs( 8)%p => new_dof("z"  , 3, -0.5d0, 0.5d0)
+   dofs(12)%p => new_dof("R"  , 3,  3.9d0, 6.0d0)
+   dofs( 5)%p => new_dof("a"  , 3,  0.0d0, 6.283185d0)
+   dofs(13)%p => new_dof("r1a", 3,  0.5d0, 1.8d0)
+   dofs(14)%p => new_dof("r2a", 3,  2.2d0, 3.8d0)
+   dofs(15)%p => new_dof("va" , 3, -0.5d0, 0.5d0)
+   dofs( 2)%p => new_dof("ua" , 3, -0.5d0, 0.5d0)
+   dofs( 6)%p => new_dof("la" , 3,  1.3415926535897d0, 4.9415926535897d0)
+   dofs( 9)%p => new_dof("r1b", 3,  0.5d0, 1.8d0)
+   dofs(10)%p => new_dof("r2b", 3,  2.2d0, 3.8d0)
+   dofs(11)%p => new_dof("vb" , 3, -0.5d0, 0.5d0)
+   dofs( 3)%p => new_dof("ub" , 3, -0.5d0, 0.5d0)
+   dofs( 7)%p => new_dof("lb" , 3, -1.8d0, 1.8d0)
 
    ! Make leaf nodes.
    nmodes = ndofs
@@ -155,34 +65,24 @@ program test_pes3c
    enddo
 
    ! Combine modes
-   ! (z,R)
-   nodes(1)%p => make_node(nodes(1:2))
-   ! (a,x,y)
-   nodes(2)%p => make_node(nodes(3:5))
-   ! (la,lb)
+   nodes(1)%p => nodes(1)%p
+   nodes(2)%p => nodes(2)%p
+   nodes(3)%p => nodes(3)%p
+   nodes(4)%p => make_node(nodes(4:5))
+   nodes(5)%p => make_node(nodes(6:7))
+   nodes(6)%p => make_node(nodes(8:9))
+   nodes(7)%p => make_node(nodes(10:11))
+   nodes(8)%p => make_node(nodes(12:13))
+   nodes(9)%p => make_node(nodes(14:15))
+
+   nodes(1)%p => make_node(nodes(1:3))
+   nodes(2)%p => make_node(nodes(4:5))
    nodes(3)%p => make_node(nodes(6:7))
-   ! (ua,ub)
    nodes(4)%p => make_node(nodes(8:9))
-   ! (r1a,r2a,va)
-   nodes(5)%p => make_node(nodes(10:12))
-   ! (r1b,r2b,vb)
-   nodes(6)%p => make_node(nodes(13:15))
 
-   ! ( (z,R) , (a,x,y) )
    nodes(1)%p => make_node(nodes(1:2))
-   ! ( (la,lb) , (ua,ub) )
-   nodes(2)%p => make_node(nodes(3:4))
-   ! (r1a,r2a,va)
-   nodes(3)%p => nodes(5)%p
-   ! (r1b,r2b,vb)
-   nodes(4)%p => nodes(6)%p
-
-   ! ( ( (z,R) , (a,x,y) ) , ( (la,lb) , (ua,ub) ) )
-   nodes(1)%p => make_node(nodes(1:2))
-   ! ( (r1a,r2a,va) , (r1b,r2b,vb) )
    nodes(2)%p => make_node(nodes(3:4))
 
-   ! ( ( ( (z,R) , (a,x,y) ) , ( (la,lb) , (ua,ub) ) ) , ( (r1a,r2a,va) , (r1b,r2b,vb) ) )
    nodes(1)%p => make_node(nodes(1:2))
 
    ! Build tree.
