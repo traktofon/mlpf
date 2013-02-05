@@ -93,7 +93,7 @@ program test_pes3c
 
    ! Generate potential.
    call write_log(logid_progress, LOGLEVEL_INFO, "Generating potential...")
-   call h5o2_init(.true., .false., 1.5d0, 1.d0) ! from Oriol's "test"
+   call h5o2_init(.true., .true., 1.5d0, 1.d0)
    call leaf_shape(t,vdim,vlen)
    allocate(v(vlen))
    call buildpot(zundel,dofs,v,vnorm,vmax,vmin)
