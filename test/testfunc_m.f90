@@ -1,7 +1,7 @@
 ! vim: set ts=3 sw=3 :
-module testfunc
+module testfunc_m
 
-   use base
+   use base_m
    implicit none
 
    contains
@@ -63,4 +63,4 @@ module testfunc
    end function coulombn
 
 
-end module testfunc
+end module testfunc_m

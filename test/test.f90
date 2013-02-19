@@ -1,15 +1,15 @@
 ! vim: set ts=3 sw=3 :
 program test
 
-   use logging
-   use dof
-   use tree
-   use graphviz
-   use genpot
-   use tuckerdecomp
-   use hiertuck
-   use linear
-   use testfunc
+   use logging_m
+   use meta_dof_m
+   use tree_m
+   use graphviz_m
+   use genpot_m
+   use tuckerdecomp_m
+   use hiertuck_m
+   use linear_m
+   use testfunc_m
    implicit none
 
    integer,parameter         :: ndofs = 12
@@ -27,6 +27,7 @@ program test
    real(dbl)                 :: limit,esq,acesq
    integer                   :: logid_progress = 0
    integer                   :: logid_data = 0
+   character(len=c1)         :: label
    character(len=160)        :: msg
    integer                   :: idot,ilog
 
@@ -42,13 +43,8 @@ program test
    allocate(dofs(ndofs))
    do f=1,ndofs
       gdim = gdim1 + mod(f,gdim2-gdim1+1)
-      allocate(dofs(f)%p)
-      dofs(f)%p%gdim = gdim
-      write (dofs(f)%p%label, '(a,i0)') '#',f
-      allocate(dofs(f)%p%x(gdim))
-      do g=1,gdim
-         dofs(f)%p%x(g) = dble(g-1)/max(dble(gdim-1),1.d0)
-      enddo
+      write (label,'(a,i0)') '#',f
+      dofs(f)%p => new_dof(label, gdim, 0.d0, 1.d0)
    enddo
 
    ! Make leaf nodes.

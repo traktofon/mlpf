@@ -1,7 +1,7 @@
 ! vim: set ts=3 sw=3 :
-module linear
+module linear_m
 
-   use base
+   use base_m
    implicit none
 
    contains
@@ -77,4 +77,4 @@ module linear
       dnorm = sqrt(dlt2sum)
    end subroutine compare
 
-end module linear
+end module linear_m

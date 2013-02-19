@@ -1,7 +1,7 @@
 module dvr_m
 
    use dof_m
-   use base
+   use base_m
    implicit none
 
    type,extends(dof_t),abstract :: dvr_t

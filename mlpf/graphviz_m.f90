@@ -1,8 +1,8 @@
 ! vim: set ts=3 sw=3 :
-module graphviz
+module graphviz_m
 
-   use dof
-   use tree
+   use dof_m
+   use tree_m
    implicit none
 
    contains
@@ -57,4 +57,4 @@ module graphviz
       write(iout,'(a)') '}'
    end subroutine mkdot
 
-end module graphviz
+end module graphviz_m

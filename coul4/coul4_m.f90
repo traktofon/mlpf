@@ -1,7 +1,7 @@
 ! vim: set ts=3 sw=3 :
-module coul4mod
+module coul4_m
 
-   use base
+   use base_m
    implicit none
 
    contains
@@ -36,4 +36,4 @@ module coul4mod
       v = 1.d0/rAB - 1.d0/rAC - 1.d0/rAD - 1.d0/rBC - 1.d0/rBD + 1.d0/rCD
    end function coul4
 
-end module coul4mod
+end module coul4_m

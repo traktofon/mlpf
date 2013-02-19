@@ -3,16 +3,12 @@
 DEP := $(dd)/Deps.mk
 
 SOURCES := \
-   base.f90 \
-   logging.f90 \
-   dof.f90 \
-   genpot.f90 \
-   linear.f90 \
-   modeutil.f90 \
-   tree.f90 \
-   graphviz.f90 \
-   tuckerdecomp.f90 \
-   hiertuck.f90 \
+   base_m.f90 \
+   logging_m.f90 \
+   linear_m.f90 \
+   modeutil_m.f90 \
+   tree_m.f90 \
+   tuckerdecomp_m.f90
 
 SRC_$(dd) := \
    $(addprefix $(dd)/,$(SOURCES))

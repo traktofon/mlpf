@@ -1,5 +1,5 @@
 ! vim: set ts=3 sw=3 :
-module logging
+module logging_m
 
    implicit none
    private
@@ -126,4 +126,4 @@ module logging
    end function getlun
 
 
-end module logging
+end module logging_m

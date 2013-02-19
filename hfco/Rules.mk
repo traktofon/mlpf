@@ -6,7 +6,7 @@ DEP := $(dd)/Deps.mk
 PROGS := $(PROGS) $(TGT)
 
 SOURCES90 := \
-   hfcomod.f90 \
+   hfco_m.f90 \
    hfcotest.f90
 SOURCES77 := \
    hfco.f
@@ -16,7 +16,7 @@ SRC_$(dd) := \
    $(addprefix $(dd)/,$(SOURCES90))
 
 MODS_$(dd) := \
-   $(OBJDIR)/hfcomod.mod
+   $(OBJDIR)/hfco_m.mod
 
 OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(SOURCES77:.f=.o)) \
@@ -24,12 +24,12 @@ OBJS_$(dd) := \
 
 # build rule
 
-$(TGT): $(OBJS_hfco) $(OBJS_core)
+$(TGT): $(OBJS_hfco) $(OBJS_COMMON)
 	$(FC) -o $@ $+ $(LIBS)
 
 # module dependencies
 
-$(DEP): $(MODS_core) $(MODS_hfco) $(SRC_hfco)
+$(DEP): $(MODS_COMMON) $(MODS_hfco) $(SRC_hfco)
 	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_hfco) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
 
 -include $(DEP)

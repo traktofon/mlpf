@@ -1,7 +1,7 @@
 ! vim: set ts=3 sw=3 :
-module zundelmod
+module zundel_m
 
-   use base
+   use base_m
    implicit none
 
    contains
@@ -28,4 +28,4 @@ module zundelmod
       return
    end function zundel
 
-end module zundelmod
+end module zundel_m

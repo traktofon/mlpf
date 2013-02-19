@@ -1,6 +1,6 @@
 module dof_m
 
-   use base
+   use base_m
    implicit none
 
    type,abstract :: dof_t
