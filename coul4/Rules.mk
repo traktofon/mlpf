@@ -6,26 +6,26 @@ DEP := $(dd)/Deps.mk
 PROGS := $(PROGS) $(TGT)
 
 SOURCES := \
-   coul4mod.f90 \
+   coul4_m.f90 \
    coul4test.f90
 
 SRC_$(dd) := \
    $(addprefix $(dd)/,$(SOURCES))
 
 MODS_$(dd) := \
-   $(OBJDIR)/coul4mod.mod
+   $(OBJDIR)/coul4_m.mod
 
 OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(SOURCES:.f90=.o))
 
 # build rule
 
-$(TGT): $(OBJS_coul4) $(OBJS_core)
+$(TGT): $(OBJS_coul4) $(OBJS_COMMON)
 	$(FC) -o $@ $+ $(LIBS)
 
 # module dependencies
 
-$(DEP): $(MODS_core) $(MODS_coul4) $(SRC_coul4)
+$(DEP): $(MODS_COMMON) $(MODS_coul4) $(SRC_coul4)
 	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_test) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
 
 -include $(DEP)

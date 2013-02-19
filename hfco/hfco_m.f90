@@ -1,7 +1,7 @@
 ! vim: set ts=3 sw=3 :
-module hfcomod
+module hfco_m
 
-   use base
+   use base_m
    implicit none
 
    contains
@@ -20,4 +20,4 @@ module hfcomod
       return
    end function hfco1
 
-end module hfcomod
+end module hfco_m

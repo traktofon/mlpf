@@ -1,9 +1,9 @@
 ! vim: set ts=3 sw=3 :
-module genpot
+module genpot_m
 
-   use base
-   use logging
-   use dof
+   use base_m
+   use logging_m
+   use dof_m
    implicit none
 
    contains
@@ -14,7 +14,7 @@ module genpot
       implicit none
       interface
          function fn(x)
-            use base
+            use base_m
             real(dbl),intent(in) :: x(:)
             real(dbl)            :: fn
          end function fn
@@ -69,4 +69,4 @@ module genpot
    end subroutine buildpot
 
 
-end module genpot
+end module genpot_m

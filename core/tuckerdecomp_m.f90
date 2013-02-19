@@ -1,9 +1,9 @@
 ! vim: set ts=3 sw=3 :
-module tuckerdecomp
+module tuckerdecomp_m
 
-   use base
-   use modeutil
-   use linear
+   use base_m
+   use modeutil_m
+   use linear_m
    implicit none
 
    integer,parameter :: btyp_unit = 1
@@ -366,5 +366,4 @@ module tuckerdecomp
    end subroutine build_dmat
 
 
-
-end module tuckerdecomp
+end module tuckerdecomp_m

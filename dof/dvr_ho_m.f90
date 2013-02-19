@@ -2,7 +2,7 @@ module dvr_ho_m
 
    use dvr_m
    use dof_m
-   use base
+   use base_m
    implicit none
 
    type,extends(dvr_t) :: dvr_ho_t
@@ -16,15 +16,15 @@ module dvr_ho_m
    contains
 
 
-   subroutine parse(dof,tokens)
+   subroutine parse_ho(dof,tokens)
       class(dof_t),pointer        :: dof
       character(len=*),intent(in) :: tokens(:)
       allocate(dvr_ho_t::dof)
       call stopnow("dvr_ho_m::parse not implemented")
-   end subroutine parse
+   end subroutine parse_ho
 
 
-   subroutine unpickle(dof,gdim,label,ipar,rpar)
+   subroutine unpickle_ho(dof,gdim,label,ipar,rpar)
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
       character(len=*),intent(in) :: label
@@ -47,7 +47,7 @@ module dvr_ho_m
          dof%fm  = xf-xi
       endif
       end select
-   end subroutine unpickle
+   end subroutine unpickle_ho
 
 
    subroutine init_ho(dof)
@@ -115,9 +115,9 @@ module dvr_ho_m
       id = 1 ! MCTDH basis type
       ! using pointers is not strictly necessary, but this makes it
       ! more likely that the compiler checks for interface mismatch
-      p => parse
-      u => unpickle
-      call register_dof("HO", id, p, u)
+      p => parse_ho
+      u => unpickle_ho
+      call register_doftyp("HO", id, p, u)
    end subroutine init_doftyp_ho
 
 end module dvr_ho_m

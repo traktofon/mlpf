@@ -1,4 +1,4 @@
-obj/testfunc.o obj/testfunc.mod: test/testfunc.f90 obj/base.mod
-obj/test.o: test/test.f90 obj/logging.mod obj/dof.mod obj/tree.mod \
- obj/graphviz.mod obj/genpot.mod obj/tuckerdecomp.mod obj/hiertuck.mod \
- obj/linear.mod obj/testfunc.mod
+obj/testfunc_m.o obj/testfunc_m.mod: test/testfunc_m.f90 obj/base_m.mod
+obj/test.o: test/test.f90 obj/logging_m.mod obj/meta_dof_m.mod obj/tree_m.mod \
+ obj/graphviz_m.mod obj/genpot_m.mod obj/tuckerdecomp_m.mod \
+ obj/hiertuck_m.mod obj/linear_m.mod obj/testfunc_m.mod

@@ -1,5 +1,5 @@
 ! vim: set ts=3 sw=3 :
-module modeutil
+module modeutil_m
 
    implicit none
 
@@ -21,4 +21,4 @@ module modeutil
       if(m<nmodes) nd=product(gdim(m+1:nmodes))
    end subroutine vgn_shape
 
-end module modeutil
+end module modeutil_m

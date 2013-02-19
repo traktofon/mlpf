@@ -1,7 +1,7 @@
 ! vim: set ts=3 sw=3 :
-module pes3cmod
+module pes3c_m
 
-   use base
+   use base_m
    implicit none
 
    contains
@@ -27,4 +27,4 @@ module pes3cmod
       return
    end function pes3c
 
-end module pes3cmod
+end module pes3c_m

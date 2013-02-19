@@ -1,14 +1,14 @@
 ! vim: set ts=3 sw=3 :
 program test_hfco
 
-   use dof
-   use tree
-   use graphviz
-   use genpot
-   use hfcomod
-   use tuckerdecomp
-   use hiertuck
-   use linear
+   use meta_dof_m
+   use tree_m
+   use graphviz_m
+   use genpot_m
+   use hfco_m
+   use tuckerdecomp_m
+   use hiertuck_m
+   use linear_m
    implicit none
 
    integer,parameter         :: ndofs = 6

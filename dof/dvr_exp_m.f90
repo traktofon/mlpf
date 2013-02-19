@@ -2,7 +2,7 @@ module dvr_exp_m
 
    use dvr_m
    use dof_m
-   use base
+   use base_m
    implicit none
 
    type,extends(dvr_t) :: dvr_exp_t
@@ -15,15 +15,15 @@ module dvr_exp_m
    contains
 
 
-   subroutine parse(dof,tokens)
+   subroutine parse_exp(dof,tokens)
       class(dof_t),pointer        :: dof
       character(len=*),intent(in) :: tokens(:)
       allocate(dvr_exp_t::dof)
       call stopnow("dvr_exp_m::parse not implemented")
-   end subroutine parse
+   end subroutine parse_exp
 
 
-   subroutine unpickle(dof,gdim,label,ipar,rpar)
+   subroutine unpickle_exp(dof,gdim,label,ipar,rpar)
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
       character(len=*),intent(in) :: label
@@ -37,7 +37,7 @@ module dvr_exp_m
       dof%xi   = rpar(1)
       dof%xf   = rpar(2)
       end select
-   end subroutine unpickle
+   end subroutine unpickle_exp
 
 
    subroutine init_exp(dof)
@@ -71,9 +71,9 @@ module dvr_exp_m
       id = 5 ! MCTDH basis type
       ! uexpg pointers is not strictly necessary, but this makes it
       ! more likely that the compiler checks for interface mismatch
-      p => parse
-      u => unpickle
-      call register_dof("exp", id, p, u)
+      p => parse_exp
+      u => unpickle_exp
+      call register_doftyp("exp", id, p, u)
    end subroutine init_doftyp_exp
 
 end module dvr_exp_m

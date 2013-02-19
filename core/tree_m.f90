@@ -1,8 +1,8 @@
 ! vim: set ts=3 sw=3 :
-module tree
+module tree_m
 
-   use base
-   use logging
+   use base_m
+   use logging_m
    implicit none
    private
 
@@ -297,4 +297,4 @@ module tree
       call write_log(logid, LOGLEVEL_DEBUG, msg)
    end subroutine examine_tree
 
-end module tree
+end module tree_m

@@ -1,7 +1,7 @@
 module dof_io_m
 
    use dof_m
-   use base
+   use base_m
    implicit none
 
    contains

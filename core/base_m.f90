@@ -1,5 +1,5 @@
 ! vim: set ts=3 sw=3 :
-module base
+module base_m
 
    implicit none
 
@@ -19,4 +19,4 @@ module base
       stop 1
    end subroutine stopnow
 
-end module base
+end module base_m

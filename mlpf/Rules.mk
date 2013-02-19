@@ -3,13 +3,9 @@
 DEP := $(dd)/Deps.mk
 
 SOURCES := \
-   dof_m.f90 \
-   dof_io_m.f90 \
-   dvr_m.f90 \
-   dvr_ho_m.f90 \
-   dvr_sin_m.f90 \
-   dvr_exp_m.f90 \
-   meta_dof_m.f90
+   genpot_m.f90 \
+   graphviz_m.f90 \
+   hiertuck_m.f90
 
 SRC_$(dd) := \
    $(addprefix $(dd)/,$(SOURCES))
@@ -23,8 +19,8 @@ OBJS_$(dd) := \
 
 # module dependencies
 
-$(DEP): $(MODS_core) $(MODS_dof) $(SRC_dof)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_dof) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
+$(DEP): $(MODS_core) $(MODS_dof) $(MODS_mlpf) $(SRC_mlpf)
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_mlpf) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
 
 -include $(DEP)
 

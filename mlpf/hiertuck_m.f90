@@ -1,10 +1,10 @@
 ! vim: set ts=3 sw=3 :
-module hiertuck
+module hiertuck_m
 
-   use logging
-   use dof
-   use tree
-   use tuckerdecomp
+   use logging_m
+   use dof_m
+   use tree_m
+   use tuckerdecomp_m
    implicit none
 
    contains
@@ -319,4 +319,4 @@ module hiertuck
    end subroutine expand_ht
 
 
-end module hiertuck
+end module hiertuck_m
