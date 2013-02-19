@@ -45,7 +45,7 @@ module dvr_exp_m
       real(dbl)                      :: dx,w
       integer                        :: g
       ! check
-      if (mod(dof%gdim,2) /= 0) &
+      if (mod(dof%gdim,2) == 0) &
          call stopnow("dvr_exp_m::init_exp : number of grid points must be odd for exp-DVR")
       ! call general DVR constructor
       call dof%init_dvr

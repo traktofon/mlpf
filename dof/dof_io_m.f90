@@ -6,11 +6,11 @@ module dof_io_m
 
    contains
 
-   function rddvrdef(lun,fver) result(dofs)
+   function rddvrdef(lun,fver) result (dofs)
       implicit none
+      type(dof_tp),pointer            :: dofs(:)
       integer,intent(in)              :: lun
       real(dbl),intent(in)            :: fver
-      class(dof_tp),pointer           :: dofs(:)
       integer                         :: ndof,f,mbaspar,i
       character(len=c1),allocatable   :: modelabel(:)
       integer,allocatable             :: gdim(:),basis(:), ipbaspar(:,:)
