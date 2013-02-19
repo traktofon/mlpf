@@ -8,6 +8,8 @@ include local.mk
 
 dd := core
 include $(dd)/Rules.mk
+dd := dof
+include $(dd)/Rules.mk
 dd := test
 include $(dd)/Rules.mk
 dd := pes3c
@@ -22,6 +24,7 @@ include $(dd)/Rules.mk
 # where to look for source files
 
 vpath %.f90 core
+vpath %.f90 dof
 vpath %.f90 test
 vpath %.f90 pes3c
 vpath %.f   pes3c
