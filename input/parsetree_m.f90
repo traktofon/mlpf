@@ -5,8 +5,13 @@ module parsetree_m
 
    use tokenize_m
    use tree_m
+   use meta_dof_m
+   use dof_m
    use base_m
    implicit none
+
+   type(dof_tp) :: dofs(99)
+   integer      :: ndof = 0
 
    contains
 
@@ -15,8 +20,8 @@ module parsetree_m
    function get_dofnum_by_label(lbl) result (f)
       character(len=*),intent(in) :: lbl
       integer                     :: f
-      integer,save                :: ndof = 0
       ndof = ndof+1
+      dofs(ndof)%p => new_dof(trim(lbl), 10, 0.d0, 1.d0)
       f = ndof
    end function get_dofnum_by_label
 

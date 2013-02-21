@@ -8,15 +8,25 @@ module graphviz_m
    contains
 
    !--------------------------------------------------------------------
-   subroutine mkdot(iout,t,dofs)
+   subroutine mkdot(iout,t,dofs,edgectrl)
    ! Creates an input file for graphviz, for visualising the tree.
+   ! edgectrl = 0 : don't label edges
+   ! edgectrl = 1 : label edges with gdim/nbasis [default]
+   ! edgectrl = 2 : label edges with gdim/maxnbasis
    !--------------------------------------------------------------------
       implicit none
-      integer,intent(in)      :: iout    ! output channel
-      type(tree_t),intent(in) :: t       ! the tree
-      type(dof_tp),intent(in) :: dofs(:) ! the DOFs
-      type(node_t),pointer    :: cnode  
-      integer                 :: i,f,idof 
+      integer,intent(in)          :: iout    ! output channel
+      type(tree_t),intent(in)     :: t       ! the tree
+      type(dof_tp),intent(in)     :: dofs(:) ! the DOFs
+      integer,intent(in),optional :: edgectrl
+      type(node_t),pointer        :: cnode
+      integer                     :: i,f,idof,ectl,enum
+      ! check edgectrl
+      if (present(edgectrl)) then
+         ectl = edgectrl
+      else
+         ectl = 1
+      endif
       ! output header
       write(iout,'(5(a,/),a)') &
          'digraph G {', &
@@ -41,16 +51,31 @@ module graphviz_m
                write (iout,'(a,i0,3a)') 'f', idof, &
                   ' [shape=box,label="', trim(dofs(idof)%p%label), '"]'
                ! output edge
-               write (iout,'(a,i0,a,i0,a,i0,a)') &
-                  'f', idof, ' -> n', cnode%num, &
-                  ' [dir=none,label=', cnode%ndim(f), ']'
+               if (ectl==0) then
+                  write (iout,'(a,i0,a,i0,a)') &
+                     'f', idof, ' -> n', cnode%num, ' [dir=none]'
+               else
+                  write (iout,'(a,i0,a,i0,a,i0,a)') &
+                     'f', idof, ' -> n', cnode%num, &
+                     ' [dir=none,label=', cnode%ndim(f), ']'
+               endif
             end do
          endif
          ! output edge to parent
          if (associated(cnode%parent)) then
-            write (iout,'(a,i0,a,i0,a,i0,a)') &
-               'n', cnode%num, ' -> n', cnode%parent%num, &
-               ' [dir=none,label=', cnode%nbasis, ']'
+            if (ectl==0) then
+               write (iout,'(a,i0,a,i0,a)') &
+                  'n', cnode%num, ' -> n', cnode%parent%num, ' [dir=none]'
+            else
+               if (ectl==1) then
+                  enum = cnode%nbasis
+               else
+                  enum = cnode%maxnbasis
+               endif
+               write (iout,'(a,i0,a,i0,a,i0,a)') &
+                  'n', cnode%num, ' -> n', cnode%parent%num, &
+                  ' [dir=none,label=', enum, ']'
+            endif
          endif
       end do
       ! output footer
