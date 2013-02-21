@@ -6,6 +6,11 @@ module tokenize_m
    integer,parameter :: maxtoklen = 200
    integer,parameter :: maxtok = 48
 
+   character(len=maxtoklen),private :: tokbuf(maxtok)
+   integer,private                  :: rpos = 1
+   integer,private                  :: wpos = 1
+   integer,private                  :: lun = 0
+ 
 
    contains
 
@@ -27,18 +32,43 @@ module tokenize_m
    end function antiscan
 
 
-   subroutine next_token(lun,token,lend)
-      integer,intent(in)                   :: lun
-      character(len=maxtoklen),intent(out) :: token
-      logical,intent(out)                  :: lend
-      character(len=maxlinlen)             :: line
-      character(len=maxtoklen)             :: tbuf(maxtok)
-      integer                              :: i0,i1,ntok,k
-      character(len=maxtoklen),save        :: tokbuf(maxtok)
-      integer,save                         :: rpos = 1
-      integer,save                         :: wpos = 1
-      character(len=3),parameter           :: ws = " "//ACHAR(10)//ACHAR(13)
+   subroutine init_tokenize(lun1,lend)
+      integer,intent(in)  :: lun1
+      logical,intent(out) :: lend
+      lun = lun1
+      rpos = 1
+      wpos = 1
+      call produce_tokens(lend)
+   end subroutine init_tokenize
 
+
+   subroutine get_token(token)
+      character(len=maxtoklen),intent(out) :: token
+      if (rpos==wpos) then
+         token = "(EOF)"
+      else
+         token = tokbuf(rpos)
+      endif
+   end subroutine get_token
+
+
+   subroutine next_token(lend)
+      logical,intent(out) :: lend
+      rpos = mod(rpos,maxtok)+1
+      if (rpos==wpos) then
+         call produce_tokens(lend)
+      endif
+   end subroutine next_token
+
+
+   subroutine produce_tokens(lend)
+      logical,intent(out)        :: lend
+      character(len=maxlinlen)   :: line
+      character(len=maxtoklen)   :: tbuf(maxtok)
+      integer                    :: i0,i1,ntok,k
+      character(len=3),parameter :: ws = " "//ACHAR(10)//ACHAR(13)
+
+      lend = .false.
       do while (rpos==wpos)
          ! nothing in the buffer, so read next line
          read(lun,'(a)',end=500) line
@@ -71,20 +101,14 @@ module tokenize_m
             i0 = i1+1
          enddo lineloop
       enddo
-
-      ! get token from buffer
-      lend = .false.
-      token = tokbuf(rpos)
-      rpos  = mod(rpos,maxtok)+1
       return
 
  500  lend = .true.
-      token = " "
       return
 
  600  print *, "tokbuf overflow"
       stop 1
-   end subroutine next_token
+   end subroutine produce_tokens
 
 
 
