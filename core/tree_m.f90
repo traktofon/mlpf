@@ -7,7 +7,7 @@ module tree_m
    private
 
    public :: node_t, node_tp, tree_t
-   public :: make_leaf, make_node, make_tree, examine_tree, leaf_shape
+   public :: make_leaf, make_node, make_tree, examine_tree, leaf_shape, set_maxnbasis
 
    type :: node_t
       !--- Local node-related data ---
@@ -51,8 +51,7 @@ module tree_m
    !--------------------------------------------------------------------
    function make_leaf(dofs) result(leaf)
    !--------------------------------------------------------------------
-      implicit none
-      type(node_t),pointer :: leaf   
+      type(node_t),pointer :: leaf
       integer,intent(in)   :: dofs(:)
       integer              :: ndofs,f
       ndofs = size(dofs)
@@ -71,7 +70,6 @@ module tree_m
    !--------------------------------------------------------------------
    function make_node(children) result(node)
    !--------------------------------------------------------------------
-      implicit none
       type(node_t),pointer        :: node       
       type(node_tp),intent(inout) :: children(:)
       integer                     :: nmodes,m   
@@ -92,7 +90,6 @@ module tree_m
    !--------------------------------------------------------------------
    function make_tree(topnode) result(tree)
    !--------------------------------------------------------------------
-      implicit none
       type(tree_t),pointer              :: tree                
       type(node_t),target,intent(inout) :: topnode             
       integer                           :: numnodes,numdofs,numleaves,numlayers
@@ -170,7 +167,6 @@ module tree_m
    !--------------------------------------------------------------------
    recursive subroutine set_preorder(node,seq,idx)
    !--------------------------------------------------------------------
-      implicit none
       type(node_t),target,intent(in) :: node  
       type(node_tp),intent(inout)    :: seq(:)
       integer,intent(inout)          :: idx   
@@ -192,7 +188,6 @@ module tree_m
    !--------------------------------------------------------------------
    recursive subroutine set_postorder(node,seq,idx)
    !--------------------------------------------------------------------
-      implicit none
       type(node_t),target,intent(in) :: node  
       type(node_tp),intent(inout)    :: seq(:)
       integer,intent(inout)          :: idx   
@@ -214,7 +209,6 @@ module tree_m
    !--------------------------------------------------------------------
    recursive subroutine set_layer(node,layer)
    !--------------------------------------------------------------------
-      implicit none
       type(node_t),intent(inout) :: node 
       integer,intent(in)         :: layer
       type(node_t),pointer       :: child
@@ -235,7 +229,6 @@ module tree_m
    subroutine leaf_shape(t,vdim,vlen)
    ! Returns the potential's shape according to the leaf-layer.
    !-------------------------------------------------------------------
-      implicit none
       type(tree_t),intent(in) :: t
       integer,allocatable     :: vdim(:)
       integer,intent(out)     :: vlen
@@ -249,12 +242,20 @@ module tree_m
    end subroutine leaf_shape
 
 
+   !--------------------------------------------------------------------
+   subroutine set_maxnbasis(node,maxnb)
+   !--------------------------------------------------------------------
+      type(node_t),intent(inout) :: node
+      integer,intent(in)         :: maxnb
+      node%maxnbasis = maxnb
+   end subroutine set_maxnbasis
+      
+
    !-------------------------------------------------------------------
    subroutine examine_tree(t)
    ! Print various information about the tree structure.
    ! Mainly for debugging.
    !--------------------------------------------------------------------
-      implicit none
       type(tree_t),intent(in) :: t
       integer                 :: m
       integer,save            :: logid=0

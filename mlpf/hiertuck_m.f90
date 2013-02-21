@@ -10,12 +10,11 @@ module hiertuck_m
    contains
 
    !--------------------------------------------------------------------
-   subroutine init_leaf(no,dofs,maxnbasis)
+   subroutine init_leaf(no,dofs)
    !--------------------------------------------------------------------
       implicit none
       type(node_t),intent(inout)  :: no
       type(dof_tp),intent(in)     :: dofs(:)
-      integer,intent(in),optional :: maxnbasis
       integer                     :: ndofs,f,idof
       ndofs = no%nmodes
       allocate(no%ndim(ndofs))
@@ -24,11 +23,6 @@ module hiertuck_m
          no%ndim(f) = dofs(idof)%p%gdim
       enddo
       no%plen = product(no%ndim)
-      if (present(maxnbasis)) then
-         no%maxnbasis = maxnbasis
-      else
-         no%maxnbasis = 0
-      endif
    end subroutine init_leaf
 
 
