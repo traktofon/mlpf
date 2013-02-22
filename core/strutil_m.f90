@@ -11,7 +11,7 @@ module strutil_m
    implicit none
    private
 
-   public :: antiscan, lcase, ucase, strcmpci
+   public :: antiscan, lcase, ucase, strcmpci, is_element_of
 
    integer,parameter :: ilca = ichar('a')
    integer,parameter :: ilcz = ichar('z')
@@ -121,5 +121,24 @@ module strutil_m
          cmp = 1
       endif
    end function strcmpci
+
+
+   !--------------------------------------------------------------------
+   pure function is_element_of(str,strlist)
+   ! Checks whether a given string matches (case-insensitively) one
+   ! one of the strings in strlist.
+   !--------------------------------------------------------------------
+      logical                     :: is_element_of
+      character(len=*),intent(in) :: str
+      character(len=*),intent(in) :: strlist(:)
+      integer                     :: w
+      is_element_of = .false.
+      do w=1,size(strlist)
+         if (strcmpci(str,strlist(w))==0) then
+            is_element_of = .true.
+            exit
+         endif
+      enddo
+   end function is_element_of
 
 end module strutil_m

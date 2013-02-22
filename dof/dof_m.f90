@@ -10,6 +10,7 @@ module dof_m
       real(dbl),allocatable :: w(:)
       contains
       procedure(init_dof),deferred :: init
+      procedure                    :: set_label
    end type dof_t
 
    type :: dof_tp
@@ -29,11 +30,10 @@ module dof_m
          character(len=c1),intent(in) :: tokens(:)
       end subroutine parse_dof
 
-      subroutine unpickle_dof(dof,gdim,label,ipar,rpar)
+      subroutine unpickle_dof(dof,gdim,ipar,rpar)
          import :: dof_t,dbl
          class(dof_t),pointer        :: dof
          integer,intent(in)          :: gdim
-         character(len=*),intent(in) :: label
          integer,intent(in)          :: ipar(:)
          real(dbl),intent(in)        :: rpar(:)
       end subroutine unpickle_dof
@@ -53,6 +53,13 @@ module dof_m
 
 
    contains
+
+
+   subroutine set_label(dof,label)
+      class(dof_t),intent(inout)  :: dof
+      character(len=*),intent(in) :: label
+      dof%label = label
+   end subroutine set_label
 
 
    subroutine register_doftyp(sname,id,parse,unpickle)

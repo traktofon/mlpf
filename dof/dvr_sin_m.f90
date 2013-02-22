@@ -17,6 +17,11 @@ module dvr_sin_m
 
 
    subroutine parse_sin(dof,tokens)
+   !--------------------------------------------------------------------
+   ! SINDVR :~ INTEGER ( PVALUE PVALUE ( "short" | "long )? ) | ANGLE ) "sdq"?
+   ! PVALUE :~ REAL ( "," UNIT )?
+   ! ANGLE  :~ "2pi" | "2pi/"+INTEGER
+   !--------------------------------------------------------------------
       class(dof_t),pointer        :: dof
       character(len=*),intent(in) :: tokens(:)
       allocate(dvr_sin_t::dof)
@@ -24,15 +29,13 @@ module dvr_sin_m
    end subroutine parse_sin
 
 
-   subroutine unpickle_sin(dof,gdim,label,ipar,rpar)
+   subroutine unpickle_sin(dof,gdim,ipar,rpar)
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
-      character(len=*),intent(in) :: label
       integer,intent(in)          :: ipar(:)
       real(dbl),intent(in)        :: rpar(:)
       allocate(dvr_sin_t::dof)
       dof%gdim  = gdim
-      dof%label = label
       select type(dof)
       type is (dvr_sin_t)
       dof%xi   = rpar(1)
