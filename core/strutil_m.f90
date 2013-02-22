@@ -1,9 +1,17 @@
+!=======================================================================
 module strutil_m
+!=======================================================================
+!
+! Several character string related utility procedures.
+!
+! FO 02/2013
+!
+!=======================================================================
 
    implicit none
    private
 
-   public :: lcase,ucase,strcmpci
+   public :: antiscan, lcase, ucase, strcmpci
 
    integer,parameter :: ilca = ichar('a')
    integer,parameter :: ilcz = ichar('z')
@@ -12,7 +20,31 @@ module strutil_m
 
    contains
 
+
+   !--------------------------------------------------------------------
+   function antiscan(string,set) result (pos)
+   ! Return position of first character in string that does *not* belong
+   ! to set, or zero if there is no such character.
+   ! This is kindof the opposite of the "scan" intrinsic procedure.
+   !--------------------------------------------------------------------
+      character(len=*),intent(in) :: string,set
+      integer                     :: pos
+      integer                     :: i,k
+      pos = 0
+      strloop: do i=1,len(string)
+         do k=1,len(set)
+            if (string(i:i) == set(k:k)) cycle strloop
+         enddo
+         pos = i
+         exit
+      enddo strloop
+   end function antiscan
+
+
+   !--------------------------------------------------------------------
    pure function lc(c)
+   ! Return lower-cased version of character.
+   !--------------------------------------------------------------------
       character,intent(in) :: c
       character            :: lc
       integer              :: i
@@ -23,7 +55,10 @@ module strutil_m
    end function lc
 
 
+   !--------------------------------------------------------------------
    pure function uc(c)
+   ! Return upper-cased version of character.
+   !--------------------------------------------------------------------
       character,intent(in) :: c
       character            :: uc
       integer              :: i
@@ -34,7 +69,10 @@ module strutil_m
    end function uc
 
 
+   !--------------------------------------------------------------------
    subroutine lcase(str)
+   ! Convert given string to lower case.
+   !--------------------------------------------------------------------
       character(len=*),intent(inout) :: str
       integer                        :: i
       do i=1,len(str)
@@ -43,7 +81,10 @@ module strutil_m
    end subroutine lcase
 
 
+   !--------------------------------------------------------------------
    subroutine ucase(str)
+   ! Convert given string to upper case.
+   !--------------------------------------------------------------------
       character(len=*),intent(inout) :: str
       integer                        :: i
       do i=1,len(str)
@@ -52,7 +93,10 @@ module strutil_m
    end subroutine ucase
 
 
+   !--------------------------------------------------------------------
    pure function strcmpci(a,b) result(cmp)
+   ! Compare strings a and b case-insensitively.
+   !--------------------------------------------------------------------
       character(len=*),intent(in) :: a,b
       integer                     :: cmp
       character                   :: ca,cb
