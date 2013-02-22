@@ -8,19 +8,20 @@ module tokenize_m
    integer,parameter :: maxtok = 48
 
    character(len=maxtoklen),private :: tokbuf(maxtok)
-   integer,private                  :: rpos = 1
-   integer,private                  :: wpos = 1
+   integer,private                  :: rpos
+   integer,private                  :: wpos
    character(len=maxtoklen),private :: stoptoks(maxtok)
-   integer,private                  :: nstop = 0
+   integer,private                  :: nstop
    character(len=maxtoklen),private :: ignotoks(maxtok)
-   integer,private                  :: nigno = 0
-   integer,private                  :: lun = 0
+   integer,private                  :: nigno
+   integer,private                  :: lun
+   integer,private                  :: currentlinenumber
+   character(len=maxlinlen),private :: currentline
  
 
    contains
 
-   !pure function is_element_of(str,strlist)
-   function is_element_of(str,strlist)
+   pure function is_element_of(str,strlist)
       logical                     :: is_element_of
       character(len=*),intent(in) :: str
       character(len=*),intent(in) :: strlist(:)
@@ -43,6 +44,7 @@ module tokenize_m
       wpos = 1
       nstop = 0
       nigno = 0
+      currentlinenumber = 0
       call produce_tokens(lend)
    end subroutine init_tokenize
 
@@ -63,7 +65,7 @@ module tokenize_m
 
    function is_stopped()
       logical :: is_stopped
-      is_stopped = is_element_of(tokbuf(rpos), stoptoks(1:nstop))
+      is_stopped = (rpos==wpos) .or. is_element_of(tokbuf(rpos), stoptoks(1:nstop))
    end function is_stopped
 
 
@@ -109,6 +111,10 @@ module tokenize_m
       do while (rpos==wpos)
          ! nothing in the buffer, so read next line
          read(lun,'(a)',end=500) line
+         ! store info (for parse_error)
+         currentlinenumber = currentlinenumber + 1
+         currentline = line
+         ! process the line
          i0 = 1
          lineloop: do while (i0 <= maxlinlen)
             ! find next non-whitespace
@@ -134,7 +140,7 @@ module tokenize_m
                tokbuf(wpos) = tbuf(k)
                wpos = mod(wpos,maxtok)+1
                if (wpos==rpos) goto 600
-            enddo
+               enddo
             ! continue processing the line
             i0 = i1+1
          enddo lineloop
@@ -147,9 +153,9 @@ module tokenize_m
 
  500  lend = .true.
       return
+ 
+ 600  call parse_error("too many tokens")
 
- 600  print *, "tokbuf overflow"
-      stop 1
    end subroutine produce_tokens
 
 
@@ -192,6 +198,18 @@ module tokenize_m
       is_comment = .false.
       if (token(1:1) == "#") is_comment = .true.
    end function is_comment
+
+
+   subroutine parse_error(msg)
+      character(len=*),intent(in) :: msg
+      character(len=maxtoklen)    :: token
+      call get_token(token)
+      write (*,'(4a,/,3x,a,i0,a,/,3x,3a)') &
+         'Parse Error at "',trim(token),'": ',trim(msg), &
+         'encountered at line ',currentlinenumber,', which reads:', &
+         '"',trim(currentline),'"'
+      stop 1
+   end subroutine parse_error
 
 
 end module tokenize_m
