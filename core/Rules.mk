@@ -4,6 +4,7 @@ DEP := $(dd)/Deps.mk
 
 SOURCES := \
    base_m.f90 \
+   strutil_m.f90 \
    logging_m.f90 \
    linear_m.f90 \
    modeutil_m.f90 \
