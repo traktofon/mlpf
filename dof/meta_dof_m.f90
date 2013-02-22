@@ -22,7 +22,8 @@ module meta_dof_m
       character(len=*),intent(in) :: label
       integer,intent(in)          :: gdim
       real(dbl),intent(in)        :: xi,xf
-      call unpickle_sin(dof,gdim,label,[0],[xi,xf])
+      call unpickle_sin(dof,gdim,[0],[xi,xf])
+      call dof%set_label(label)
       call dof%init
    end function new_dof
 

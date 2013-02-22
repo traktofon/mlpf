@@ -46,7 +46,8 @@ module dof_io_m
          if (.not.associated(doftyp)) &
             call stopnow("rddvrdef : unknown basis type")
          unpickle => doftyp%unpickle
-         call unpickle(dofs(f)%p, gdim(f), modelabel(f), ipbaspar(:,f), rpbaspar(:,f))
+         call unpickle(dofs(f)%p, gdim(f), ipbaspar(:,f), rpbaspar(:,f))
+         call dofs(f)%p%set_label(modelabel(f))
       enddo
 
       deallocate(xend,rpbaspar,ipbaspar,basis,gdim,modelabel)

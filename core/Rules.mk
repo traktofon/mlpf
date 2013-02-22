@@ -6,6 +6,7 @@ SOURCES := \
    base_m.f90 \
    strutil_m.f90 \
    logging_m.f90 \
+   tokenize_m.f90 \
    linear_m.f90 \
    modeutil_m.f90 \
    tree_m.f90 \

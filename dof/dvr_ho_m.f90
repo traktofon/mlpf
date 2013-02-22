@@ -24,16 +24,14 @@ module dvr_ho_m
    end subroutine parse_ho
 
 
-   subroutine unpickle_ho(dof,gdim,label,ipar,rpar)
+   subroutine unpickle_ho(dof,gdim,ipar,rpar)
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
-      character(len=*),intent(in) :: label
       integer,intent(in)          :: ipar(:)
       real(dbl),intent(in)        :: rpar(:)
       real(dbl)                   :: xi,xf
       allocate(dvr_ho_t::dof)
       dof%gdim  = gdim
-      dof%label = label
       select type(dof)
       type is (dvr_ho_t)
       dof%typ  = ipar(1)
