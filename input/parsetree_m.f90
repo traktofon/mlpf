@@ -39,7 +39,7 @@ module parsetree_m
          call get_token(token)
          ! match with modelabels
          f = get_dofnum_by_label(token)
-         if (f==0) call parserror("expected valid modelabel")
+         if (f==0) call parse_error("expected valid modelabel")
          ! store dof number
          nf = nf+1
          fs(nf) = f
@@ -60,7 +60,7 @@ module parsetree_m
       integer                  :: nm,maxnb,ierr
       type(node_tp)            :: ms(16)
       logical                  :: lend
-      if (is_stopped()) call parserror("expected mode definition")
+      if (is_stopped()) call parse_error("expected start or end of mode definition")
       call get_token(token)
       if (token == "(") then
          nm = 0
@@ -83,20 +83,11 @@ module parsetree_m
          call next_token(lend)
          call get_token(token)
          read (token,*,iostat=ierr) maxnb
-         if (ierr/=0) call parserror("expected integer")
+         if (ierr/=0) call parse_error("expected integer")
          call set_maxnbasis(node,maxnb)
          call next_token(lend)
       endif
    end function parse_node
-
-
-   subroutine parserror(msg)
-      character(len=*),intent(in) :: msg
-      character(len=maxtoklen)    :: token
-      call get_token(token)
-      write (*,'(4a)') 'Parse Error at "',trim(token),'": ',trim(msg)
-      stop 1
-   end subroutine parserror
 
 
 end module parsetree_m
