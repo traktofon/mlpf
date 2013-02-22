@@ -1,5 +1,6 @@
 module tokenize_m
 
+   use strutil_m
    implicit none
 
    integer,parameter :: maxlinlen = 240
@@ -9,27 +10,29 @@ module tokenize_m
    character(len=maxtoklen),private :: tokbuf(maxtok)
    integer,private                  :: rpos = 1
    integer,private                  :: wpos = 1
+   character(len=maxtoklen),private :: stoptoks(maxtok)
+   integer,private                  :: nstop = 0
+   character(len=maxtoklen),private :: ignotoks(maxtok)
+   integer,private                  :: nigno = 0
    integer,private                  :: lun = 0
  
 
    contains
 
-
-   function antiscan(string,set) result (pos)
-   ! return position of first character in string that does *not* belong to set
-   ! or zero if there is no such character
-      character(len=*),intent(in) :: string,set
-      integer                     :: pos
-      integer                     :: i,k
-      pos = 0
-      strloop: do i=1,len(string)
-         do k=1,len(set)
-            if (string(i:i) == set(k:k)) cycle strloop
-         enddo
-         pos = i
-         exit
-      enddo strloop
-   end function antiscan
+   !pure function is_element_of(str,strlist)
+   function is_element_of(str,strlist)
+      logical                     :: is_element_of
+      character(len=*),intent(in) :: str
+      character(len=*),intent(in) :: strlist(:)
+      integer                     :: w
+      is_element_of = .false.
+      do w=1,size(strlist)
+         if (strcmpci(str,strlist(w))==0) then
+            is_element_of = .true.
+            exit
+         endif
+      enddo
+   end function is_element_of
 
 
    subroutine init_tokenize(lun1,lend)
@@ -38,25 +41,59 @@ module tokenize_m
       lun = lun1
       rpos = 1
       wpos = 1
+      nstop = 0
+      nigno = 0
       call produce_tokens(lend)
    end subroutine init_tokenize
 
 
+   subroutine set_stoptoks(words)
+      character(len=*),intent(in) :: words(:)
+      nstop = size(words)
+      if (nstop>0) stoptoks(1:nstop) = words(:)
+   end subroutine set_stoptoks
+
+
+   subroutine set_ignotoks(words)
+      character(len=*),intent(in) :: words(:)
+      nigno = size(words)
+      if (nigno>0) ignotoks(1:nigno) = words(:)
+   end subroutine set_ignotoks
+
+
+   function is_stopped()
+      logical :: is_stopped
+      is_stopped = is_element_of(tokbuf(rpos), stoptoks(1:nstop))
+   end function is_stopped
+
+
    subroutine get_token(token)
       character(len=maxtoklen),intent(out) :: token
-      if (rpos==wpos) then
-         token = "(EOF)"
-      else
-         token = tokbuf(rpos)
-      endif
+      logical                              :: lend
+      do
+         if (rpos==wpos) then
+            token = "(EOF)"
+            exit
+         else
+            token = tokbuf(rpos)
+            if (is_stopped()) exit
+            if (.not. is_element_of(token, ignotoks(1:nigno))) exit
+            call next_token(lend)
+         endif
+      enddo
    end subroutine get_token
 
 
    subroutine next_token(lend)
       logical,intent(out) :: lend
-      rpos = mod(rpos,maxtok)+1
-      if (rpos==wpos) then
-         call produce_tokens(lend)
+      if (is_stopped()) then
+         lend = .true.
+      else
+         lend = .false.
+         rpos = mod(rpos,maxtok)+1
+         if (rpos==wpos) then
+            call produce_tokens(lend)
+         endif
       endif
    end subroutine next_token
 
@@ -91,6 +128,7 @@ module tokenize_m
             endif
             ! something is at line(i0:i1)
             call split_word(line(i0:i1), tbuf, ntok)
+            ! insert tokens into ringbuffer
             do k=1,ntok
                if (is_comment(tbuf(k))) exit lineloop ! skip rest of line
                tokbuf(wpos) = tbuf(k)
@@ -100,6 +138,10 @@ module tokenize_m
             ! continue processing the line
             i0 = i1+1
          enddo lineloop
+         ! insert EOL marker
+         tokbuf(wpos) = "(EOL)"
+         wpos = mod(wpos,maxtok)+1
+         if (wpos==rpos) goto 600
       enddo
       return
 
