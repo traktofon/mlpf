@@ -60,6 +60,7 @@ module parsetree_m
       integer                  :: nm,maxnb,ierr
       type(node_tp)            :: ms(16)
       logical                  :: lend
+      if (is_stopped()) call parserror("expected mode definition")
       call get_token(token)
       if (token == "(") then
          nm = 0
