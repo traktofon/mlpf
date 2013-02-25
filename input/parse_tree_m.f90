@@ -1,4 +1,4 @@
-module parsetree_m
+module parse_tree_m
 
 ! leaf ::= MODELABEL ( "," MODELABEL )*
 ! node ::= ( leaf | "(" node node* ")" ) ( "=" INTEGER )?
@@ -47,7 +47,7 @@ module parsetree_m
       type(dof_tp),intent(in)         :: dofs(:)
       type(node_t),pointer            :: node
       character(len=maxtoklen)        :: token
-      integer                         :: nm,maxnb,ierr
+      integer                         :: nm,maxnb
       type(node_tp)                   :: ms(16)
       if (t%is_stopped()) &
          call t%error("expected start or end of mode definition")
@@ -71,13 +71,10 @@ module parsetree_m
       token = t%get()
       if (token == "=") then
          call t%gofwd
-         token = t%get()
-         read (token,*,iostat=ierr) maxnb
-         if (ierr/=0) call t%error("expected integer")
+         maxnb = parse_int(t)
          call set_maxnbasis(node,maxnb)
-         call t%gofwd
       endif
    end function parse_node
 
 
-end module parsetree_m
+end module parse_tree_m

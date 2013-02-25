@@ -2,6 +2,8 @@ module dvr_ho_m
 
    use dvr_m
    use dof_m
+   use tokenize_m
+   use units_m
    use base_m
    implicit none
 
@@ -16,11 +18,39 @@ module dvr_ho_m
    contains
 
 
-   subroutine parse_ho(dof,tokens)
-      class(dof_t),pointer        :: dof
-      character(len=*),intent(in) :: tokens(:)
+   !--------------------------------------------------------------------
+   subroutine parse_ho(dof,tkner)
+   !--------------------------------------------------------------------
+   ! hodvr :~ "xi-xf" length length | length energy mass?
+   !--------------------------------------------------------------------
+      class(dof_t),pointer            :: dof
+      type(tokenizer_t),intent(inout) :: tkner
+      character(len=maxtoklen) :: token
+      real(dbl) :: r1,r2,r3
+
       allocate(dvr_ho_t::dof)
-      call stopnow("dvr_ho_m::parse not implemented")
+      select type(dof)
+      type is (dvr_ho_t)
+
+      dof%gdim = parse_int(tkner)
+      token = tkner%get()
+      if (strcmpci(token,"xi-xf")==0) then
+         call tkner%gofwd
+         r1 = parse_length(tkner)
+         r2 = parse_length(tkner)
+         dof%typ = 1
+         dof%xeq = 0.5d0*(r1+r2)
+         dof%fm = r2-r1
+      else
+         r1 = parse_length(tkner)
+         r2 = parse_energy(tkner)
+         r3 = parse_mass(tkner, dflt=1.d0)
+         dof%typ = 0
+         dof%xeq = r1
+         dof%fm = r2*r3
+      endif
+
+      end select
    end subroutine parse_ho
 
 
