@@ -1,7 +1,7 @@
 module parsetree_m
 
-! leaf ::= MODELABEL [ "," MODELABEL ]*
-! node ::= { leaf | "(" node [ node ]* ")" } [ "=" INTEGER ]
+! leaf ::= MODELABEL ( "," MODELABEL )*
+! node ::= ( leaf | "(" node node* ")" ) ( "=" INTEGER )?
 
    use tokenize_m
    use tree_m
@@ -26,66 +26,66 @@ module parsetree_m
    end function get_dofnum_by_label
 
 
-   function parse_leaf() result(leaf)
-      type(node_t),pointer     :: leaf
-      character(len=maxtoklen) :: token
-      integer                  :: f,nf
-      integer                  :: fs(16)
-      logical                  :: lend
+   function parse_leaf(t) result(leaf)
+      type(tokenizer_t),intent(inout) :: t
+      type(node_t),pointer            :: leaf
+      character(len=maxtoklen)        :: token
+      integer                         :: f,nf
+      integer                         :: fs(16)
       nf = 0
-      lend = .false.
-      do while (.not.lend)
+      do while (.not. t%is_stopped())
          ! read current token
-         call get_token(token)
+         token = t%get()
          ! match with modelabels
          f = get_dofnum_by_label(token)
-         if (f==0) call parse_error("expected valid modelabel")
+         if (f==0) call t%error("expected valid modelabel")
          ! store dof number
          nf = nf+1
          fs(nf) = f
          ! continue parsing
-         call next_token(lend)
-         call get_token(token)
+         call t%gofwd
+         token = t%get()
          if (token /= ",") exit
-         call next_token(lend)
+         call t%gofwd
       enddo
       ! create leaf 
       leaf => make_leaf(fs(1:nf))
    end function parse_leaf
 
 
-   recursive function parse_node() result(node)
-      type(node_t),pointer     :: node
-      character(len=maxtoklen) :: token
-      integer                  :: nm,maxnb,ierr
-      type(node_tp)            :: ms(16)
-      logical                  :: lend
-      if (is_stopped()) call parse_error("expected start or end of mode definition")
-      call get_token(token)
+   recursive function parse_node(t) result(node)
+      type(tokenizer_t),intent(inout) :: t
+      type(node_t),pointer            :: node
+      character(len=maxtoklen)        :: token
+      integer                         :: nm,maxnb,ierr
+      type(node_tp)                   :: ms(16)
+      if (t%is_stopped()) &
+         call t%error("expected start or end of mode definition")
+      token = t%get()
       if (token == "(") then
          nm = 0
-         call next_token(lend)
+         call t%gofwd
          do
             nm = nm+1
-            ms(nm)%p => parse_node()
-            call get_token(token)
+            ms(nm)%p => parse_node(t)
+            token = t%get()
             if (token == ")") then
-               call next_token(lend)
+               call t%gofwd
                exit
             endif
          enddo
          node => make_node(ms(1:nm))
       else
-         node => parse_leaf()
+         node => parse_leaf(t)
       endif
-      call get_token(token)
+      token = t%get()
       if (token == "=") then
-         call next_token(lend)
-         call get_token(token)
+         call t%gofwd
+         token = t%get()
          read (token,*,iostat=ierr) maxnb
-         if (ierr/=0) call parse_error("expected integer")
+         if (ierr/=0) call t%error("expected integer")
          call set_maxnbasis(node,maxnb)
-         call next_token(lend)
+         call t%gofwd
       endif
    end function parse_node
 

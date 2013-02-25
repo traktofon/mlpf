@@ -8,19 +8,23 @@ module tokenize_m
    integer,parameter :: maxtok = 48
 
    type :: tokenizer_t
-      character(len=maxtoklen)             :: tokbuf(maxtok)
-      integer                              :: rpos
-      integer                              :: wpos
-      character(len=maxtoklen),allocatable :: stoptoks(:)
-      character(len=maxtoklen),allocatable :: ignotoks(:)
-      integer                              :: lun
-      integer                              :: linenumber
-      character(len=maxlinlen)             :: currentline
-      logical                              :: lend
+      character(len=maxtoklen) :: tokbuf(maxtok)
+      integer                  :: rpos
+      integer                  :: wpos
+      character(len=maxtoklen) :: stoptoks(maxtok)
+      integer                  :: nstop
+      character(len=maxtoklen) :: ignotoks(maxtok)
+      integer                  :: nigno
+      integer                  :: lun
+      integer                  :: linenumber
+      character(len=maxlinlen) :: currentline
+      logical                  :: stopped
       contains
       procedure :: init
-      procedure :: set_stop
-      procedure :: set_igno
+      procedure :: add_stop
+      procedure :: add_igno
+      procedure :: clear_stop
+      procedure :: clear_igno
       procedure :: is_stopped
       procedure :: get
       procedure :: put
@@ -41,37 +45,54 @@ module tokenize_m
       t%rpos = 1
       t%wpos = 1
       t%linenumber = 0
-      allocate(t%stoptoks(0))
-      allocate(t%ignotoks(0))
+      t%stopped = .false.
+      call t%clear_stop
+      call t%clear_igno
       call t%produce
    end subroutine init
 
 
-   subroutine set_stop(t,words)
+   subroutine clear_stop(t)
       class(tokenizer_t),intent(inout) :: t
-      character(len=*),intent(in)      :: words(:)
-      if (allocated(t%stoptoks)) &
-         deallocate(t%stoptoks)
-      allocate(t%stoptoks(size(words)))
-      t%stoptoks(:) = words(:)
-   end subroutine set_stop
+      t%nstop = 0
+   end subroutine clear_stop
 
 
-   subroutine set_igno(t,words)
+   subroutine add_stop(t,word)
       class(tokenizer_t),intent(inout) :: t
-      character(len=*),intent(in)      :: words(:)
-      if (allocated(t%ignotoks)) &
-         deallocate(t%ignotoks)
-      allocate(t%ignotoks(size(words)))
-      t%ignotoks(:) = words(:)
-   end subroutine set_igno
+      character(len=*),intent(in)      :: word
+      if (t%nstop == maxtok) &
+         call t%error("too many stop-tokens")
+      t%nstop = t%nstop + 1
+      t%stoptoks(t%nstop) = word
+   end subroutine add_stop
+
+
+   subroutine clear_igno(t)
+      class(tokenizer_t),intent(inout) :: t
+      t%nigno = 0
+   end subroutine clear_igno
+
+
+   subroutine add_igno(t,word)
+      class(tokenizer_t),intent(inout) :: t
+      character(len=*),intent(in)      :: word
+      if (t%nigno == maxtok) &
+         call t%error("too many ignore-tokens")
+      t%nigno = t%nigno + 1
+      t%ignotoks(t%nigno) = word
+   end subroutine add_igno
 
 
    function is_stopped(t)
-      class(tokenizer_t),intent(in) :: t
-      logical                       :: is_stopped
-      is_stopped = t%rpos==t%wpos .or. &
-                   is_element_of(t%tokbuf(t%rpos), t%stoptoks)
+      class(tokenizer_t),intent(inout) :: t
+      logical                          :: is_stopped
+      if (.not. t%stopped) then
+         ! check again
+         t%stopped = t%rpos==t%wpos .or. &
+                     is_element_of(t%tokbuf(t%rpos), t%stoptoks(1:t%nstop))
+      endif
+      is_stopped = t%stopped
    end function is_stopped
 
 
@@ -84,7 +105,7 @@ module tokenize_m
             exit
          else
             token = t%tokbuf(t%rpos)
-            if (.not. is_element_of(token, t%ignotoks)) exit
+            if (.not. is_element_of(token, t%ignotoks(1:t%nigno))) exit
             call t%gofwd
          endif
       enddo
@@ -97,6 +118,7 @@ module tokenize_m
       t%tokbuf(t%wpos) = token
       t%wpos = mod(t%wpos,maxtok)+1
       if (t%wpos==t%rpos) call t%error("too many tokens")
+      t%stopped = .false.
    end subroutine put
 
 
