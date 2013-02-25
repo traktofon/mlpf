@@ -1,6 +1,7 @@
 module tokenize_m
 
    use strutil_m
+   use base_m
    implicit none
 
    integer,parameter :: maxlinlen = 240
@@ -55,6 +56,7 @@ module tokenize_m
    subroutine clear_stop(t)
       class(tokenizer_t),intent(inout) :: t
       t%nstop = 0
+      t%stopped = .false.
    end subroutine clear_stop
 
 
@@ -190,7 +192,7 @@ module tokenize_m
          'Parse Error at "',trim(token),'": ',trim(msg), &
          'encountered at line ',t%linenumber,', which reads:', &
          '"',trim(t%currentline),'"'
-      stop 1
+      call stopnow("Input Error")
    end subroutine error
 
 
@@ -215,14 +217,11 @@ module tokenize_m
             i1 = i0+i1-2
          endif
          ntok = ntok+1
-         if (ntok>tlen) goto 600
+         if (ntok>tlen) call stopnow("tbuf overflow")
          toks(ntok) = word(i0:i1)
          i0 = i1+1
       enddo
       return
-
- 600  print *, "tbuf overflow"
-      stop 1
    end subroutine split_word
 
 
@@ -233,5 +232,30 @@ module tokenize_m
       if (token(1:1) == "#") is_comment = .true.
    end function is_comment
 
+
+   function parse_int(t) result(val)
+      type(tokenizer_t),intent(inout) :: t
+      integer                         :: val
+      character(len=maxtoklen)        :: token
+      integer                         :: ierr
+      token = t%get()
+      read(token,*,iostat=ierr) val
+      if (ierr/=0) call t%error("expected integer number")
+      call t%gofwd
+      return
+   end function parse_int
+
+
+   function parse_real(t) result(val)
+      type(tokenizer_t),intent(inout) :: t
+      real(dbl)                       :: val
+      character(len=maxtoklen)        :: token
+      integer                         :: ierr
+      token = t%get()
+      read(token,*,iostat=ierr) val
+      if (ierr/=0) call t%error("expected real number")
+      call t%gofwd
+      return
+   end function parse_real
 
 end module tokenize_m

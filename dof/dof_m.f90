@@ -1,6 +1,7 @@
 module dof_m
 
    use base_m
+   use tokenize_m
    implicit none
 
    type,abstract :: dof_t
@@ -24,10 +25,10 @@ module dof_m
          class(dof_t),intent(inout) :: dof
       end subroutine init_dof
 
-      subroutine parse_dof(dof,tokens)
-         import :: dof_t,c1
-         class(dof_t),pointer         :: dof
-         character(len=c1),intent(in) :: tokens(:)
+      subroutine parse_dof(dof,tkner)
+         import :: dof_t,tokenizer_t
+         class(dof_t),pointer            :: dof
+         type(tokenizer_t),intent(inout) :: tkner
       end subroutine parse_dof
 
       subroutine unpickle_dof(dof,gdim,ipar,rpar)

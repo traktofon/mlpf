@@ -2,6 +2,7 @@ module dvr_sin_m
 
    use dvr_m
    use dof_m
+   use tokenize_m
    use base_m
    implicit none
 
@@ -16,14 +17,14 @@ module dvr_sin_m
    contains
 
 
-   subroutine parse_sin(dof,tokens)
+   subroutine parse_sin(dof,tkner)
    !--------------------------------------------------------------------
    ! SINDVR :~ INTEGER ( PVALUE PVALUE ( "short" | "long )? ) | ANGLE ) "sdq"?
    ! PVALUE :~ REAL ( "," UNIT )?
    ! ANGLE  :~ "2pi" | "2pi/"+INTEGER
    !--------------------------------------------------------------------
-      class(dof_t),pointer        :: dof
-      character(len=*),intent(in) :: tokens(:)
+      class(dof_t),pointer            :: dof
+      type(tokenizer_t),intent(inout) :: tkner
       allocate(dvr_sin_t::dof)
       call stopnow("dvr_sin_m::parse not implemented")
    end subroutine parse_sin

@@ -2,6 +2,7 @@ module dvr_exp_m
 
    use dvr_m
    use dof_m
+   use tokenize_m
    use base_m
    implicit none
 
@@ -15,9 +16,9 @@ module dvr_exp_m
    contains
 
 
-   subroutine parse_exp(dof,tokens)
-      class(dof_t),pointer        :: dof
-      character(len=*),intent(in) :: tokens(:)
+   subroutine parse_exp(dof,tkner)
+      class(dof_t),pointer            :: dof
+      type(tokenizer_t),intent(inout) :: tkner
       allocate(dvr_exp_t::dof)
       call stopnow("dvr_exp_m::parse not implemented")
    end subroutine parse_exp
