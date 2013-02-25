@@ -62,6 +62,21 @@ module dof_m
    end subroutine set_label
 
 
+   function find_dofnum_by_label(label,dofs) result(dofnum)
+      character(len=*),intent(in) :: label
+      type(dof_tp),intent(in)     :: dofs(:)
+      integer                     :: dofnum
+      integer                     :: f
+      dofnum = 0
+      do f=1,size(dofs)
+         if (label == dofs(f)%p%label) then
+            dofnum = f
+            return
+         endif
+      enddo
+   end function find_dofnum_by_label
+
+
    subroutine register_doftyp(sname,id,parse,unpickle)
       character(len=*),intent(in)     :: sname
       integer                         :: id
@@ -79,7 +94,7 @@ module dof_m
    end subroutine register_doftyp
 
 
-   function find_doftyp_by_sname(sname) result(doftyp)
+   function find_doftyp_by_name(sname) result(doftyp)
       type(doftyp_t),pointer      :: doftyp
       character(len=*),intent(in) :: sname
       integer                     :: i
@@ -90,7 +105,7 @@ module dof_m
             return
          endif
       enddo
-   end function find_doftyp_by_sname
+   end function find_doftyp_by_name
 
 
    function find_doftyp_by_id(id) result(doftyp)

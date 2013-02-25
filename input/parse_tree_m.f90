@@ -10,24 +10,13 @@ module parsetree_m
    use base_m
    implicit none
 
-   type(dof_tp) :: dofs(99)
-   integer      :: ndof = 0
 
    contains
 
 
-   ! placeholder
-   function get_dofnum_by_label(lbl) result (f)
-      character(len=*),intent(in) :: lbl
-      integer                     :: f
-      ndof = ndof+1
-      dofs(ndof)%p => new_dof(trim(lbl), 10, 0.d0, 1.d0)
-      f = ndof
-   end function get_dofnum_by_label
-
-
-   function parse_leaf(t) result(leaf)
+   function parse_leaf(t,dofs) result(leaf)
       type(tokenizer_t),intent(inout) :: t
+      type(dof_tp),intent(in)         :: dofs(:)
       type(node_t),pointer            :: leaf
       character(len=maxtoklen)        :: token
       integer                         :: f,nf
@@ -37,7 +26,7 @@ module parsetree_m
          ! read current token
          token = t%get()
          ! match with modelabels
-         f = get_dofnum_by_label(token)
+         f = find_dofnum_by_label(token,dofs)
          if (f==0) call t%error("expected valid modelabel")
          ! store dof number
          nf = nf+1
@@ -53,8 +42,9 @@ module parsetree_m
    end function parse_leaf
 
 
-   recursive function parse_node(t) result(node)
+   recursive function parse_node(t,dofs) result(node)
       type(tokenizer_t),intent(inout) :: t
+      type(dof_tp),intent(in)         :: dofs(:)
       type(node_t),pointer            :: node
       character(len=maxtoklen)        :: token
       integer                         :: nm,maxnb,ierr
@@ -67,7 +57,7 @@ module parsetree_m
          call t%gofwd
          do
             nm = nm+1
-            ms(nm)%p => parse_node(t)
+            ms(nm)%p => parse_node(t,dofs)
             token = t%get()
             if (token == ")") then
                call t%gofwd
@@ -76,7 +66,7 @@ module parsetree_m
          enddo
          node => make_node(ms(1:nm))
       else
-         node => parse_leaf(t)
+         node => parse_leaf(t,dofs)
       endif
       token = t%get()
       if (token == "=") then
