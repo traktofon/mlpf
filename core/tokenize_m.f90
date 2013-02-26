@@ -8,6 +8,10 @@ module tokenize_m
    integer,parameter :: maxtoklen = 200
    integer,parameter :: maxtok = 48
 
+   integer,parameter :: STOPREASON_NONE     = 0
+   integer,parameter :: STOPREASON_STOPWORD = 1
+   integer,parameter :: STOPREASON_EOF      = 2
+
    type :: tokenizer_t
       character(len=maxtoklen) :: tokbuf(maxtok)
       integer                  :: rpos
@@ -16,6 +20,7 @@ module tokenize_m
       integer                  :: nstop
       character(len=maxtoklen) :: ignotoks(maxtok)
       integer                  :: nigno
+      character(len=c5)        :: filename
       integer                  :: lun
       integer                  :: linenumber
       character(len=maxlinlen) :: currentline
@@ -27,6 +32,7 @@ module tokenize_m
       procedure :: clear_stop
       procedure :: clear_igno
       procedure :: is_stopped
+      procedure :: stopreason
       procedure :: get
       procedure :: put
       procedure :: gofwd
@@ -39,16 +45,19 @@ module tokenize_m
    contains
 
 
-   subroutine init(t,lun)
+   subroutine init(t,filename)
       class(tokenizer_t),intent(inout) :: t
-      integer,intent(in)               :: lun
-      t%lun = lun
+      character(len=*),intent(in)      :: filename
+      integer :: ierr
+      t%filename = trim(filename)
+      t%linenumber = 0
       t%rpos = 1
       t%wpos = 1
-      t%linenumber = 0
       t%stopped = .false.
       call t%clear_stop
       call t%clear_igno
+      open(newunit=t%lun, file=trim(filename), form="formatted", status="old", iostat=ierr)
+      if (ierr/=0) call stopnow('cannot open file "'//trim(filename)//'"')
       call t%produce
    end subroutine init
 
@@ -96,6 +105,19 @@ module tokenize_m
       endif
       is_stopped = t%stopped
    end function is_stopped
+
+
+   function stopreason(t)
+      class(tokenizer_t),intent(in) :: t
+      integer                       :: stopreason
+      if (t%rpos == t%wpos) then
+         stopreason = STOPREASON_EOF
+      elseif (is_element_of(t%tokbuf(t%rpos), t%stoptoks(1:t%nstop))) then
+         stopreason = STOPREASON_STOPWORD
+      else
+         stopreason = STOPREASON_NONE
+      endif
+   end function stopreason
 
 
    function get(t) result (token)
@@ -188,10 +210,15 @@ module tokenize_m
       class(tokenizer_t),intent(in) :: t
       character(len=*),intent(in)   :: msg
       character(len=maxtoklen)      :: token
-      token = t%tokbuf(t%rpos)
-      write (*,'(4a,/,3x,a,i0,a,/,3x,3a)') &
+      if (t%stopreason() == STOPREASON_EOF) then
+         token = "(EOF)"
+      else
+         token = t%tokbuf(t%rpos)
+      endif
+      write (*,'(4a,/,3x,a,i0,3a,/,3x,3a)') &
          'Parse Error at "',trim(token),'": ',trim(msg), &
-         'encountered at line ',t%linenumber,', which reads:', &
+         'encountered at line ',t%linenumber,&
+         ' of file "',trim(t%filename),'", reading:', &
          '"',trim(t%currentline),'"'
       call stopnow("Input Error")
    end subroutine error
