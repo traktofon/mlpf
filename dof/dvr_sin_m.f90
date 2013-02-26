@@ -3,6 +3,7 @@ module dvr_sin_m
    use dvr_m
    use dof_m
    use tokenize_m
+   use units_m
    use base_m
    implicit none
 
@@ -17,16 +18,47 @@ module dvr_sin_m
    contains
 
 
+   !--------------------------------------------------------------------
    subroutine parse_sin(dof,tkner)
    !--------------------------------------------------------------------
-   ! SINDVR :~ INTEGER ( PVALUE PVALUE ( "short" | "long )? ) | ANGLE ) "sdq"?
-   ! PVALUE :~ REAL ( "," UNIT )?
-   ! ANGLE  :~ "2pi" | "2pi/"+INTEGER
+   ! sindvr :~ INTEGER ( length length ( "short" | "long )? ) | angle ) "sdq"?
    !--------------------------------------------------------------------
       class(dof_t),pointer            :: dof
       type(tokenizer_t),intent(inout) :: tkner
+      character(len=maxtoklen)        :: token
+      real(dbl) :: r1,dx
+      logical :: have2pi
       allocate(dvr_sin_t::dof)
-      call stopnow("dvr_sin_m::parse not implemented")
+      select type (dof)
+      type is (dvr_sin_t)
+
+      dof%gdim = parse_int(tkner)
+      dof%typ = 0
+      r1 = parse_angle(tkner,have2pi)
+      if (have2pi) then
+         dx = r1/(dof%gdim + 1)
+         dof%xi = dx
+         dof%xf = r1-dx
+      else
+         dof%xi = parse_length(tkner)
+         dof%xf = parse_length(tkner)
+         token = tkner%get()
+         if (token=="short") then
+            call tkner%gofwd
+         elseif (token=="long") then
+            dx = (dof%xf - dof%xi)/(dof%gdim + 1)
+            dof%xi = dof%xi + dx
+            dof%xf = dof%xf - dx
+            call tkner%gofwd
+         endif
+      endif
+      token = tkner%get()
+      if (token=="sdq") then
+         dof%typ = 1
+         call tkner%gofwd
+      endif
+
+      end select
    end subroutine parse_sin
 
 

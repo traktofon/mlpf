@@ -21,7 +21,7 @@ module dvr_ho_m
    !--------------------------------------------------------------------
    subroutine parse_ho(dof,tkner)
    !--------------------------------------------------------------------
-   ! hodvr :~ "xi-xf" length length | length energy mass?
+   ! hodvr :~ INTEGER ( "xi-xf" length length | length energy mass? )
    !--------------------------------------------------------------------
       class(dof_t),pointer            :: dof
       type(tokenizer_t),intent(inout) :: tkner
