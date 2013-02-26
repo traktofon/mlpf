@@ -7,6 +7,7 @@ module base_m
    integer,parameter :: cdbl = kind( (1.0_dbl,1.0_dbl) )
 
    integer,parameter :: c1 = 16
+   integer,parameter :: c5 = 240
 
    ! Math
    real(dbl), parameter :: PI = 3.14159265358979323846_dbl

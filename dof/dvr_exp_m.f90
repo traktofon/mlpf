@@ -71,7 +71,6 @@ module dvr_exp_m
       select type (dof)
       type is (dvr_exp_t)
       call parse_fft_bounds(tkner, dof%gdim, dof%xi, dof%xf)
-      print *, dof%xi, dof%xf
       end select
    end subroutine parse_exp
 

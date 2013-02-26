@@ -1,12 +1,17 @@
+!=======================================================================
 module parse_tree_m
-
-! leaf ::= MODELABEL ( "," MODELABEL )*
-! node ::= ( leaf | "(" node node* ")" ) ( "=" INTEGER )?
+!=======================================================================
+!
+! leaf :~ modelabel ( "," modelabel )*
+! node :~ ( leaf | "(" node node* ")" ) ( "=" INTEGER )?
+!
+!=======================================================================
 
    use tokenize_m
    use tree_m
    use meta_dof_m
    use dof_m
+   use strutil_m
    use base_m
    implicit none
 
@@ -14,7 +19,9 @@ module parse_tree_m
    contains
 
 
+   !--------------------------------------------------------------------
    function parse_leaf(t,dofs) result(leaf)
+   !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: t
       type(dof_tp),intent(in)         :: dofs(:)
       type(node_t),pointer            :: leaf
@@ -42,7 +49,9 @@ module parse_tree_m
    end function parse_leaf
 
 
+   !--------------------------------------------------------------------
    recursive function parse_node(t,dofs) result(node)
+   !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: t
       type(dof_tp),intent(in)         :: dofs(:)
       type(node_t),pointer            :: node
@@ -75,6 +84,35 @@ module parse_tree_m
          call set_maxnbasis(node,maxnb)
       endif
    end function parse_node
+
+
+   !--------------------------------------------------------------------
+   function parse_tree(t,dofs,topnode) result(flag)
+   !--------------------------------------------------------------------
+      type(tokenizer_t),intent(inout) :: t
+      type(dof_tp),intent(in)         :: dofs(:)
+      type(node_t),pointer            :: topnode
+      character(len=maxtoklen)        :: token
+      logical                         :: flag
+
+      token = t%get()
+      call ucase(token)
+      if (token /= "TREE-SECTION") then
+         flag = .false.
+         return
+      endif
+      call t%clear_stop
+      call t%add_stop("END-TREE-SECTION")
+      call t%gofwd
+
+      topnode => parse_node(t,dofs)
+      flag = .true.
+
+      if (t%stopreason() /= STOPREASON_STOPWORD) &
+         call t%error("expected end of section")
+      call t%clear_stop
+      call t%gofwd
+   end function parse_tree
 
 
 end module parse_tree_m
