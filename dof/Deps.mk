@@ -5,8 +5,8 @@ obj/dvr_m.o obj/dvr_m.mod: dof/dvr_m.f90 obj/dof_m.mod obj/base_m.mod
 obj/dvr_ho_m.o obj/dvr_ho_m.mod: dof/dvr_ho_m.f90 obj/dvr_m.mod obj/dof_m.mod \
  obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
 obj/dvr_sin_m.o obj/dvr_sin_m.mod: dof/dvr_sin_m.f90 obj/dvr_m.mod \
- obj/dof_m.mod obj/tokenize_m.mod obj/base_m.mod
+ obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
 obj/dvr_exp_m.o obj/dvr_exp_m.mod: dof/dvr_exp_m.f90 obj/dvr_m.mod \
- obj/dof_m.mod obj/tokenize_m.mod obj/base_m.mod
+ obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
 obj/meta_dof_m.o obj/meta_dof_m.mod: dof/meta_dof_m.f90 obj/dvr_ho_m.mod \
  obj/dvr_sin_m.mod obj/dvr_exp_m.mod obj/dof_m.mod obj/base_m.mod

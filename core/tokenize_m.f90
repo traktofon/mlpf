@@ -140,7 +140,8 @@ module tokenize_m
       character(len=maxlinlen)         :: line
       character(len=maxtoklen)         :: tbuf(maxtok)
       integer                          :: i0,i1,ntok,k
-      character(len=3),parameter       :: ws = " "//ACHAR(10)//ACHAR(13)
+      character(len=*),parameter       :: ws = " "//ACHAR(10)//ACHAR(13)
+      character(len=*),parameter       :: sc = "=,#{}[]()<>"
 
       do while (t%rpos==t%wpos)
          ! nothing in the buffer, so read next line
@@ -167,7 +168,7 @@ module tokenize_m
                i1=i1+i0-2
             endif
             ! something is at line(i0:i1)
-            call split_word(line(i0:i1), tbuf, ntok)
+            call split_word(line(i0:i1), sc, tbuf, ntok)
             ! insert tokens into ringbuffer
             do k=1,ntok
                if (is_comment(tbuf(k))) exit lineloop ! skip rest of line
@@ -196,19 +197,18 @@ module tokenize_m
    end subroutine error
 
 
-   subroutine split_word(word,toks,ntok)
+   subroutine split_word(word,splitat,toks,ntok)
       character(len=*),intent(in)          :: word
+      character(len=*),intent(in)          :: splitat
       character(len=maxtoklen),intent(out) :: toks(:)
       integer,intent(out)                  :: ntok
       integer                              :: wlen,tlen,i0,i1
-      character(len=11),parameter          :: sc = "()=<>,{}[]#"
-
       wlen = len(word)
       tlen = len(toks)
       ntok = 0
       i0 = 1
       do while (i0 <= wlen)
-         i1 = scan(word(i0:wlen),sc)
+         i1 = scan(word(i0:wlen),splitat)
          if (i1==0) then
             i1 = wlen
          elseif (i1==1) then
@@ -217,7 +217,7 @@ module tokenize_m
             i1 = i0+i1-2
          endif
          ntok = ntok+1
-         if (ntok>tlen) call stopnow("tbuf overflow")
+         if (ntok>tlen) call stopnow("split_word: toks overflow")
          toks(ntok) = word(i0:i1)
          i0 = i1+1
       enddo
@@ -257,5 +257,33 @@ module tokenize_m
       call t%gofwd
       return
    end function parse_real
+
+
+   function parse_angle(t,flag) result(val)
+      type(tokenizer_t),intent(inout) :: t
+      logical,intent(out),optional    :: flag
+      real(dbl)                       :: val
+      character(len=maxtoklen)        :: token
+      integer                         :: ierr,pord
+      token = t%get()
+      if (strcmpci(token(1:3),"2pi")==0) then
+         if (token(4:4) == " ") then
+            pord=1
+         elseif (token(4:4) == "/") then
+            read (token(5:),*,err=500,end=500) pord
+         else
+            goto 500
+         endif
+         if (present(flag)) flag = .true.
+         val = 2.d0*pi/pord
+         call t%gofwd
+      else
+         if (.not.present(flag)) goto 500
+         flag = .false.
+         val  = 0.d0
+      endif
+      return
+ 500  call t%error('expected 2pi or 2pi/m')
+   end function parse_angle
 
 end module tokenize_m
