@@ -10,13 +10,17 @@ dd := core
 include $(dd)/Rules.mk
 dd := map
 include $(dd)/Rules.mk
+dd := parse
+include $(dd)/Rules.mk
 dd := dof
+include $(dd)/Rules.mk
+dd := input
 include $(dd)/Rules.mk
 dd := mlpf
 include $(dd)/Rules.mk
 
-MODS_COMMON := $(MODS_core) $(MODS_map) $(MODS_dof) $(MODS_mlpf)
-OBJS_COMMON := $(OBJS_mlpf) $(OBJS_dof) $(OBJS_map) $(OBJS_core)
+MODS_COMMON := $(MODS_core) $(MODS_map) $(MODS_parse) $(MODS_dof) $(MODS_input) $(MODS_mlpf)
+OBJS_COMMON := $(OBJS_mlpf) $(OBJS_input) $(OBJS_dof) $(OBJS_parse) $(OBJS_map) $(OBJS_core)
 
 dd := test
 include $(dd)/Rules.mk
@@ -33,7 +37,9 @@ include $(dd)/Rules.mk
 
 vpath %.f90 core
 vpath %.f90 map
+vpath %.f90 parse
 vpath %.f90 dof
+vpath %.f90 input
 vpath %.f90 mlpf
 vpath %.f90 test
 vpath %.f90 pes3c
