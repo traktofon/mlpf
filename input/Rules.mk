@@ -3,13 +3,8 @@
 DEP := $(dd)/Deps.mk
 
 SOURCES := \
-   dof_m.f90 \
-   dof_io_m.f90 \
-   dvr_m.f90 \
-   dvr_ho_m.f90 \
-   dvr_sin_m.f90 \
-   dvr_exp_m.f90 \
-   meta_dof_m.f90
+   parse_pbasis_m.f90 \
+   parse_tree_m.f90
 
 SRC_$(dd) := \
    $(addprefix $(dd)/,$(SOURCES))
@@ -23,8 +18,8 @@ OBJS_$(dd) := \
 
 # module dependencies
 
-$(DEP): $(MODS_core) $(MODS_parse) $(MODS_dof) $(SRC_dof)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_dof) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
+$(DEP): $(MODS_core) $(MODS_parse) $(MODS_dof) $(MODS_input) $(SRC_input)
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_input) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
 
 -include $(DEP)
 
