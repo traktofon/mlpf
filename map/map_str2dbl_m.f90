@@ -1,5 +1,5 @@
 !=======================================================================
-module map_m
+module map_str2dbl_m
 !=======================================================================
 !
 ! This module implements a map (aka dictionary, aka associative list).
@@ -14,8 +14,9 @@ module map_m
 ! * map_get: return the value associated with a key
 ! * map_put: store a key and its associated value
 ! * map_del: remove a key/value pair
-! * map_forall: iterate over all items in the map
 ! * map_destroy: delete all items from the map
+! * map_iter_start: initialize iteration over all items
+! * map_iter_next: get next key/value pair
 !
 ! Some advantages of LLRBTs are:
 ! - no memory overhead for maps with few items
@@ -32,46 +33,78 @@ module map_m
 !
 !=======================================================================
 
-   use base_m
-   use strutil_m
+   use base_m; use strutil_m
    implicit none
    private
    
-   public :: map_get, map_put, map_del, map_forall, map_destroy
+   public :: map_get, map_put, map_del, map_destroy, map_iter_start, map_iter_next
 
-   integer,parameter :: keylen = 32
+   type,public :: map_str2dbl_t
+      type(mapnode_t),private,pointer   :: root => null()
+      type(iterstack_t),private,pointer :: iter => null()
+   end type map_str2dbl_t
+
+
+   interface map_get
+      module procedure map1_get
+   end interface map_get
+   
+   interface map_put
+      module procedure map1_put
+   end interface map_put
+   
+   interface map_del
+      module procedure map1_del
+   end interface map_del
+   
+   interface map_destroy
+      module procedure map1_destroy
+   end interface map_destroy
+   
+   interface map_iter_start
+      module procedure map1_iter_start
+   end interface map_iter_start
+   
+   interface map_iter_next
+      module procedure map1_iter_next
+   end interface map_iter_next
+
+
    logical,parameter :: BLACK  = .false.
    logical,parameter :: RED    = .true.
 
-   type,public :: map_t
-      type(mapnode_t),private,pointer :: root => null()
-   end type map_t
-
    type :: mapnode_t
-      character(len=keylen)   :: key
-      real(dbl)               :: val
+      character(len=32) :: key
+      real(dbl) :: val
       type(mapnode_t),pointer :: left => null()
       type(mapnode_t),pointer :: right => null()
-      logical                 :: color
+      logical :: color
    end type mapnode_t
+
+   type :: iterstack_t
+      type(mapnode_t),pointer   :: node => null()
+      type(iterstack_t),pointer :: next => null()
+      type(iterstack_t),pointer :: prev => null()
+   end type
+
 
    contains
 
 
    !--------------------------------------------------------------------
-   function map_get(map,key,val) result(found)
+   function map1_get(map,key,val) result(found)
    !--------------------------------------------------------------------
    ! If the map has an item with the given key, return its value in val,
    ! and set found to .true., otherwise found is .false. and val is
    ! undefined.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
-      type(map_t),intent(in)      :: map
+      type(map_str2dbl_t),intent(in) :: map
       character(len=*),intent(in) :: key
-      real(dbl),intent(out)       :: val
-      logical                     :: found
-      type(mapnode_t),pointer     :: node
-      integer                     :: cmp
+      real(dbl),intent(out) :: val
+      logical :: found
+      type(mapnode_t),pointer :: node
+      integer :: cmp
       node => map%root
       do while (associated(node))
          cmp = strcmpci(key,node%key)
@@ -86,68 +119,87 @@ module map_m
          endif
       enddo
       found = .false.
-   end function map_get
+   end function map1_get
 
 
    !--------------------------------------------------------------------
-   subroutine map_put(map,key,val)
+   subroutine map1_put(map,key,val)
    !--------------------------------------------------------------------
    ! Store the given key/value-pair in the map. If there already is an
    ! item with the given key present, it will be overwritten.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
-      type(map_t),intent(inout)   :: map
+      type(map_str2dbl_t),intent(inout) :: map
       character(len=*),intent(in) :: key
-      real(dbl),intent(in)        :: val
+      real(dbl),intent(in) :: val
       call insert(map%root,key,val)
       map%root%color = BLACK
-   end subroutine map_put
+   end subroutine map1_put
 
 
    !--------------------------------------------------------------------
-   subroutine map_del(map,key)
+   subroutine map1_del(map,key)
    !--------------------------------------------------------------------
    ! Deletes the item with given key from the map.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
-      type(map_t),intent(inout)   :: map
+      type(map_str2dbl_t),intent(inout) :: map
       character(len=*),intent(in) :: key
       if (associated(map%root)) then
          call delete(map%root,key)
          if (associated(map%root)) &
             map%root%color = BLACK
       endif
-   end subroutine map_del
+   end subroutine map1_del
 
 
    !--------------------------------------------------------------------
-   subroutine map_forall(map,func)
-   !--------------------------------------------------------------------
-   ! Traverses the map in the natural order of the keys. The given
-   ! function is called for each item in turn.
-   ! * runtime ~ Theta(n)
-   !--------------------------------------------------------------------
-      type(map_t),intent(in) :: map
-      interface
-         subroutine func(key,val)
-            import :: dbl
-            character(len=*),intent(in) :: key
-            real(dbl),intent(in)        :: val
-         end subroutine func
-      end interface
-      call inorder(map%root,func)
-   end subroutine map_forall
-
-
-   !--------------------------------------------------------------------
-   subroutine map_destroy(map)
+   subroutine map1_destroy(map)
    !--------------------------------------------------------------------
    ! Deletes all items from the map.
    ! * runtime ~ Theta(n)
    !--------------------------------------------------------------------
-      type(map_t),intent(inout) :: map
+      type(map_str2dbl_t),intent(inout) :: map
+      call iter_empty(map%iter)
       call dispose(map%root)
-   end subroutine map_destroy
+   end subroutine map1_destroy
+
+
+   !--------------------------------------------------------------------
+   subroutine map1_iter_start(map)
+   !--------------------------------------------------------------------
+   ! Initializes iteration over all items in the map. A following call
+   ! to map_iter_next will return the item with the smallest key.
+   !--------------------------------------------------------------------
+      type(map_str2dbl_t),intent(inout) :: map
+      call iter_empty(map%iter)
+      call iter_fill(map%iter,map%root)
+   end subroutine map1_iter_start
+
+
+   !--------------------------------------------------------------------
+   function map1_iter_next(map,key,val) result(found)
+   !--------------------------------------------------------------------
+   ! In an iteration over all items (started with map_iter_start),
+   ! returns key/value of the next item.  If the iteration is finished,
+   ! found will be .false., otherwise .true.
+   !--------------------------------------------------------------------
+      type(map_str2dbl_t),intent(inout) :: map
+      character(len=*),intent(out) :: key
+      real(dbl),intent(out) :: val
+      logical :: found
+      type(mapnode_t),pointer :: node
+      if (.not.associated(map%iter)) then
+         found = .false.
+         return
+      endif
+      node => map%iter%node
+      call iter_pop(map%iter)
+      call iter_fill(map%iter,node%right)
+      key = node%key
+      val = node%val
+      found = .true.
+   end function map1_iter_next
 
 
    !====================================================================
@@ -158,30 +210,11 @@ module map_m
 
 
    !--------------------------------------------------------------------
-   recursive subroutine inorder(node,func)
-   !--------------------------------------------------------------------
-      type(mapnode_t),pointer :: node
-      interface
-         subroutine func(key,val)
-            import :: dbl
-            character(len=*),intent(in) :: key
-            real(dbl),intent(in)        :: val
-         end subroutine func
-      end interface
-      if (associated(node)) then
-         call inorder(node%left,func)
-         call func(node%key,node%val)
-         call inorder(node%right,func)
-      endif
-   end subroutine inorder
-
-
-   !--------------------------------------------------------------------
    function new_node(key,val) result(node)
    !--------------------------------------------------------------------
       character(len=*),intent(in) :: key
-      real(dbl),intent(in)        :: val
-      type(mapnode_t),pointer     :: node
+      real(dbl),intent(in) :: val
+      type(mapnode_t),pointer :: node
       allocate(node)
       node%key = key
       node%val = val
@@ -243,10 +276,10 @@ module map_m
    !--------------------------------------------------------------------
    recursive subroutine insert(node,key,val)
    !--------------------------------------------------------------------
-      type(mapnode_t),pointer     :: node
+      type(mapnode_t),pointer :: node
       character(len=*),intent(in) :: key
-      real(dbl),intent(in)        :: val
-      integer                     :: cmp
+      real(dbl),intent(in) :: val
+      integer :: cmp
       if (.not.associated(node)) then
          node => new_node(key,val)
          return
@@ -340,9 +373,9 @@ module map_m
    !--------------------------------------------------------------------
    recursive subroutine delete(n,key)
    !--------------------------------------------------------------------
-      type(mapnode_t),pointer     :: n
+      type(mapnode_t),pointer :: n
       character(len=*),intent(in) :: key
-      type(mapnode_t),pointer     :: m
+      type(mapnode_t),pointer :: m
       if (strcmpci(key,n%key)<0) then
          if (.not.is_red(n%left) .and. .not.is_red(n%left%left)) &
             call mv_red_left(n)
@@ -378,6 +411,72 @@ module map_m
          deallocate(node)
       endif
    end subroutine dispose
-      
 
-end module map_m
+
+   !====================================================================
+   ! Now follows the code for iterating over all items in the map.
+   ! This could be done much more naturally with callback functions,
+   ! but Fortran's lack of closures makes that approach cumbersome to
+   ! use. Also, our nodes don't have parent pointers. So we use a simple
+   ! stack to keep track of the nodes encountered on the way down.
+   !====================================================================
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_pop(iter)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      type(iterstack_t),pointer :: prev
+      if (.not.associated(iter)) return
+      if (associated(iter%prev)) then
+         prev => iter%prev
+         nullify(prev%next)
+         deallocate(iter)
+         iter => prev
+      else
+         deallocate(iter)
+      endif
+   end subroutine iter_pop
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_push(iter,node)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      type(mapnode_t),pointer   :: node
+      type(iterstack_t),pointer :: new
+      allocate(new)
+      new%node => node
+      if (associated(iter)) then
+         new%prev => iter
+         iter%next => new
+      endif
+      iter => new
+   end subroutine iter_push
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_fill(iter,node)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      type(mapnode_t),pointer   :: node,node1
+      node1 => node
+      do while (associated(node1))
+         call iter_push(iter,node1)
+         node1 => node1%left
+      enddo
+   end subroutine iter_fill
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_empty(iter)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      do while (associated(iter))
+         call iter_pop(iter)
+      enddo
+   end subroutine iter_empty
+
+
+end module map_str2dbl_m
+! vim: set syntax=fortran ts=3 sw=3 expandtab :
