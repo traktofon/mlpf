@@ -30,7 +30,7 @@ $(OBJDIR)/h5o2.pes.o: h5o2.pes.f90
 # module dependencies
 
 $(DEP): $(MODS_COMMON) $(MODS_zundel) $(SRC_zundel)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_zundel) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -Jtmp $(SRC_zundel) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@tmp/@obj/@" > $@
 
 -include $(DEP)
 
