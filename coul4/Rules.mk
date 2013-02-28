@@ -26,7 +26,7 @@ $(TGT): $(OBJS_coul4) $(OBJS_COMMON)
 # module dependencies
 
 $(DEP): $(MODS_COMMON) $(MODS_coul4) $(SRC_coul4)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_coul4) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -Jtmp $(SRC_coul4) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@tmp/@obj/@" > $@
 
 -include $(DEP)
 

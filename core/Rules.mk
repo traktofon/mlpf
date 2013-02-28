@@ -24,7 +24,7 @@ OBJS_$(dd) := \
 # module dependencies
 
 $(DEP): $(MODS_core) $(SRC_core)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(OBJDIR) $(SRC_core) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" > $@
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -Jtmp $(SRC_core) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@tmp/@obj/@" > $@
 
 -include $(DEP)
 
