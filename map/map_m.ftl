@@ -14,8 +14,9 @@ module #mod#_m
 ! * map_get: return the value associated with a key
 ! * map_put: store a key and its associated value
 ! * map_del: remove a key/value pair
-! * map_forall: iterate over all items in the map
 ! * map_destroy: delete all items from the map
+! * map_iter_start: initialize iteration over all items
+! * map_iter_next: get next key/value pair
 !
 ! Some advantages of LLRBTs are:
 ! - no memory overhead for maps with few items
@@ -36,7 +37,13 @@ module #mod#_m
    implicit none
    private
    
-   public :: map_get, map_put, map_del, map_forall, map_destroy
+   public :: map_get, map_put, map_del, map_destroy, map_iter_start, map_iter_next
+
+   type,public :: #mod#_t
+      type(mapnode_t),private,pointer   :: root => null()
+      type(iterstack_t),private,pointer :: iter => null()
+   end type #mod#_t
+
 
    interface map_get
       module procedure map1_get
@@ -50,17 +57,18 @@ module #mod#_m
       module procedure map1_del
    end interface map_del
    
-   interface map_forall
-      module procedure map1_forall
-   end interface map_forall
-   
    interface map_destroy
       module procedure map1_destroy
    end interface map_destroy
    
-   type,public :: #mod#_t
-      type(mapnode_t),private,pointer :: root => null()
-   end type #mod#_t
+   interface map_iter_start
+      module procedure map1_iter_start
+   end interface map_iter_start
+   
+   interface map_iter_next
+      module procedure map1_iter_next
+   end interface map_iter_next
+
 
    logical,parameter :: BLACK  = .false.
    logical,parameter :: RED    = .true.
@@ -72,6 +80,13 @@ module #mod#_m
       type(mapnode_t),pointer :: right => null()
       logical :: color
    end type mapnode_t
+
+   type :: iterstack_t
+      type(mapnode_t),pointer   :: node => null()
+      type(iterstack_t),pointer :: next => null()
+      type(iterstack_t),pointer :: prev => null()
+   end type
+
 
    contains
 
@@ -139,33 +154,52 @@ module #mod#_m
 
 
    !--------------------------------------------------------------------
-   subroutine map1_forall(map,func)
-   !--------------------------------------------------------------------
-   ! Traverses the map in the natural order of the keys. The given
-   ! function is called for each item in turn.
-   ! * runtime ~ Theta(n)
-   !--------------------------------------------------------------------
-      type(#mod#_t),intent(in) :: map
-      interface
-         subroutine func(key,val)
-            #use#
-            #key#,intent(in) :: key
-            #val#,intent(inout) :: val
-         end subroutine func
-      end interface
-      call inorder(map%root,func)
-   end subroutine map1_forall
-
-
-   !--------------------------------------------------------------------
    subroutine map1_destroy(map)
    !--------------------------------------------------------------------
    ! Deletes all items from the map.
    ! * runtime ~ Theta(n)
    !--------------------------------------------------------------------
       type(#mod#_t),intent(inout) :: map
+      call iter_empty(map%iter)
       call dispose(map%root)
    end subroutine map1_destroy
+
+
+   !--------------------------------------------------------------------
+   subroutine map1_iter_start(map)
+   !--------------------------------------------------------------------
+   ! Initializes iteration over all items in the map. A following call
+   ! to map_iter_next will return the item with the smallest key.
+   !--------------------------------------------------------------------
+      type(#mod#_t),intent(inout) :: map
+      call iter_empty(map%iter)
+      call iter_fill(map%iter,map%root)
+   end subroutine map1_iter_start
+
+
+   !--------------------------------------------------------------------
+   function map1_iter_next(map,key,val) result(found)
+   !--------------------------------------------------------------------
+   ! In an iteration over all items (started with map_iter_start),
+   ! returns key/value of the next item.  If the iteration is finished,
+   ! found will be .false., otherwise .true.
+   !--------------------------------------------------------------------
+      type(#mod#_t),intent(inout) :: map
+      #key#,intent(out) :: key
+      #val#,intent(out) :: val
+      logical :: found
+      type(mapnode_t),pointer :: node
+      if (.not.associated(map%iter)) then
+         found = .false.
+         return
+      endif
+      node => map%iter%node
+      call iter_pop(map%iter)
+      call iter_fill(map%iter,node%right)
+      key = node%key
+      val = node%val
+      found = .true.
+   end function map1_iter_next
 
 
    !====================================================================
@@ -396,7 +430,72 @@ module #mod#_m
          deallocate(node)
       endif
    end subroutine dispose
-      
+
+
+   !====================================================================
+   ! Now follows the code for iterating over all items in the map.
+   ! This could be done much more naturally with callback functions,
+   ! but Fortran's lack of closures makes that approach cumbersome to
+   ! use. Also, our nodes don't have parent pointers. So we use a simple
+   ! stack to keep track of the nodes encountered on the way down.
+   !====================================================================
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_pop(iter)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      type(iterstack_t),pointer :: prev
+      if (.not.associated(iter)) return
+      if (associated(iter%prev)) then
+         prev => iter%prev
+         nullify(prev%next)
+         deallocate(iter)
+         iter => prev
+      else
+         deallocate(iter)
+      endif
+   end subroutine iter_pop
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_push(iter,node)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      type(mapnode_t),pointer   :: node
+      type(iterstack_t),pointer :: new
+      allocate(new)
+      new%node => node
+      if (associated(iter)) then
+         new%prev => iter
+         iter%next => new
+      endif
+      iter => new
+   end subroutine iter_push
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_fill(iter,node)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      type(mapnode_t),pointer   :: node,node1
+      node1 => node
+      do while (associated(node1))
+         call iter_push(iter,node1)
+         node1 => node1%left
+      enddo
+   end subroutine iter_fill
+
+
+   !--------------------------------------------------------------------
+   subroutine iter_empty(iter)
+   !--------------------------------------------------------------------
+      type(iterstack_t),pointer :: iter
+      do while (associated(iter))
+         call iter_pop(iter)
+      enddo
+   end subroutine iter_empty
+
 
 end module #mod#_m
 ! vim: set syntax=fortran ts=3 sw=3 expandtab :
