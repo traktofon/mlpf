@@ -8,13 +8,15 @@ include local.mk
 
 dd := core
 include $(dd)/Rules.mk
+dd := map
+include $(dd)/Rules.mk
 dd := dof
 include $(dd)/Rules.mk
 dd := mlpf
 include $(dd)/Rules.mk
 
-MODS_COMMON := $(MODS_core) $(MODS_dof) $(MODS_mlpf)
-OBJS_COMMON := $(OBJS_mlpf) $(OBJS_dof) $(OBJS_core)
+MODS_COMMON := $(MODS_core) $(MODS_map) $(MODS_dof) $(MODS_mlpf)
+OBJS_COMMON := $(OBJS_mlpf) $(OBJS_dof) $(OBJS_map) $(OBJS_core)
 
 dd := test
 include $(dd)/Rules.mk
@@ -30,6 +32,7 @@ include $(dd)/Rules.mk
 # where to look for source files
 
 vpath %.f90 core
+vpath %.f90 map
 vpath %.f90 dof
 vpath %.f90 mlpf
 vpath %.f90 test

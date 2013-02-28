@@ -1,5 +1,5 @@
 !=======================================================================
-module #mod#_m
+module map_str2int_m
 !=======================================================================
 !
 ! This module implements a map (aka dictionary, aka associative list).
@@ -33,16 +33,16 @@ module #mod#_m
 !
 !=======================================================================
 
-   #use#
+   use strutil_m
    implicit none
    private
    
    public :: map_get, map_put, map_del, map_destroy, map_iter_start, map_iter_next
 
-   type,public :: #mod#_t
+   type,public :: map_str2int_t
       type(mapnode_t),private,pointer   :: root => null()
       type(iterstack_t),private,pointer :: iter => null()
-   end type #mod#_t
+   end type map_str2int_t
 
 
    interface map_get
@@ -74,8 +74,8 @@ module #mod#_m
    logical,parameter :: RED    = .true.
 
    type :: mapnode_t
-      #key1# :: key
-      #val# :: val
+      character(len=32) :: key
+      integer :: val
       type(mapnode_t),pointer :: left => null()
       type(mapnode_t),pointer :: right => null()
       logical :: color
@@ -99,15 +99,15 @@ module #mod#_m
    ! undefined.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
-      type(#mod#_t),intent(in) :: map
-      #key#,intent(in) :: key
-      #val#,intent(out) :: val
+      type(map_str2int_t),intent(in) :: map
+      character(len=*),intent(in) :: key
+      integer,intent(out) :: val
       logical :: found
       type(mapnode_t),pointer :: node
       integer :: cmp
       node => map%root
       do while (associated(node))
-         cmp = #cmp#(key,node%key)
+         cmp = strcmpci(key,node%key)
          if (cmp<0) then
             node => node%left
          elseif (cmp>0) then
@@ -129,9 +129,9 @@ module #mod#_m
    ! item with the given key present, it will be overwritten.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
-      type(#mod#_t),intent(inout) :: map
-      #key#,intent(in) :: key
-      #val#,intent(in) :: val
+      type(map_str2int_t),intent(inout) :: map
+      character(len=*),intent(in) :: key
+      integer,intent(in) :: val
       call insert(map%root,key,val)
       map%root%color = BLACK
    end subroutine map1_put
@@ -143,8 +143,8 @@ module #mod#_m
    ! Deletes the item with given key from the map.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
-      type(#mod#_t),intent(inout) :: map
-      #key#,intent(in) :: key
+      type(map_str2int_t),intent(inout) :: map
+      character(len=*),intent(in) :: key
       if (associated(map%root)) then
          call delete(map%root,key)
          if (associated(map%root)) &
@@ -159,7 +159,7 @@ module #mod#_m
    ! Deletes all items from the map.
    ! * runtime ~ Theta(n)
    !--------------------------------------------------------------------
-      type(#mod#_t),intent(inout) :: map
+      type(map_str2int_t),intent(inout) :: map
       call iter_empty(map%iter)
       call dispose(map%root)
    end subroutine map1_destroy
@@ -171,7 +171,7 @@ module #mod#_m
    ! Initializes iteration over all items in the map. A following call
    ! to map_iter_next will return the item with the smallest key.
    !--------------------------------------------------------------------
-      type(#mod#_t),intent(inout) :: map
+      type(map_str2int_t),intent(inout) :: map
       call iter_empty(map%iter)
       call iter_fill(map%iter,map%root)
    end subroutine map1_iter_start
@@ -184,9 +184,9 @@ module #mod#_m
    ! returns key/value of the next item.  If the iteration is finished,
    ! found will be .false., otherwise .true.
    !--------------------------------------------------------------------
-      type(#mod#_t),intent(inout) :: map
-      #key#,intent(out) :: key
-      #val#,intent(out) :: val
+      type(map_str2int_t),intent(inout) :: map
+      character(len=*),intent(out) :: key
+      integer,intent(out) :: val
       logical :: found
       type(mapnode_t),pointer :: node
       if (.not.associated(map%iter)) then
@@ -212,8 +212,8 @@ module #mod#_m
    !--------------------------------------------------------------------
    function new_node(key,val) result(node)
    !--------------------------------------------------------------------
-      #key#,intent(in) :: key
-      #val#,intent(in) :: val
+      character(len=*),intent(in) :: key
+      integer,intent(in) :: val
       type(mapnode_t),pointer :: node
       allocate(node)
       node%key = key
@@ -277,14 +277,14 @@ module #mod#_m
    recursive subroutine insert(node,key,val)
    !--------------------------------------------------------------------
       type(mapnode_t),pointer :: node
-      #key#,intent(in) :: key
-      #val#,intent(in) :: val
+      character(len=*),intent(in) :: key
+      integer,intent(in) :: val
       integer :: cmp
       if (.not.associated(node)) then
          node => new_node(key,val)
          return
       endif
-      cmp = #cmp#(key,node%key)
+      cmp = strcmpci(key,node%key)
       if (cmp<0) then
          call insert(node%left,key,val)
       elseif (cmp>0) then
@@ -374,21 +374,21 @@ module #mod#_m
    recursive subroutine delete(n,key)
    !--------------------------------------------------------------------
       type(mapnode_t),pointer :: n
-      #key#,intent(in) :: key
+      character(len=*),intent(in) :: key
       type(mapnode_t),pointer :: m
-      if (#cmp#(key,n%key)<0) then
+      if (strcmpci(key,n%key)<0) then
          if (.not.is_red(n%left) .and. .not.is_red(n%left%left)) &
             call mv_red_left(n)
          call delete(n%left,key)
       else
          if (is_red(n%left)) call rot_right(n)
-         if (#cmp#(key,n%key)==0 .and. .not.associated(n%right)) then
+         if (strcmpci(key,n%key)==0 .and. .not.associated(n%right)) then
             deallocate(n)
             return
          endif
          if (.not.is_red(n%right) .and. .not.is_red(n%right%left)) &
             call mv_red_right(n)
-         if (#cmp#(key,n%key)==0) then
+         if (strcmpci(key,n%key)==0) then
             m => find_min(n%right)
             n%key = m%key
             n%val = m%val
@@ -478,5 +478,5 @@ module #mod#_m
    end subroutine iter_empty
 
 
-end module #mod#_m
+end module map_str2int_m
 ! vim: set syntax=fortran ts=3 sw=3 expandtab :
