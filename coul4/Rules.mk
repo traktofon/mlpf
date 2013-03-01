@@ -20,6 +20,6 @@ ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
 
 # build rule
 
-$(TGT): $(OBJS_coul4) $(OBJS_COMMON)
+$(TGT): $(OBJS_coul4) $(OBJS_core)
 	$(FC) -o $@ $+ $(LIBS)
 
