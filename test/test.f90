@@ -20,7 +20,7 @@ program test
    type(dof_tp),allocatable  :: dofs(:)
    type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
-   integer                   :: f,gdim,g,nmodes,nleft,ll,m,i,vlen,vlen0,nmod1
+   integer                   :: f,gdim,nmodes,nleft,ll,m,i,vlen,vlen0,nmod1
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax

@@ -1,7 +1,17 @@
-# vim: set ts=8 noexpandtab :
+# Copy this file to local.mk and change compilation settings
+# according to your compiler and BLAS/LAPACK libraries.
 
+# the Fortran compiler
 FC := gfortran
+
+# the compiler options
 FFLAGS := -Wall -g -fbounds-check
 #FFLAGS := -O2
-DEPFLAGS := -cpp -MM
+
+# the linking options
+LDFLAGS :=
+
+# the libraries (BLAS/LAPACK or compatible)
 LIBS := -llapack -lblas
+
+# vim: set ts=8 noexpandtab syntax=make:

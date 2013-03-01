@@ -25,5 +25,5 @@ $(TGT): $(OBJS_zundel) $(OBJS_core)
 	$(FC) -o $@ $+ $(LIBS)
 
 $(OBJDIR)/h5o2.pes.o: h5o2.pes.f90
-	$(FC) $(FFLAGS) -ffixed-form -c -o $@ $<
+	$(LINK) $(FFLAGS) -ffixed-form -c -o $@ $<
 

@@ -6,6 +6,8 @@ OBJDIR := obj
 TMPDIR := scr
 include local.mk
 
+LINK := $(FC) $(LDFLAGS)
+
 PROGS :=
 ALLSOURCES :=
 

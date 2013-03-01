@@ -17,14 +17,11 @@ program test_pes3c
    type(dof_tp)              :: dofs(ndofs)
    type(node_tp),allocatable :: nodes(:)
    type(tree_t),pointer      :: t
-   integer                   :: f,nmodes,m,vlen,vlen0
+   integer                   :: f,nmodes,vlen,vlen0
    integer,allocatable       :: vdim(:)
    real(dbl),allocatable     :: v(:),v0(:)
    real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax
    real(dbl)                 :: limit,esq,acesq
-   real(dbl)                 :: xi,xf
-   integer                   :: gdim
-   character(len=16)         :: lbl
    integer                   :: logid_progress = 0
    integer                   :: logid_data = 0
    character(len=160)        :: msg
