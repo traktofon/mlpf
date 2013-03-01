@@ -21,7 +21,6 @@ program test_coul4
    real(dbl),allocatable     :: v(:),v0(:)
    real(dbl)                 :: vnorm,vmax,vmin,dnorm,dmax
    real(dbl)                 :: limit,esq,acesq
-   real(dbl)                 :: xi,xf
    integer                   :: logid_progress = 0
    integer                   :: logid_data = 0
    character(len=160)        :: msg

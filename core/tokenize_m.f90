@@ -291,7 +291,7 @@ module tokenize_m
       logical,intent(out),optional    :: flag
       real(dbl)                       :: val
       character(len=maxtoklen)        :: token
-      integer                         :: ierr,pord
+      integer                         :: pord
       token = t%get()
       if (strcmpci(token(1:3),"2pi")==0) then
          if (token(4:4) == " ") then
