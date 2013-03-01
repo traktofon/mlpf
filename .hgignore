@@ -1,6 +1,5 @@
 syntax:glob
 
-empty.f90
 local.mk
 *.swp
 *.orig
