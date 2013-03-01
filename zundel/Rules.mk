@@ -21,7 +21,7 @@ ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
 
 # build rules
 
-$(TGT): $(OBJS_zundel) $(OBJS_COMMON)
+$(TGT): $(OBJS_zundel) $(OBJS_core)
 	$(FC) -o $@ $+ $(LIBS)
 
 $(OBJDIR)/h5o2.pes.o: h5o2.pes.f90
