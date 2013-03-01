@@ -1,9 +1,6 @@
 # vim: set ts=8 noexpandtab :
 
 TGT := $(dd)/pes3ctest
-DEP := $(dd)/Deps.mk
-
-PROGS := $(PROGS) $(TGT)
 
 SOURCES90 := \
    pes3c_m.f90 \
@@ -22,15 +19,11 @@ OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(SOURCES77:.f=.o)) \
    $(addprefix $(OBJDIR)/,$(SOURCES90:.f90=.o))
 
+PROGS := $(PROGS) $(TGT)
+ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
+
 # build rule
 
-$(TGT): $(OBJS_pes3c) $(OBJS_COMMON)
+$(TGT): $(OBJS_pes3c) $(OBJS_core)
 	$(FC) -o $@ $+ $(LIBS)
-
-# module dependencies
-
-$(DEP): $(MODS_COMMON) $(MODS_pes3c) $(SRC_pes3c)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(TMPDIR) $(SRC_pes3c) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@$(TMPDIR)/@$(OBJDIR)/@" > $@
-
--include $(DEP)
 

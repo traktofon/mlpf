@@ -2,27 +2,15 @@
 
 all: targets
 
-PROGS :=
 OBJDIR := obj
 TMPDIR := scr
 include local.mk
 
+PROGS :=
+ALLSOURCES :=
+
 dd := core
 include $(dd)/Rules.mk
-dd := map
-include $(dd)/Rules.mk
-dd := parse
-include $(dd)/Rules.mk
-dd := dof
-include $(dd)/Rules.mk
-dd := input
-include $(dd)/Rules.mk
-dd := mlpf
-include $(dd)/Rules.mk
-
-MODS_COMMON := $(MODS_core) $(MODS_map) $(MODS_parse) $(MODS_dof) $(MODS_input) $(MODS_mlpf)
-OBJS_COMMON := $(OBJS_mlpf) $(OBJS_input) $(OBJS_dof) $(OBJS_parse) $(OBJS_map) $(OBJS_core)
-
 dd := test
 include $(dd)/Rules.mk
 dd := pes3c
@@ -37,11 +25,6 @@ include $(dd)/Rules.mk
 # where to look for source files
 
 vpath %.f90 core
-vpath %.f90 map
-vpath %.f90 parse
-vpath %.f90 dof
-vpath %.f90 input
-vpath %.f90 mlpf
 vpath %.f90 test
 vpath %.f90 pes3c
 vpath %.f   pes3c
@@ -67,3 +50,11 @@ targets: $(PROGS)
 
 clean:
 	rm -f $(OBJDIR)/* $(PROGS)
+
+# dependencies
+
+-include deps.mk
+
+dep:
+	bin/mkdep $(OBJDIR) $(ALLSOURCES) > deps.mk
+
