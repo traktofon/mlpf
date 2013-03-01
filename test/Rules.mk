@@ -1,9 +1,6 @@
 # vim: set ts=8 noexpandtab :
 
 TGT := $(dd)/test
-DEP := $(dd)/Deps.mk
-
-PROGS := $(PROGS) $(TGT)
 
 SOURCES := \
    testfunc_m.f90 \
@@ -18,15 +15,11 @@ MODS_$(dd) := \
 OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(SOURCES:.f90=.o))
 
+PROGS := $(PROGS) $(TGT)
+ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
+
 # build rule
 
 $(TGT): $(OBJS_test) $(OBJS_COMMON)
 	$(FC) -o $@ $+ $(LIBS)
-
-# module dependencies
-
-$(DEP): $(MODS_COMMON) $(MODS_test) $(SRC_test)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(TMPDIR) $(SRC_test) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@$(TMPDIR)/@$(OBJDIR)/@" > $@
-
--include $(DEP)
 

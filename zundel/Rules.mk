@@ -1,9 +1,6 @@
 # vim: set ts=8 noexpandtab :
 
 TGT := $(dd)/zundeltest
-DEP := $(dd)/Deps.mk
-
-PROGS := $(PROGS) $(TGT)
 
 SOURCES := \
    zundel_m.f90 \
@@ -19,6 +16,9 @@ OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(SOURCES:.f90=.o)) \
    $(OBJDIR)/h5o2.pes.o
 
+PROGS := $(PROGS) $(TGT)
+ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
+
 # build rules
 
 $(TGT): $(OBJS_zundel) $(OBJS_COMMON)
@@ -26,11 +26,4 @@ $(TGT): $(OBJS_zundel) $(OBJS_COMMON)
 
 $(OBJDIR)/h5o2.pes.o: h5o2.pes.f90
 	$(FC) $(FFLAGS) -ffixed-form -c -o $@ $<
-
-# module dependencies
-
-$(DEP): $(MODS_COMMON) $(MODS_zundel) $(SRC_zundel)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(TMPDIR) $(SRC_zundel) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@$(TMPDIR)/@$(OBJDIR)/@" > $@
-
--include $(DEP)
 
