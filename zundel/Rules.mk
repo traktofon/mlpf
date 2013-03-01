@@ -22,8 +22,8 @@ ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
 # build rules
 
 $(TGT): $(OBJS_zundel) $(OBJS_core)
-	$(FC) -o $@ $+ $(LIBS)
+	$(LINK) -o $@ $+ $(LIBS)
 
 $(OBJDIR)/h5o2.pes.o: h5o2.pes.f90
-	$(LINK) $(FFLAGS) -ffixed-form -c -o $@ $<
+	$(FC) $(FFLAGS) -ffixed-form -c -o $@ $<
 
