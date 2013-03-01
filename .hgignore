@@ -5,6 +5,7 @@ local.mk
 *.swp
 *.orig
 obj/
+scr/
 test/test
 pes3c/pes3ctest
 zundel/zundeltest

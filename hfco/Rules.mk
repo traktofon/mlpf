@@ -30,7 +30,7 @@ $(TGT): $(OBJS_hfco) $(OBJS_COMMON)
 # module dependencies
 
 $(DEP): $(MODS_COMMON) $(MODS_hfco) $(SRC_hfco)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -Jtmp $(SRC_hfco) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@tmp/@obj/@" > $@
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(TMPDIR) $(SRC_hfco) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@$(TMPDIR)/@$(OBJDIR)/@" > $@
 
 -include $(DEP)
 

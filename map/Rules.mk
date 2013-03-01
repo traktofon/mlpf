@@ -19,7 +19,7 @@ OBJS_$(dd) := \
 # module dependencies
 
 $(DEP): $(MODS_core) $(MODS_map) $(SRC_map)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -Jtmp $(SRC_map) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@tmp/@obj/@" > $@
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(TMPDIR) $(SRC_map) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@$(TMPDIR)/@$(OBJDIR)/@" > $@
 
 -include $(DEP)
 

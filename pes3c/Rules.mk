@@ -30,7 +30,7 @@ $(TGT): $(OBJS_pes3c) $(OBJS_COMMON)
 # module dependencies
 
 $(DEP): $(MODS_COMMON) $(MODS_pes3c) $(SRC_pes3c)
-	$(FC) $(DEPFLAGS) -I$(OBJDIR) -Jtmp $(SRC_pes3c) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@tmp/@obj/@" > $@
+	$(FC) $(DEPFLAGS) -I$(OBJDIR) -J$(TMPDIR) $(SRC_pes3c) | sed -e "s@^\(\S\)@$(OBJDIR)/\1@" -e "s@$(TMPDIR)/@$(OBJDIR)/@" > $@
 
 -include $(DEP)
 

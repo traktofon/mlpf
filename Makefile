@@ -4,6 +4,7 @@ all: targets
 
 PROGS :=
 OBJDIR := obj
+TMPDIR := scr
 include local.mk
 
 dd := core
