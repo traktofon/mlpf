@@ -13,7 +13,9 @@ module map_str2int_m
 ! Supported operations are:
 ! * map_get: return the value associated with a key
 ! * map_put: store a key and its associated value
-! * map_del: remove a key/value pair
+! * map_has: check if key is in the map
+! * map_del: remove an *existing* key/value pair
+! * map_del_safe: remove key/value pair if it exists
 ! * map_destroy: delete all items from the map
 ! * map_iter_start: initialize iteration over all items
 ! * map_iter_next: get next key/value pair
@@ -37,7 +39,8 @@ module map_str2int_m
    implicit none
    private
    
-   public :: map_get, map_put, map_del, map_destroy, map_iter_start, map_iter_next
+   public :: map_get, map_put, map_has, map_del, map_del_safe, &
+             map_destroy, map_iter_start, map_iter_next
 
    type,public :: map_str2int_t
       type(mapnode_t),private,pointer   :: root => null()
@@ -53,10 +56,18 @@ module map_str2int_m
       module procedure map1_put
    end interface map_put
    
+   interface map_has
+      module procedure map1_has
+   end interface map_has
+   
    interface map_del
       module procedure map1_del
    end interface map_del
    
+   interface map_del_safe
+      module procedure map1_del_safe
+   end interface map_del_safe
+
    interface map_destroy
       module procedure map1_destroy
    end interface map_destroy
@@ -123,6 +134,21 @@ module map_str2int_m
 
 
    !--------------------------------------------------------------------
+   function map1_has(map,key) result(found)
+   !--------------------------------------------------------------------
+   ! If the map has an item with the given key, return .true.
+   ! * runtime ~ O(log n)
+   !--------------------------------------------------------------------
+      type(map_str2int_t),intent(in) :: map
+      character(len=*),intent(in) :: key
+      integer :: vdum
+      logical :: found
+      found = map1_get(map,key,vdum)
+   end function map1_has
+
+
+
+   !--------------------------------------------------------------------
    subroutine map1_put(map,key,val)
    !--------------------------------------------------------------------
    ! Store the given key/value-pair in the map. If there already is an
@@ -140,7 +166,8 @@ module map_str2int_m
    !--------------------------------------------------------------------
    subroutine map1_del(map,key)
    !--------------------------------------------------------------------
-   ! Deletes the item with given key from the map.
+   ! Deletes the item with given key from the map.  It is assumed that
+   ! such an item exists! If in doubt, use the _del_safe method.
    ! * runtime ~ O(log n)
    !--------------------------------------------------------------------
       type(map_str2int_t),intent(inout) :: map
@@ -153,6 +180,21 @@ module map_str2int_m
    end subroutine map1_del
 
 
+   !--------------------------------------------------------------------
+   subroutine map1_del_safe(map,key)
+   !--------------------------------------------------------------------
+   ! Deletes the item with the given key from the map, if it exists.
+   ! Otherwise nothing is done.
+   ! * runtime ~ O(log n)
+   ! TODO: the lookup could probably be avoided by modifying the
+   !       low-level delete code.
+   !--------------------------------------------------------------------
+      type(map_str2int_t),intent(inout) :: map
+      character(len=*),intent(in) :: key
+      if (map1_has(map,key)) call map1_del(map,key)
+   end subroutine map1_del_safe
+
+ 
    !--------------------------------------------------------------------
    subroutine map1_destroy(map)
    !--------------------------------------------------------------------
