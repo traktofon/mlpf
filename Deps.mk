@@ -31,8 +31,8 @@ obj/parse_tree_m.o obj/parse_tree_m.mod: core/parse_tree_m.f90 \
  obj/tokenize_m.mod obj/tree_m.mod obj/meta_dof_m.mod obj/dof_m.mod \
  obj/strutil_m.mod obj/base_m.mod
 obj/strutil_m.o obj/strutil_m.mod: core/strutil_m.f90
-obj/tokenize_m.o obj/tokenize_m.mod: core/tokenize_m.f90 obj/strutil_m.mod \
- obj/base_m.mod
+obj/tokenize_m.o obj/tokenize_m.mod: core/tokenize_m.f90 \
+ obj/map_str2int_m.mod obj/strutil_m.mod obj/base_m.mod
 obj/tree_m.o obj/tree_m.mod: core/tree_m.f90 obj/base_m.mod obj/logging_m.mod
 obj/tuckerdecomp_m.o obj/tuckerdecomp_m.mod: core/tuckerdecomp_m.f90 \
  obj/base_m.mod obj/modeutil_m.mod obj/linear_m.mod

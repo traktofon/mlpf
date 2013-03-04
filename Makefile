@@ -3,7 +3,7 @@
 all: targets
 
 OBJDIR := obj
-TMPDIR := scr
+
 include local.mk
 
 LINK := $(FC) $(LDFLAGS)
@@ -48,6 +48,8 @@ $(OBJDIR)/%.o: %.f
 
 # other rules
 
+core : $(OBJS_core)
+
 targets: $(PROGS)
 
 clean:
@@ -55,8 +57,8 @@ clean:
 
 # dependencies
 
--include deps.mk
+-include Deps.mk
 
 dep:
-	bin/mkdep $(OBJDIR) $(ALLSOURCES) > deps.mk
+	bin/mkdep $(OBJDIR) $(ALLSOURCES) > Deps.mk
 

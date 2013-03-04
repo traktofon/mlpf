@@ -1,5 +1,6 @@
 module tokenize_m
 
+   use map_str2int_m
    use strutil_m
    use base_m
    implicit none
@@ -16,10 +17,8 @@ module tokenize_m
       character(len=maxtoklen) :: tokbuf(maxtok)
       integer                  :: rpos
       integer                  :: wpos
-      character(len=maxtoklen) :: stoptoks(maxtok)
-      integer                  :: nstop
-      character(len=maxtoklen) :: ignotoks(maxtok)
-      integer                  :: nigno
+      type(map_str2int_t)      :: stops
+      type(map_str2int_t)      :: ignos
       character(len=c5)        :: filename
       integer                  :: lun
       integer                  :: linenumber
@@ -29,6 +28,8 @@ module tokenize_m
       procedure :: init
       procedure :: add_stop
       procedure :: add_igno
+      procedure :: del_stop
+      procedure :: del_igno
       procedure :: clear_stop
       procedure :: clear_igno
       procedure :: is_stopped
@@ -64,7 +65,7 @@ module tokenize_m
 
    subroutine clear_stop(t)
       class(tokenizer_t),intent(inout) :: t
-      t%nstop = 0
+      call map_destroy(t%stops)
       t%stopped = .false.
    end subroutine clear_stop
 
@@ -72,36 +73,45 @@ module tokenize_m
    subroutine add_stop(t,word)
       class(tokenizer_t),intent(inout) :: t
       character(len=*),intent(in)      :: word
-      if (t%nstop == maxtok) &
-         call t%error("too many stop-tokens")
-      t%nstop = t%nstop + 1
-      t%stoptoks(t%nstop) = word
+      call map_put(t%stops,word,1)
    end subroutine add_stop
+
+
+   subroutine del_stop(t,word)
+      class(tokenizer_t),intent(inout) :: t
+      character(len=*),intent(in)      :: word
+      call map_del_safe(t%stops,word)
+   end subroutine del_stop
 
 
    subroutine clear_igno(t)
       class(tokenizer_t),intent(inout) :: t
-      t%nigno = 0
+      call map_destroy(t%ignos)
    end subroutine clear_igno
 
 
    subroutine add_igno(t,word)
       class(tokenizer_t),intent(inout) :: t
       character(len=*),intent(in)      :: word
-      if (t%nigno == maxtok) &
-         call t%error("too many ignore-tokens")
-      t%nigno = t%nigno + 1
-      t%ignotoks(t%nigno) = word
+      call map_put(t%ignos,word,1)
    end subroutine add_igno
+
+
+   subroutine del_igno(t,word)
+      class(tokenizer_t),intent(inout) :: t
+      character(len=*),intent(in)      :: word
+      call map_del_safe(t%ignos,word)
+   end subroutine del_igno
 
 
    function is_stopped(t)
       class(tokenizer_t),intent(inout) :: t
       logical                          :: is_stopped
+      integer                          :: idum
       if (.not. t%stopped) then
          ! check again
          t%stopped = t%rpos==t%wpos .or. &
-                     is_element_of(t%tokbuf(t%rpos), t%stoptoks(1:t%nstop))
+                     map_has(t%stops, t%tokbuf(t%rpos))
       endif
       is_stopped = t%stopped
    end function is_stopped
@@ -110,9 +120,10 @@ module tokenize_m
    function stopreason(t)
       class(tokenizer_t),intent(in) :: t
       integer                       :: stopreason
+      integer                       :: idum
       if (t%rpos == t%wpos) then
          stopreason = STOPREASON_EOF
-      elseif (is_element_of(t%tokbuf(t%rpos), t%stoptoks(1:t%nstop))) then
+      elseif (map_has(t%stops, t%tokbuf(t%rpos))) then
          stopreason = STOPREASON_STOPWORD
       else
          stopreason = STOPREASON_NONE
@@ -129,7 +140,7 @@ module tokenize_m
             exit
          else
             token = t%tokbuf(t%rpos)
-            if (.not. is_element_of(token, t%ignotoks(1:t%nigno))) exit
+            if (.not.map_has(t%ignos,token)) exit
             call t%gofwd
          endif
       enddo
