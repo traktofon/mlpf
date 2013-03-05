@@ -5,8 +5,11 @@
 FC := gfortran
 
 # the compiler options
-FFLAGS := -Wall -g -fbounds-check
+FFLAGS := -Wall -g -fcheck=all
 #FFLAGS := -O2
+
+# the compiler flag that specifies where .mod files are put
+MODFLAG := -J
 
 # the linking options
 LDFLAGS :=
