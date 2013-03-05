@@ -96,7 +96,7 @@ module #mod#_m
       type(mapnode_t),pointer   :: node => null()
       type(iterstack_t),pointer :: next => null()
       type(iterstack_t),pointer :: prev => null()
-   end type
+   end type iterstack_t
 
 
    contains
