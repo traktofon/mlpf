@@ -344,8 +344,8 @@ module tuckerdecomp_m
    ! 3-dim. tensor.
    !--------------------------------------------------------------------
       implicit none
-      real(dbl),intent(in)  :: v(vd,gd,nd)
       integer,intent(in)    :: vd,gd,nd
+      real(dbl),intent(in)  :: v(vd,gd,nd)
       real(dbl),intent(out) :: dm(gd,gd)
       integer               :: a,b,vi,ni
       dm = 0.d0

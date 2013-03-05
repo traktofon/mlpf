@@ -38,7 +38,7 @@ vpath %.f90 coul4
 # general build rules
 
 $(OBJDIR)/%.o: %.f90
-	$(FC) $(FFLAGS) -I$(OBJDIR) -J$(OBJDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
 
 $(OBJDIR)/%.mod: $(OBJDIR)/%.o
 	@true
