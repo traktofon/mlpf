@@ -48,9 +48,9 @@ module dof_m
       procedure(unpickle_dof),nopass,pointer :: unpickle
    end type doftyp_t
 
-   integer               :: num_doftyps = 0
-   integer,parameter     :: max_doftyps = 32
-   type(doftyp_t),target :: doftyps(max_doftyps)
+   integer,save               :: num_doftyps = 0
+   integer,parameter          :: max_doftyps = 32
+   type(doftyp_t),target,save :: doftyps(max_doftyps)
 
 
    contains

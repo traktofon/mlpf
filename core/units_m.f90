@@ -18,7 +18,7 @@ module units_m
       character(len=c1)   :: desc
    end type unitclass_t
 
-   type(unitclass_t),target :: &
+   type(unitclass_t),target,save :: &
       units_energy, units_mass, units_length, units_momentum, units_time, units
 
    real(dbl),parameter :: ufs = 41.34137333656d0
