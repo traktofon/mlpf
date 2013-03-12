@@ -202,7 +202,7 @@ module #mod#_m
    ! * runtime ~ Theta(n)
    !--------------------------------------------------------------------
       type(#mod#_t),intent(inout) :: map
-      call iter_empty(map%iter)
+      call iter_flush(map%iter)
       call dispose(map%root)
    end subroutine map1_destroy
 
@@ -214,7 +214,7 @@ module #mod#_m
    ! to map_iter_next will return the item with the smallest key.
    !--------------------------------------------------------------------
       type(#mod#_t),intent(inout) :: map
-      call iter_empty(map%iter)
+      call iter_flush(map%iter)
       call iter_fill(map%iter,map%root)
    end subroutine map1_iter_start
 
@@ -511,13 +511,13 @@ module #mod#_m
 
 
    !--------------------------------------------------------------------
-   subroutine iter_empty(iter)
+   subroutine iter_flush(iter)
    !--------------------------------------------------------------------
       type(iterstack_t),pointer :: iter
       do while (associated(iter))
          call iter_pop(iter)
       enddo
-   end subroutine iter_empty
+   end subroutine iter_flush
 
 
 end module #mod#_m
