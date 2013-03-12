@@ -40,7 +40,7 @@ module parse_pbasis_m
          call tkner%error("unknown basis type")
       call tkner%gofwd
 
-      call tkner%clear_igno
+      call tkner%del_igno("(EOL)")
       bparse => btyp%parse
       call bparse(dof,tkner)
       call dof%set_label(mlabel)

@@ -107,7 +107,6 @@ module tokenize_m
    function is_stopped(t)
       class(tokenizer_t),intent(inout) :: t
       logical                          :: is_stopped
-      integer                          :: idum
       if (.not. t%stopped) then
          ! check again
          t%stopped = t%rpos==t%wpos .or. &
@@ -120,7 +119,6 @@ module tokenize_m
    function stopreason(t)
       class(tokenizer_t),intent(in) :: t
       integer                       :: stopreason
-      integer                       :: idum
       if (t%rpos == t%wpos) then
          stopreason = STOPREASON_EOF
       elseif (map_has(t%stops, t%tokbuf(t%rpos))) then
@@ -303,6 +301,7 @@ module tokenize_m
       real(dbl)                       :: val
       character(len=maxtoklen)        :: token
       integer                         :: pord
+      val = 0.d0
       token = t%get()
       if (strcmpci(token(1:3),"2pi")==0) then
          if (token(4:4) == " ") then
@@ -318,7 +317,6 @@ module tokenize_m
       else
          if (.not.present(flag)) goto 500
          flag = .false.
-         val  = 0.d0
       endif
       return
  500  call t%error('expected 2pi or 2pi/m')

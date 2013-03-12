@@ -18,7 +18,7 @@ module units_m
       character(len=c1)   :: desc
    end type unitclass_t
 
-   type(unitclass_t),target,save :: &
+   type(unitclass_t),save :: &
       units_energy, units_mass, units_length, units_momentum, units_time, units
 
    real(dbl),parameter :: ufs = 41.34137333656d0
@@ -67,67 +67,87 @@ module units_m
 
 
    subroutine init_units_energy
-      type(map_str2dbl_t),pointer :: map
-      map => units_energy%map
       units_energy%desc = "energy"
-      call map_put(map, "au",       1.d0)
-      call map_put(map, "mH",       1.d-3)
-      call map_put(map, "eV",       1.d0/uev)
-      call map_put(map, "meV",      1.d-3/uev)
-      call map_put(map, "eV-1",     uev)
-      call map_put(map, "cm-1",     1.d0/invcm)
-      call map_put(map, "kcal/mol", 1.d0/kcal)
-      call map_put(map, "kJ/mol",   1.d0/kjoule)
-      call map_put(map, "kelvin",   1.d0/kelvin)
-      call map_put(map, "aJ",       1.d0/attojoule)
-      call map_put(map, "debye",    debye)
+      call put("au",       1.d0)
+      call put("mH",       1.d-3)
+      call put("eV",       1.d0/uev)
+      call put("meV",      1.d-3/uev)
+      call put("eV-1",     uev)
+      call put("cm-1",     1.d0/invcm)
+      call put("kcal/mol", 1.d0/kcal)
+      call put("kJ/mol",   1.d0/kjoule)
+      call put("kelvin",   1.d0/kelvin)
+      call put("aJ",       1.d0/attojoule)
+      call put("debye",    debye)
+      contains
+      subroutine put(label,cval)
+         character(len=*),intent(in) :: label
+         real(dbl),intent(in)        :: cval
+         call map_put(units_energy%map, label, cval)
+      end subroutine put
    end subroutine init_units_energy
 
 
    subroutine init_units_mass
-      type(map_str2dbl_t),pointer :: map
-      map => units_mass%map
       units_mass%desc = "mass"
-      call map_put(map, "au",     1.d0)
-      call map_put(map, "AMU",    atomicmassunit)
-      call map_put(map, "H-mass", hydrogenmass)
-      call map_put(map, "D-mass", deuteriummass)
-      call map_put(map, "p-mass", protonmass)
+      call put("au",     1.d0)
+      call put("AMU",    atomicmassunit)
+      call put("H-mass", hydrogenmass)
+      call put("D-mass", deuteriummass)
+      call put("p-mass", protonmass)
+      contains
+      subroutine put(label,cval)
+         character(len=*),intent(in) :: label
+         real(dbl),intent(in)        :: cval
+         call map_put(units_mass%map, label, cval)
+      end subroutine put
    end subroutine init_units_mass
 
 
    subroutine init_units_length
-      type(map_str2dbl_t),pointer :: map
-      map => units_length%map
       units_length%desc = "length"
-      call map_put(map, "au",    1.d0)
-      call map_put(map, "Angst", 1.d0/angstroem)
-      call map_put(map, "pm",    1.d0/picometer)
-      call map_put(map, "nm",    1.d0/nanometer)
-      call map_put(map, "PI",    PI)
-      call map_put(map, "deg",   PI/180.d0)
+      call put("au",    1.d0)
+      call put("Angst", 1.d0/angstroem)
+      call put("pm",    1.d0/picometer)
+      call put("nm",    1.d0/nanometer)
+      call put("PI",    PI)
+      call put("deg",   PI/180.d0)
+      contains
+      subroutine put(label,cval)
+         character(len=*),intent(in) :: label
+         real(dbl),intent(in)        :: cval
+         call map_put(units_length%map, label, cval)
+      end subroutine put
    end subroutine init_units_length
 
 
    subroutine init_units_momentum
-      type(map_str2dbl_t),pointer :: map
-      map => units_momentum%map
       units_momentum%desc = "momentum"
-      call map_put(map, "au",      1.d0)
-      call map_put(map, "Angst-1", angstroem)
-      call map_put(map, "pm-1",    picometer)
-      call map_put(map, "nm-1",    nanometer)
+      call put("au",      1.d0)
+      call put("Angst-1", angstroem)
+      call put("pm-1",    picometer)
+      call put("nm-1",    nanometer)
+      contains
+      subroutine put(label,cval)
+         character(len=*),intent(in) :: label
+         real(dbl),intent(in)        :: cval
+         call map_put(units_momentum%map, label, cval)
+      end subroutine put
    end subroutine init_units_momentum
 
 
    subroutine init_units_time
-      type(map_str2dbl_t),pointer :: map
-      map => units_time%map
       units_time%desc = "time"
-      call map_put(map, "au",   1.d0)
-      call map_put(map, "fs",   ufs)
-      call map_put(map, "ps",   1.d3*ufs)
-      call map_put(map, "fs-1", 1.d0/ufs)
+      call put("au",   1.d0)
+      call put("fs",   ufs)
+      call put("ps",   1.d3*ufs)
+      call put("fs-1", 1.d0/ufs)
+      contains
+      subroutine put(label,cval)
+         character(len=*),intent(in) :: label
+         real(dbl),intent(in)        :: cval
+         call map_put(units_time%map, label, cval)
+      end subroutine put
    end subroutine init_units_time
 
 
