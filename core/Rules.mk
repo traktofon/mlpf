@@ -18,6 +18,7 @@ SOURCES := \
    meta_dof_m.f90     \
    modeutil_m.f90     \
    parse_pbasis_m.f90 \
+   parse_pot_m.f90    \
    parse_run_m.f90    \
    parse_tree_m.f90   \
    strutil_m.f90      \
