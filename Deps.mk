@@ -10,7 +10,8 @@ obj/dvr_m.o obj/dvr_m.mod: core/dvr_m.f90 obj/dof_m.mod obj/base_m.mod
 obj/dvr_sin_m.o obj/dvr_sin_m.mod: core/dvr_sin_m.f90 obj/dvr_m.mod \
  obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
 obj/genpot_m.o obj/genpot_m.mod: core/genpot_m.f90 obj/base_m.mod \
- obj/logging_m.mod obj/dof_m.mod obj/dof_io_m.mod obj/base_m.mod
+ obj/logging_m.mod obj/dof_m.mod obj/dof_io_m.mod obj/mmap_m.mod \
+ obj/base_m.mod
 obj/graphviz_m.o obj/graphviz_m.mod: core/graphviz_m.f90 obj/dof_m.mod \
  obj/tree_m.mod
 obj/hiertuck_m.o obj/hiertuck_m.mod: core/hiertuck_m.f90 obj/logging_m.mod \
