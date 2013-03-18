@@ -4,6 +4,7 @@ module genpot_m
    use base_m
    use logging_m
    use dof_m
+   use dof_io_m
    implicit none
 
    contains
@@ -11,7 +12,6 @@ module genpot_m
    !--------------------------------------------------------------------
    subroutine buildpot(fn,dofs,v,vnorm,vmax,vmin)
    !--------------------------------------------------------------------
-      implicit none
       interface
          function fn(x)
             use base_m
@@ -68,5 +68,14 @@ module genpot_m
 
    end subroutine buildpot
 
+
+
+   !--------------------------------------------------------------------
+   subroutine loadpot(fname)
+   !--------------------------------------------------------------------
+      character(len=*),intent(in) :: fname
+      ! TODO
+   end subroutine loadpot
+   
 
 end module genpot_m

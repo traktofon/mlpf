@@ -27,6 +27,7 @@ include $(dd)/Rules.mk
 # where to look for source files
 
 vpath %.f90 core
+vpath %.c   core
 vpath %.f90 test
 vpath %.f90 pes3c
 vpath %.f   pes3c
@@ -45,6 +46,9 @@ $(OBJDIR)/%.mod: $(OBJDIR)/%.o
 
 $(OBJDIR)/%.o: %.f
 	$(FC) $(FFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 # other rules
 
