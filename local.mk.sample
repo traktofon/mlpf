@@ -4,12 +4,18 @@
 # the Fortran compiler
 FC := gfortran
 
-# the compiler options
+# the Fortran compiler options
 FFLAGS := -Wall -g -fcheck=all
 #FFLAGS := -O2
 
-# the compiler flag that specifies where .mod files are put
+# the Fortran compiler flag that specifies where .mod files are put
 MODFLAG := -J
+
+# the C compiler
+CC := gcc
+
+# the C compiler options
+CFLAGS := -Wall -g
 
 # the linking options
 LDFLAGS :=
