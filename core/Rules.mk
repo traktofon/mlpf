@@ -1,6 +1,6 @@
 # vim: set ts=8 noexpandtab :
 
-SOURCES := \
+FSOURCES := \
    base_m.f90         \
    dof_io_m.f90       \
    dof_m.f90          \
@@ -16,6 +16,7 @@ SOURCES := \
    map_str2dbl_m.f90  \
    map_str2int_m.f90  \
    meta_dof_m.f90     \
+   mmap_m.f90         \
    modeutil_m.f90     \
    parse_pbasis_m.f90 \
    parse_pot_m.f90    \
@@ -27,13 +28,18 @@ SOURCES := \
    tuckerdecomp_m.f90 \
    units_m.f90
 
+CSOURCES := \
+   c_io.c
+
 SRC_$(dd) := \
-   $(addprefix $(dd)/,$(SOURCES))
+   $(addprefix $(dd)/,$(FSOURCES)) \
+   $(addprefix $(dd)/,$(CSOURCES))
 
 MODS_$(dd) := \
-   $(addprefix $(OBJDIR)/,$(SOURCES:.f90=.mod))
+   $(addprefix $(OBJDIR)/,$(FSOURCES:.f90=.mod))
 
 OBJS_$(dd) := \
-   $(addprefix $(OBJDIR)/,$(SOURCES:.f90=.o))
+   $(addprefix $(OBJDIR)/,$(FSOURCES:.f90=.o)) \
+   $(addprefix $(OBJDIR)/,$(CSOURCES:.c=.o))
 
 ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
