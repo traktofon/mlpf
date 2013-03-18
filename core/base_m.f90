@@ -7,6 +7,7 @@ module base_m
    integer,parameter :: cdbl = kind( (1.0_dbl,1.0_dbl) )
 
    integer,parameter :: c1 = 16
+   integer,parameter :: c2 = 32
    integer,parameter :: c5 = 240
 
    ! Math
