@@ -66,3 +66,7 @@ clean:
 dep:
 	bin/mkdep $(OBJDIR) $(ALLSOURCES) > Deps.mk
 
+# ctags
+
+tags: $(ALLSOURCES)
+	ctags --fortran-kinds=+i $(ALLSOURCES)
