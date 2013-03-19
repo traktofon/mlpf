@@ -1,23 +1,23 @@
 program mlpf
 
    use tokenize_m
-   use units_m
    use parse_run_m
    use parse_pot_m
    use parse_pbasis_m
    use parse_tree_m
    use runopts_m
-   use tree_m
-   use hiertuck_m
-   use graphviz_m
+   use meta_dof_m
+   use units_m
+   use base_m
    implicit none
 
-   type(node_t),pointer     :: topnode
-   type(tree_t),pointer     :: tree
+   character(len=c5)        :: inpfile
+   type(inp_node_t),pointer :: inptree
+!  type(tree_t),pointer     :: tree
    type(tokenizer_t)        :: tkner
    character(len=maxtoklen) :: token
    type(runopts_t)          :: runopts
-   integer                  :: m,idot
+!  integer                  :: m,idot
    class(dof_t),pointer     :: dof
    type(dof_tp),allocatable :: dofs(:)
    logical                  :: have_run
@@ -27,9 +27,15 @@ program mlpf
    integer                  :: f,i
 
 
+   call get_command_argument(1,inpfile)
+   if (inpfile == "") then
+      call usage
+      stop 1
+   endif
+
    call init_doftyps
    call init_units
-   call tkner%init("test.inp")
+   call tkner%init(trim(inpfile))
 
    allocate(dofs(0))
    have_run    = .false.
@@ -56,7 +62,7 @@ program mlpf
          if (have_pbasis) call tkner%error("duplicate PBASIS-SECTION")
          have_pbasis = .true.
 
-      elseif (parse_tree(tkner,dofs,topnode)) then
+      elseif (parse_tree(tkner,inptree)) then
          if (have_tree) call tkner%error("duplicate TREE-SECTION")
          have_tree = .true.
 
@@ -89,13 +95,27 @@ program mlpf
 
    if (.not.have_tree) &
       call stopnow("missing TREE-SECTION")
-   tree => make_tree(topnode)
-   do m=1,tree%numleaves
-      call init_leaf(tree%leaves(m)%p, dofs)
-   enddo
-   call open_logfile(idot,"tree.dot")
-   call mkdot(idot,tree,dofs,2)
-   call flush(idot)
-   call close_logfile(idot)
+!  tree => make_tree(topnode)
+!  do m=1,tree%numleaves
+!     call init_leaf(tree%leaves(m)%p, dofs)
+!  enddo
+!  call open_logfile(idot,"tree.dot")
+!  call mkdot(idot,tree,dofs,2)
+!  call flush(idot)
+!  call close_logfile(idot)
+
+   call dispose_inp_tree(inptree)
+
+   contains
+
+   subroutine usage
+      write (*,'(a,4(/a))') &
+         "------------------------------------------------------------",&
+         "Usage: mlpf [ options ] inputfile",&
+         "Options:",&
+         "  (none)",&
+         "------------------------------------------------------------"
+   end subroutine usage
 
 end program mlpf
+
