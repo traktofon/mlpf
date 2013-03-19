@@ -1,6 +1,7 @@
 syntax:glob
 
 local.mk
+tags
 *.swp
 *.orig
 obj/
