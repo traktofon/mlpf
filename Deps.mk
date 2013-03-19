@@ -45,25 +45,7 @@ obj/tuckerdecomp_m.o obj/tuckerdecomp_m.mod: core/tuckerdecomp_m.f90 \
 obj/units_m.o obj/units_m.mod: core/units_m.f90 obj/base_m.mod \
  obj/tokenize_m.mod obj/map_str2dbl_m.mod
 obj/c_io.o: core/c_io.c
-obj/testfunc_m.o obj/testfunc_m.mod: test/testfunc_m.f90 obj/base_m.mod
-obj/test.o: test/test.f90 obj/logging_m.mod obj/meta_dof_m.mod obj/tree_m.mod \
- obj/graphviz_m.mod obj/genpot_m.mod obj/tuckerdecomp_m.mod \
- obj/hiertuck_m.mod obj/linear_m.mod obj/testfunc_m.mod
-obj/pes3cvpd.o: pes3c/pes3cvpd.f
-obj/pes3c_m.o obj/pes3c_m.mod: pes3c/pes3c_m.f90 obj/base_m.mod
-obj/pes3ctest.o: pes3c/pes3ctest.f90 obj/meta_dof_m.mod obj/tree_m.mod \
- obj/graphviz_m.mod obj/genpot_m.mod obj/pes3c_m.mod \
- obj/tuckerdecomp_m.mod obj/hiertuck_m.mod obj/linear_m.mod
-obj/zundel_m.o obj/zundel_m.mod: zundel/zundel_m.f90 obj/base_m.mod
-obj/zundeltest.o: zundel/zundeltest.f90 obj/meta_dof_m.mod obj/tree_m.mod \
- obj/graphviz_m.mod obj/genpot_m.mod obj/zundel_m.mod \
- obj/tuckerdecomp_m.mod obj/hiertuck_m.mod obj/linear_m.mod
-obj/hfco.o: hfco/hfco.f
-obj/hfco_m.o obj/hfco_m.mod: hfco/hfco_m.f90 obj/base_m.mod
-obj/hfcotest.o: hfco/hfcotest.f90 obj/meta_dof_m.mod obj/tree_m.mod \
- obj/graphviz_m.mod obj/genpot_m.mod obj/hfco_m.mod \
- obj/tuckerdecomp_m.mod obj/hiertuck_m.mod obj/linear_m.mod
-obj/coul4_m.o obj/coul4_m.mod: coul4/coul4_m.f90 obj/base_m.mod
-obj/coul4test.o: coul4/coul4test.f90 obj/meta_dof_m.mod obj/tree_m.mod \
- obj/graphviz_m.mod obj/genpot_m.mod obj/coul4_m.mod \
- obj/tuckerdecomp_m.mod obj/hiertuck_m.mod obj/linear_m.mod
+obj/mlpf.o: main/mlpf.f90 obj/tokenize_m.mod obj/units_m.mod \
+ obj/parse_run_m.mod obj/parse_pot_m.mod obj/parse_pbasis_m.mod \
+ obj/parse_tree_m.mod obj/tree_m.mod obj/hiertuck_m.mod \
+ obj/graphviz_m.mod
