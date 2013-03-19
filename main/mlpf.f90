@@ -5,6 +5,7 @@ program mlpf
    use parse_pot_m
    use parse_pbasis_m
    use parse_tree_m
+   use inp_tree_m
    use runopts_m
    use meta_dof_m
    use units_m
@@ -104,7 +105,7 @@ program mlpf
 !  call flush(idot)
 !  call close_logfile(idot)
 
-   call dispose_inp_tree(inptree)
+   call dispose_inp_node(inptree)
 
    contains
 
