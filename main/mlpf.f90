@@ -6,6 +6,7 @@ program mlpf
    use parse_pot_m
    use parse_pbasis_m
    use parse_tree_m
+   use runopts_m
    use tree_m
    use hiertuck_m
    use graphviz_m
@@ -15,6 +16,7 @@ program mlpf
    type(tree_t),pointer     :: tree
    type(tokenizer_t)        :: tkner
    character(len=maxtoklen) :: token
+   type(runopts_t)          :: runopts
    integer                  :: m,idot
    class(dof_t),pointer     :: dof
    type(dof_tp),allocatable :: dofs(:)
@@ -42,7 +44,7 @@ program mlpf
       token = tkner%get()
       if (tkner%stopreason() == STOPREASON_STOPWORD) exit
 
-      if (parse_run(tkner)) then
+      if (parse_run(tkner,runopts)) then
          if (have_run) call tkner%error("duplicate RUN-SECTION")
          have_run = .true.
    

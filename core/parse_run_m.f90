@@ -2,14 +2,17 @@ module parse_run_m
 
    use tokenize_m
    use strutil_m
+   use runopts_m
    implicit none
 
    contains
 
-   function parse_run(tkner) result (flag)
+   function parse_run(tkner,runopts) result (flag)
       type(tokenizer_t),intent(inout) :: tkner
+      type(runopts_t),intent(out)     :: runopts
       logical                         :: flag
       character(len=maxtoklen)        :: token
+      logical                         :: lopt
 
       token = tkner%get()
       if (strcmpci(token,"RUN-SECTION") /= 0) then
@@ -18,22 +21,51 @@ module parse_run_m
       endif
       call tkner%clear_stop
       call tkner%add_stop("END-RUN-SECTION")
-      call tkner%gofwd()
+      call tkner%gofwd
       flag = .true.
 
-      write (*,'(a)') '(RUN-SECTION currently ignored)'
+      ! Set defaults.
+      runopts%lgendvr = .true.
+      runopts%lgenpot = .true.
+      runopts%dvrfile = "(NONE)"
+      runopts%potfile = "(NONE)"
+
       do
          token = tkner%get()
          if (token == "(END)") exit
          call lcase(token)
-         ! TODO
-         call tkner%gofwd()
+      
+         if (token == "gendvr") then
+            runopts%lgendvr = .true.
+            call tkner%gofwd
+
+         elseif (token == "readdvr") then
+            runopts%lgendvr = .false.
+            call tkner%gofwd
+            token = parse_option1(tkner,lopt)
+            if (lopt) runopts%dvrfile = trim(token)
+
+         elseif (token == "genpot") then
+            runopts%lgenpot = .true.
+            call tkner%gofwd
+
+         elseif (token == "readpot") then
+            runopts%lgenpot = .false.
+            call tkner%gofwd
+            token = parse_option1(tkner,lopt)
+            if (lopt) runopts%potfile = trim(token)
+          
+         elseif (token == "=" .or. token == ",") then
+            call tkner%error("expected keyword instead of option")
+         else
+            call tkner%error("unknown keyword")
+         endif
       enddo
 
       if (tkner%stopreason() /= STOPREASON_STOPWORD) &
          call tkner%error("expected end of section")
       call tkner%clear_stop
-      call tkner%gofwd()
+      call tkner%gofwd
 
    end function parse_run
 
