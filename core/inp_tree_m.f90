@@ -2,11 +2,13 @@
 module inp_tree_m
 !=======================================================================
 
+   use tree_m
+   use dof_m
    use base_m
    implicit none
    private
 
-   public :: make_inp_leaf, make_inp_node, dispose_inp_node
+   public :: make_inp_leaf, make_inp_node, dispose_inp_node, inp2node
 
    type,public :: inp_node_t
       logical                   :: isleaf
@@ -75,5 +77,42 @@ module inp_tree_m
       deallocate(node)
    end subroutine dispose_inp_node
 
+
+   !--------------------------------------------------------------------
+   recursive function inp2node(inpn,dofs) result(node)
+   ! Converts an inp_node_t to a node_t.
+   !--------------------------------------------------------------------
+      type(node_t),pointer      :: node
+      type(inp_node_t),pointer  :: inpn
+      type(dof_tp),intent(in)   :: dofs(:)
+      type(node_tp),allocatable :: children(:)
+      integer,allocatable       :: dofnums(:)
+      integer                   :: nmodes,m,f
+      character(len=c1)         :: label
+      if (inpn%isleaf) then
+         ! Leaf: map modelabels to dof-numbers
+         nmodes = inpn%nmodes
+         allocate(dofnums(nmodes))
+         do m=1,nmodes
+            label = inpn%labels(m)
+            f = find_dofnum_by_label(label, dofs)
+            if (f==0) &
+               call stopnow("modelabel not found: "//trim(label))
+            dofnums(m) = f
+         enddo
+         node => make_leaf(dofnums)
+         deallocate(dofnums)
+      else
+         ! Non-leaf: convert children first
+         nmodes = inpn%nmodes
+         allocate(children(nmodes))
+         do m=1,nmodes
+            children(m)%p => inp2node(inpn%modes(m)%p, dofs)
+         enddo
+         node => make_node(children)
+         deallocate(children)
+      endif
+      call set_maxnbasis(node, inpn%val)
+   end function inp2node
 
 end module inp_tree_m
