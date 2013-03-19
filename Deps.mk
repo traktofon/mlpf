@@ -16,7 +16,8 @@ obj/graphviz_m.o obj/graphviz_m.mod: core/graphviz_m.f90 obj/dof_m.mod \
  obj/tree_m.mod
 obj/hiertuck_m.o obj/hiertuck_m.mod: core/hiertuck_m.f90 obj/logging_m.mod \
  obj/dof_m.mod obj/tree_m.mod obj/tuckerdecomp_m.mod
-obj/inp_tree_m.o obj/inp_tree_m.mod: core/inp_tree_m.f90 obj/base_m.mod
+obj/inp_tree_m.o obj/inp_tree_m.mod: core/inp_tree_m.f90 obj/tree_m.mod \
+ obj/dof_m.mod obj/base_m.mod
 obj/linear_m.o obj/linear_m.mod: core/linear_m.f90 obj/base_m.mod
 obj/logging_m.o obj/logging_m.mod: core/logging_m.f90
 obj/map_str2dbl_m.o obj/map_str2dbl_m.mod: core/map_str2dbl_m.f90 \
@@ -48,5 +49,5 @@ obj/units_m.o obj/units_m.mod: core/units_m.f90 obj/base_m.mod \
 obj/c_io.o: core/c_io.c
 obj/mlpf.o: main/mlpf.f90 obj/tokenize_m.mod obj/parse_run_m.mod \
  obj/parse_pot_m.mod obj/parse_pbasis_m.mod obj/parse_tree_m.mod \
- obj/inp_tree_m.mod obj/runopts_m.mod obj/meta_dof_m.mod obj/units_m.mod \
- obj/base_m.mod
+ obj/inp_tree_m.mod obj/tree_m.mod obj/runopts_m.mod obj/meta_dof_m.mod \
+ obj/hiertuck_m.mod obj/graphviz_m.mod obj/units_m.mod obj/base_m.mod

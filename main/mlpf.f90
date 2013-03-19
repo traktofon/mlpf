@@ -6,19 +6,23 @@ program mlpf
    use parse_pbasis_m
    use parse_tree_m
    use inp_tree_m
+   use tree_m
    use runopts_m
    use meta_dof_m
+   use hiertuck_m
+   use graphviz_m
    use units_m
    use base_m
    implicit none
 
    character(len=c5)        :: inpfile
    type(inp_node_t),pointer :: inptree
-!  type(tree_t),pointer     :: tree
+   type(node_t),pointer     :: topnode
+   type(tree_t),pointer     :: tree
    type(tokenizer_t)        :: tkner
    character(len=maxtoklen) :: token
    type(runopts_t)          :: runopts
-!  integer                  :: m,idot
+   integer                  :: m,idot
    class(dof_t),pointer     :: dof
    type(dof_tp),allocatable :: dofs(:)
    logical                  :: have_run
@@ -96,14 +100,16 @@ program mlpf
 
    if (.not.have_tree) &
       call stopnow("missing TREE-SECTION")
-!  tree => make_tree(topnode)
-!  do m=1,tree%numleaves
-!     call init_leaf(tree%leaves(m)%p, dofs)
-!  enddo
-!  call open_logfile(idot,"tree.dot")
-!  call mkdot(idot,tree,dofs,2)
-!  call flush(idot)
-!  call close_logfile(idot)
+
+   topnode => inp2node(inptree,dofs)
+   tree => make_tree(topnode)
+   do m=1,tree%numleaves
+      call init_leaf(tree%leaves(m)%p, dofs)
+   enddo
+   call open_logfile(idot,"tree.dot")
+   call mkdot(idot,tree,dofs,2)
+   call flush(idot)
+   call close_logfile(idot)
 
    call dispose_inp_node(inptree)
 
