@@ -72,14 +72,14 @@ module genpot_m
 
 
    !--------------------------------------------------------------------
-   function loadpot(fname,vfmt) result(v)
+   subroutine loadpot(fname,vfmt,dofs,v)
    !--------------------------------------------------------------------
       character(len=*),intent(in) :: fname
       integer,intent(in)          :: vfmt
+      type(dof_tp),pointer        :: dofs(:)
       real(dbl),pointer           :: v(:)
       integer                     :: lun,ierr,f,j
       real(dbl)                   :: fver
-      type(dof_tp),pointer        :: dofs(:)
       integer*8                   :: vlen
       integer                     :: nitems,niobuf,vpos,nleft,nread
 
@@ -133,8 +133,9 @@ module genpot_m
  
  500  call stopnow("error reading file: "//trim(fname))
 
-   end function loadpot
-   
+   end subroutine loadpot
+
+
 
    !--------------------------------------------------------------------
    subroutine rdvpotpars(lun)
