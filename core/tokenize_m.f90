@@ -228,7 +228,7 @@ module tokenize_m
          'Parse Error at "',trim(token),'": ',trim(msg), &
          'encountered at line ',t%linenumber,&
          ' of file "',trim(t%filename),'", reading:', &
-         '"',trim(t%currentline),'"'
+         '"',trim(adjustl(t%currentline)),'"'
       call stopnow("Input Error")
    end subroutine error
 
@@ -321,5 +321,43 @@ module tokenize_m
       return
  500  call t%error('expected 2pi or 2pi/m')
    end function parse_angle
+
+
+   function parse_option1(t,flag) result(str)
+      type(tokenizer_t),intent(inout) :: t
+      logical,intent(out)             :: flag
+      character(len=maxtoklen)        :: str
+      character(len=maxtoklen)        :: token
+      token = t%get()
+      if (token == "=") then
+         call t%gofwd
+         str = t%get()
+         call t%gofwd
+         flag = .true.
+      else
+         str = " "
+         flag = .false.
+      endif
+      return
+   end function parse_option1
+
+
+   function parse_option2(t,flag) result(str)
+      type(tokenizer_t),intent(inout) :: t
+      logical,intent(out)             :: flag
+      character(len=maxtoklen)        :: str
+      character(len=maxtoklen)        :: token
+      token = t%get()
+      if (token == ",") then
+         call t%gofwd
+         str = t%get()
+         call t%gofwd
+         flag = .true.
+      else
+         str = " "
+         flag = .false.
+      endif
+      return
+   end function parse_option2
 
 end module tokenize_m

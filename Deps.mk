@@ -32,10 +32,11 @@ obj/parse_pbasis_m.o obj/parse_pbasis_m.mod: core/parse_pbasis_m.f90 \
 obj/parse_pot_m.o obj/parse_pot_m.mod: core/parse_pot_m.f90 \
  obj/tokenize_m.mod obj/strutil_m.mod
 obj/parse_run_m.o obj/parse_run_m.mod: core/parse_run_m.f90 \
- obj/tokenize_m.mod obj/strutil_m.mod
+ obj/tokenize_m.mod obj/strutil_m.mod obj/runopts_m.mod
 obj/parse_tree_m.o obj/parse_tree_m.mod: core/parse_tree_m.f90 \
  obj/tokenize_m.mod obj/tree_m.mod obj/meta_dof_m.mod obj/dof_m.mod \
  obj/strutil_m.mod obj/base_m.mod
+obj/runopts_m.o obj/runopts_m.mod: core/runopts_m.f90 obj/base_m.mod
 obj/strutil_m.o obj/strutil_m.mod: core/strutil_m.f90
 obj/tokenize_m.o obj/tokenize_m.mod: core/tokenize_m.f90 \
  obj/map_str2int_m.mod obj/strutil_m.mod obj/base_m.mod
@@ -47,5 +48,5 @@ obj/units_m.o obj/units_m.mod: core/units_m.f90 obj/base_m.mod \
 obj/c_io.o: core/c_io.c
 obj/mlpf.o: main/mlpf.f90 obj/tokenize_m.mod obj/units_m.mod \
  obj/parse_run_m.mod obj/parse_pot_m.mod obj/parse_pbasis_m.mod \
- obj/parse_tree_m.mod obj/tree_m.mod obj/hiertuck_m.mod \
+ obj/parse_tree_m.mod obj/runopts_m.mod obj/tree_m.mod obj/hiertuck_m.mod \
  obj/graphviz_m.mod

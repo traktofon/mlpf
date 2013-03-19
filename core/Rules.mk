@@ -22,6 +22,7 @@ FSOURCES := \
    parse_pot_m.f90    \
    parse_run_m.f90    \
    parse_tree_m.f90   \
+   runopts_m.f90      \
    strutil_m.f90      \
    tokenize_m.f90     \
    tree_m.f90         \

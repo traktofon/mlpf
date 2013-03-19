@@ -4,9 +4,4 @@ local.mk
 *.swp
 *.orig
 obj/
-scr/
-test/test
-pes3c/pes3ctest
-zundel/zundeltest
-hfco/hfcotest
-coul4/coul4test
+main/mlpf
