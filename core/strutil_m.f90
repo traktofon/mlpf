@@ -11,7 +11,7 @@ module strutil_m
    implicit none
    private
 
-   public :: antiscan, lcase, ucase, strcmpci, is_element_of
+   public :: antiscan, lcase, ucase, strcmpci, is_element_of, endswith
 
    integer,parameter :: ilca = ichar('a')
    integer,parameter :: ilcz = ichar('z')
@@ -141,4 +141,19 @@ module strutil_m
       enddo
    end function is_element_of
 
+
+   !--------------------------------------------------------------------
+   pure function endswith(str,pat)
+   ! Checks whether a given string _str_ ends with the given
+   ! substring _pat_.
+   !--------------------------------------------------------------------
+      logical                     :: endswith
+      character(len=*),intent(in) :: str,pat
+      integer                     :: lstr,lpat,pos1
+      lstr = len_trim(str)
+      lpat = len_trim(pat)
+      pos1 = max(lstr-lpat+1,1)
+      endswith = (str(pos1:lstr) == pat(1:lpat))
+   end function endswith
+      
 end module strutil_m

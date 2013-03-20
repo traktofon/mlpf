@@ -7,9 +7,9 @@ module parse_run_m
 
    contains
 
-   function parse_run(tkner,runopts) result (flag)
+   function parse_run(tkner,opts) result (flag)
       type(tokenizer_t),intent(inout) :: tkner
-      type(runopts_t),intent(out)     :: runopts
+      type(runopts_t),intent(out)     :: opts
       logical                         :: flag
       character(len=maxtoklen)        :: token
 
@@ -24,11 +24,13 @@ module parse_run_m
       flag = .true.
 
       ! Set defaults.
-      runopts%lgendvr = .true.
-      runopts%lgenpot = .true.
-      runopts%dvrfile = NOFILE
-      runopts%potfile = NOFILE
-      runopts%vpotfmt = 1
+      opts%lgendvr = .true.
+      opts%lgenpot = .true.
+      opts%lgendot = .false.
+      opts%dvrfile = NOFILE
+      opts%potfile = NOFILE
+      opts%dotfile = NOFILE
+      opts%vpotfmt = 1
 
       do
          token = tkner%get()
@@ -36,37 +38,46 @@ module parse_run_m
          call lcase(token)
       
          if (token == "gendvr") then
-            runopts%lgendvr = .true.
+            opts%lgendvr = .true.
             call tkner%gofwd
 
          elseif (token == "readdvr") then
-            runopts%lgendvr = .false.
+            opts%lgendvr = .false.
             call tkner%gofwd
             if (have_option1(tkner)) then
                token = tkner%get()
-               runopts%dvrfile = trim(token)
+               opts%dvrfile = trim(token)
                call tkner%gofwd
             endif
 
          elseif (token == "genpot") then
-            runopts%lgenpot = .true.
+            opts%lgenpot = .true.
             call tkner%gofwd
 
          elseif (token == "readpot") then
-            runopts%lgenpot = .false.
+            opts%lgenpot = .false.
             call tkner%gofwd
             if (have_option1(tkner)) then
                token = tkner%get()
-               runopts%potfile = trim(token)
+               opts%potfile = trim(token)
                call tkner%gofwd
             endif
           
          elseif (token == "vpot-format") then
             call tkner%gofwd
             if (have_option1(tkner)) then
-               runopts%vpotfmt = parse_int(tkner)
+               opts%vpotfmt = parse_int(tkner)
             else
                call tkner%error("keyword needs an option: "//trim(token))
+            endif
+
+         elseif (token == "graphviz") then
+            opts%lgendot = .true.
+            call tkner%gofwd
+            if (have_option1(tkner)) then
+               token = tkner%get()
+               opts%dotfile = trim(token)
+               call tkner%gofwd
             endif
 
          elseif (token == "=" .or. token == ",") then

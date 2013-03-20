@@ -16,15 +16,14 @@ program mlpf
    use hiertuck_m
    use graphviz_m
    use units_m
+   use strutil_m
    use base_m
    implicit none
 
    character(len=c5)        :: inpfile
    type(inp_node_t),pointer :: inptree => null()
-   type(node_t),pointer     :: topnode
    type(tree_t),pointer     :: tree
    type(runopts_t)          :: runopts
-   integer                  :: m,idot
    type(dof_tp),pointer     :: dofs(:)  => null()
    type(dof_tp),pointer     :: pdofs(:) => null()
    logical                  :: have_run
@@ -48,24 +47,13 @@ program mlpf
 
    call rundvr
    call runpot
-
-   if (.not.have_tree) &
-      call stopnow("missing TREE-SECTION")
-
-   topnode => inp2node(inptree,dofs)
-   tree => make_tree(topnode)
-   do m=1,tree%numleaves
-      call init_leaf(tree%leaves(m)%p, dofs)
-   enddo
-   call open_logfile(idot,"tree.dot")
-   call mkdot(idot,tree,dofs,2)
-   call flush(idot)
-   call close_logfile(idot)
+   call runtree
 
    call dispose_inp_node(inptree)
 
+!=======================================================================
    contains
-
+!=======================================================================
 
    !--------------------------------------------------------------------
    subroutine usage
@@ -200,12 +188,14 @@ program mlpf
       else
          ! read potential
          fname = runopts%potfile
-         if (fname == NOFILE) then
+         if (fname == NOFILE) fname = ""
+         if (fname == "" .or. endswith(fname,"/")) then
             ! if no filename was specified, set default
+            ! if pathname was specified, add default vpot filename
             if (runopts%vpotfmt == 1) then
-               fname = "vpot"
+               fname = trim(fname)//"vpot"
             else
-               fname = "vpot2"
+               fname = trim(fname)//"vpot2"
             endif
          endif
          call loadpot(fname, runopts%vpotfmt, vdofs, v)
@@ -215,6 +205,37 @@ program mlpf
 
       endif
    end subroutine runpot
+
+
+   !--------------------------------------------------------------------
+   subroutine runtree
+   !--------------------------------------------------------------------
+      type(node_t),pointer :: topnode
+      integer              :: m,lun,ierr
+      character(len=c5)    :: dotfile
+
+      if (.not.have_tree) &
+         call stopnow("missing TREE-SECTION")
+
+      topnode => inp2node(inptree,dofs)
+      tree => make_tree(topnode)
+      do m=1,tree%numleaves
+         call init_leaf(tree%leaves(m)%p, dofs)
+      enddo
+
+      if (runopts%lgendot) then
+         dotfile = runopts%dotfile
+         if (dotfile == NOFILE) &
+            dotfile="tree.dot"
+         open(newunit=lun, file=trim(dotfile), status="unknown", form="formatted", iostat=ierr)
+         if (ierr /= 0) &
+            call stopnow("cannot create file: "//trim(dotfile))
+         call mkdot(lun, tree, dofs, 2)
+         call flush(lun)
+         close(lun)
+      endif
+   end subroutine runtree
+
 
 end program mlpf
 
