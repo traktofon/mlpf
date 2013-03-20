@@ -44,7 +44,7 @@ module dof_io_m
       do f=1,ndof
          doftyp => find_doftyp_by_id(basis(f))
          if (.not.associated(doftyp)) &
-            call stopnow("rddvrdef : unknown basis type")
+            call stopnow("rddvrdef: unknown basis type")
          unpickle => doftyp%unpickle
          call unpickle(dofs(f)%p, gdim(f), ipbaspar(:,f), rpbaspar(:,f))
          call dofs(f)%p%set_label(modelabel(f))
@@ -53,7 +53,7 @@ module dof_io_m
       deallocate(xend,rpbaspar,ipbaspar,basis,gdim,modelabel)
       return
 
-  500 call stopnow("rddvrdef : error reading dvr information")
+  500 call stopnow("rddvrdef: error reading dvr information")
 
    end function rddvrdef
 

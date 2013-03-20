@@ -21,11 +21,11 @@ module genpot_m
          end function fn
       end interface
       type(dof_tp),intent(in) :: dofs(:)
-      real(dbl),intent(out)   :: v(:)
+      real(dbl),pointer       :: v(:)
       real(dbl),intent(out)   :: vnorm,vmax,vmin
       integer,save            :: logid=0
       character(len=160)      :: msg
-      integer                 :: j,f,ndofs
+      integer                 :: vlen,ierr,j,f,ndofs
       integer                 :: idx(size(dofs))
       real(dbl)               :: x(size(dofs))
       real(dbl)               :: v2sum
@@ -33,6 +33,11 @@ module genpot_m
       call get_logger(logid,"data")
       write (msg,'(a,i0)') 'Full potential size = ',size(v)
       call write_log(logid, LOGLEVEL_INFO, msg)
+
+      vlen = gridsize(dofs)
+      allocate(v(vlen),stat=ierr)
+      if (ierr /= 0) &
+         call stopnow("buildpot: cannot allocate memory")
 
       v2sum  = 0.d0
       vmax   = -1.d99
