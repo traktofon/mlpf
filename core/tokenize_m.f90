@@ -38,7 +38,7 @@ module tokenize_m
       procedure :: get
       procedure :: put
       procedure :: gofwd
-     !procedure :: goback
+      procedure :: goback
       procedure :: produce
       procedure :: error
    end type tokenizer_t
@@ -172,6 +172,15 @@ module tokenize_m
          endif
       endif
    end subroutine gofwd
+
+
+   subroutine goback(t)
+      class(tokenizer_t),intent(inout) :: t
+      t%rpos = t%rpos - 1
+      if (t%rpos==0)  t%rpos = maxtok
+      if (t%rpos==t%wpos) call t%error("too many tokens")
+      t%stopped = .false.
+   end subroutine goback
 
 
    subroutine produce(t)

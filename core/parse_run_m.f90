@@ -66,7 +66,7 @@ module parse_run_m
             if (have_option1(tkner)) then
                runopts%vpotfmt = parse_int(tkner)
             else
-               call tkner%error("keyword needs an option")
+               call tkner%error("keyword needs an option: "//trim(token))
             endif
 
          elseif (token == "=" .or. token == ",") then
