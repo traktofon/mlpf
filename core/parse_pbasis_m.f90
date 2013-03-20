@@ -57,7 +57,7 @@ module parse_pbasis_m
    function parse_pbasis(tkner,dofs) result(flag)
    !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: tkner
-      type(dof_tp),allocatable        :: dofs(:)
+      type(dof_tp),pointer            :: dofs(:)
       logical                         :: flag
       character(len=maxtoklen)        :: token
       class(dof_t),pointer            :: dof
@@ -85,7 +85,6 @@ module parse_pbasis_m
          ndof = ndof+1
          dofs1(ndof)%p => dof
       enddo
-      if (allocated(dofs)) deallocate(dofs)
       allocate(dofs(ndof))
       dofs(:) = dofs1(1:ndof)
       flag = .true.

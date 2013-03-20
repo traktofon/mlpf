@@ -122,4 +122,16 @@ module dof_m
       enddo
    end function find_doftyp_by_id
 
+
+   function gridsize(dofs)
+      integer*8               :: gridsize
+      type(dof_tp),intent(in) :: dofs(:)
+      integer                 :: f
+      gridsize = 1
+      do f=1,size(dofs)
+         gridsize = gridsize * dofs(f)%p%gdim
+      enddo
+   end function gridsize
+
+
 end module dof_m

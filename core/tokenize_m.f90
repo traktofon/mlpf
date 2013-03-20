@@ -26,6 +26,7 @@ module tokenize_m
       logical                  :: stopped
       contains
       procedure :: init
+      procedure :: dispose
       procedure :: add_stop
       procedure :: add_igno
       procedure :: del_stop
@@ -61,6 +62,13 @@ module tokenize_m
       if (ierr/=0) call stopnow('cannot open file "'//trim(filename)//'"')
       call t%produce
    end subroutine init
+
+
+   subroutine dispose(t)
+      class(tokenizer_t),intent(inout) :: t
+      call map_destroy(t%stops)
+      call map_destroy(t%ignos)
+   end subroutine dispose
 
 
    subroutine clear_stop(t)
@@ -323,41 +331,34 @@ module tokenize_m
    end function parse_angle
 
 
-   function parse_option1(t,flag) result(str)
+   function have_option1(t) result(flag)
       type(tokenizer_t),intent(inout) :: t
-      logical,intent(out)             :: flag
-      character(len=maxtoklen)        :: str
+      logical                         :: flag
       character(len=maxtoklen)        :: token
       token = t%get()
       if (token == "=") then
          call t%gofwd
-         str = t%get()
-         call t%gofwd
          flag = .true.
       else
-         str = " "
          flag = .false.
       endif
       return
-   end function parse_option1
+   end function have_option1
 
 
-   function parse_option2(t,flag) result(str)
+   function have_option2(t) result(flag)
       type(tokenizer_t),intent(inout) :: t
-      logical,intent(out)             :: flag
-      character(len=maxtoklen)        :: str
+      logical                         :: flag
       character(len=maxtoklen)        :: token
       token = t%get()
       if (token == ",") then
          call t%gofwd
-         str = t%get()
-         call t%gofwd
          flag = .true.
       else
-         str = " "
          flag = .false.
       endif
       return
-   end function parse_option2
+   end function have_option2
+
 
 end module tokenize_m

@@ -12,7 +12,6 @@ module parse_run_m
       type(runopts_t),intent(out)     :: runopts
       logical                         :: flag
       character(len=maxtoklen)        :: token
-      logical                         :: lopt
 
       token = tkner%get()
       if (strcmpci(token,"RUN-SECTION") /= 0) then
@@ -27,8 +26,9 @@ module parse_run_m
       ! Set defaults.
       runopts%lgendvr = .true.
       runopts%lgenpot = .true.
-      runopts%dvrfile = "(NONE)"
-      runopts%potfile = "(NONE)"
+      runopts%dvrfile = NOFILE
+      runopts%potfile = NOFILE
+      runopts%vpotfmt = 1
 
       do
          token = tkner%get()
@@ -42,8 +42,11 @@ module parse_run_m
          elseif (token == "readdvr") then
             runopts%lgendvr = .false.
             call tkner%gofwd
-            token = parse_option1(tkner,lopt)
-            if (lopt) runopts%dvrfile = trim(token)
+            if (have_option1(tkner)) then
+               token = tkner%get()
+               runopts%dvrfile = trim(token)
+               call tkner%gofwd
+            endif
 
          elseif (token == "genpot") then
             runopts%lgenpot = .true.
@@ -52,9 +55,20 @@ module parse_run_m
          elseif (token == "readpot") then
             runopts%lgenpot = .false.
             call tkner%gofwd
-            token = parse_option1(tkner,lopt)
-            if (lopt) runopts%potfile = trim(token)
+            if (have_option1(tkner)) then
+               token = tkner%get()
+               runopts%potfile = trim(token)
+               call tkner%gofwd
+            endif
           
+         elseif (token == "vpot-format") then
+            call tkner%gofwd
+            if (have_option1(tkner)) then
+               runopts%vpotfmt = parse_int(tkner)
+            else
+               call tkner%error("keyword needs an option")
+            endif
+
          elseif (token == "=" .or. token == ",") then
             call tkner%error("expected keyword instead of option")
          else
