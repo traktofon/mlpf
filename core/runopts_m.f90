@@ -6,8 +6,10 @@ module runopts_m
    type :: runopts_t
       logical           :: lgendvr
       logical           :: lgenpot
+      logical           :: lgendot
       character(len=c5) :: dvrfile
       character(len=c5) :: potfile
+      character(len=c5) :: dotfile
       integer           :: vpotfmt
    end type runopts_t
 
