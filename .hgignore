@@ -6,3 +6,4 @@ tags
 *.orig
 obj/
 main/mlpf
+main/test
