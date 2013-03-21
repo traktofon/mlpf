@@ -340,6 +340,33 @@ module tokenize_m
    end function parse_angle
 
 
+   function parse_sym(t,flag) result(sym)
+      type(tokenizer_t),intent(inout) :: t
+      logical,intent(out),optional    :: flag
+      integer                         :: sym
+      character(len=maxtoklen)        :: token
+      sym = 0
+      token = t%get()
+      call lcase(token)
+      if (token=="all") then
+         sym = 0
+      elseif (token=="odd") then
+         sym = 1
+      elseif (token=="even") then
+         sym = 2
+      else
+         if (present(flag)) then
+            flag = .false.
+            return
+         else
+            call t%error("expected all/odd/even")
+         endif
+      endif
+      if (present(flag)) flag = .true.
+      call t%gofwd
+   end function parse_sym
+
+
    function have_option1(t) result(flag)
       type(tokenizer_t),intent(inout) :: t
       logical                         :: flag
