@@ -134,4 +134,13 @@ module dof_m
    end function gridsize
 
 
+   subroutine dofs_shape(dofs,vdim)
+      type(dof_tp),intent(in) :: dofs(:)
+      integer,intent(out)     :: vdim(:)
+      integer                 :: f
+      do f=1,size(dofs)
+         vdim(f) = dofs(f)%p%gdim
+      enddo
+   end subroutine dofs_shape
+
 end module dof_m

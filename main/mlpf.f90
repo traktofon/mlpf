@@ -31,6 +31,8 @@ program mlpf
    logical                  :: have_pbasis
    logical                  :: have_tree
    real(dbl),pointer        :: v(:)
+   integer,pointer          :: vdim(:)
+   real(dbl)                :: accerr2
 
    call get_command_argument(1,inpfile)
    if (inpfile == "") then
@@ -38,18 +40,27 @@ program mlpf
       stop 1
    endif
 
+   ! initialize global data structures
    call init_doftyps
    call init_units
 
+   ! parse the input file
    call parse_input
    if (.not.have_run) &
       call stopnow("missing RUN-SECTION")
 
+   ! create the DVR definition -> dofs
    call rundvr
-   call runpot
-   call runtree
 
+   ! create the potential data -> v
+   call runpot
+
+   ! create the MLPF tree -> tree
+   call runtree
    call dispose_inp_node(inptree)
+
+   ! create an initial potfit
+   call runpf
 
 !=======================================================================
    contains
@@ -141,10 +152,9 @@ program mlpf
          if (ierr /=0 ) &
             call stopnow("cannot read file version: "//trim(fname))
          dofs => rddvrdef(lun,fver)
+         close(lun)
 
       endif
-      call initdvr(dofs)
-
    end subroutine rundvr
 
 
@@ -179,6 +189,7 @@ program mlpf
             call stopnow("missing POTENTIAL-SECTION")
          if (.not.associated(dofs)) &
             call stopnow("cannot build potential without DVR definition")
+         call initdvr(dofs)
          ! TODO:
          ! implement parsing of POT-SECTION
          ! map defined DOFs to the DOFs required by the pot.func.
@@ -200,8 +211,9 @@ program mlpf
          endif
          call loadpot(fname, runopts%vpotfmt, vdofs, v)
          ! TODO: check DVR consistency
+         if (have_pbasis) &
+            write(*,*) 'WARNING: using DVR from vpot file, ignoring PBASIS-SECTION'
          dofs => vdofs
-         call initdvr(dofs)
 
       endif
    end subroutine runpot
@@ -236,6 +248,15 @@ program mlpf
       endif
    end subroutine runtree
 
+
+   !--------------------------------------------------------------------
+   subroutine runpf
+   !--------------------------------------------------------------------
+      allocate(vdim(tree%numleaves))
+      call leaf_shape(tree,vdim)
+      call potfit_from_v(tree, v, vdim, 0.d0, accerr2)
+   end subroutine runpf
+   
 
 end program mlpf
 
