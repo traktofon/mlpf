@@ -292,7 +292,7 @@ module tuckerdecomp_m
    ! v will be reallocated, and vdim will be overwritten!
    !--------------------------------------------------------------------
       implicit none
-      real(dbl),allocatable    :: v(:)
+      real(dbl),pointer        :: v(:)
       integer,intent(inout)    :: vdim(:)
       type(basis_t),intent(in) :: basis(:)
       real(dbl),allocatable    :: u(:)
