@@ -250,7 +250,7 @@ module hiertuck_m
    !--------------------------------------------------------------------
       implicit none
       type(tree_t),intent(in) :: t
-      real(dbl),allocatable   :: v(:)
+      real(dbl),pointer       :: v(:)
       type(node_t),pointer    :: no
       integer                 :: vdim(t%numdofs)
       integer                 :: xdim(t%numdofs)
@@ -297,7 +297,7 @@ module hiertuck_m
                   d1 = d1+1
                enddo
                d2 = d2+1
-           endif
+            endif
          enddo
          write (msg,'(a,i0,a,99(x,i0))') '  layer ',l,': vdim =', (vdim(i), i=1,order)
          call write_log(logid_data, LOGLEVEL_DEBUG, msg)
