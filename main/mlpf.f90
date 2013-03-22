@@ -32,7 +32,7 @@ program mlpf
    logical                  :: have_tree
    real(dbl),pointer        :: v(:)
    integer,pointer          :: vdim(:)
-   real(dbl)                :: accerr2
+   real(dbl)                :: accerr2,err2limit
 
    call get_command_argument(1,inpfile)
    if (inpfile == "") then
@@ -45,7 +45,7 @@ program mlpf
    call init_units
 
    ! parse the input file
-   call parse_input
+   call runinp
    if (.not.have_run) &
       call stopnow("missing RUN-SECTION")
 
@@ -62,6 +62,13 @@ program mlpf
    ! create an initial potfit
    call runpf
 
+   ! create the multi-layer potfit
+   call runmlpf
+
+   ! create the graphviz input file
+   call rundot
+
+
 !=======================================================================
    contains
 !=======================================================================
@@ -77,7 +84,7 @@ program mlpf
 
 
    !--------------------------------------------------------------------
-   subroutine parse_input
+   subroutine runinp
    !--------------------------------------------------------------------
       type(tokenizer_t)        :: tkner
       character(len=maxtoklen) :: token
@@ -122,7 +129,7 @@ program mlpf
 
       call tkner%dispose
       
-   end subroutine parse_input
+   end subroutine runinp
 
 
    !--------------------------------------------------------------------
@@ -223,8 +230,7 @@ program mlpf
    subroutine runtree
    !--------------------------------------------------------------------
       type(node_t),pointer :: topnode
-      integer              :: m,lun,ierr
-      character(len=c5)    :: dotfile
+      integer              :: m
 
       if (.not.have_tree) &
          call stopnow("missing TREE-SECTION")
@@ -235,6 +241,15 @@ program mlpf
          call init_leaf(tree%leaves(m)%p, dofs)
       enddo
 
+   end subroutine runtree
+
+
+   !--------------------------------------------------------------------
+   subroutine rundot
+   !--------------------------------------------------------------------
+      integer           :: lun,ierr
+      character(len=c5) :: dotfile
+
       if (runopts%lgendot) then
          dotfile = runopts%dotfile
          if (dotfile == NOFILE) &
@@ -242,21 +257,41 @@ program mlpf
          open(newunit=lun, file=trim(dotfile), status="unknown", form="formatted", iostat=ierr)
          if (ierr /= 0) &
             call stopnow("cannot create file: "//trim(dotfile))
-         call mkdot(lun, tree, dofs, 2)
+         call mkdot(lun, tree, dofs)
          call flush(lun)
          close(lun)
       endif
-   end subroutine runtree
+
+   end subroutine rundot
 
 
    !--------------------------------------------------------------------
    subroutine runpf
    !--------------------------------------------------------------------
+      integer   :: vlen
+      real(dbl) :: err2
+
       allocate(vdim(tree%numleaves))
-      call leaf_shape(tree,vdim)
-      call potfit_from_v(tree, v, vdim, 0.d0, accerr2)
+      call leaf_shape(tree,vdim,vlen)
+      err2limit = vlen * (runopts%rmse)**2
+      call potfit_from_v(tree, v, vdim, err2limit, err2)
+      accerr2 = accerr2 + err2
+
    end subroutine runpf
    
+
+   !--------------------------------------------------------------------
+   subroutine runmlpf
+   !--------------------------------------------------------------------
+      integer   :: vlen
+      real(dbl) :: err2
+
+      vlen = product(vdim)
+      call compute_ht(tree, v(1:vlen), vdim, err2limit-accerr2, err2)
+      accerr2 = accerr2 + err2
+
+   end subroutine runmlpf
+
 
 end program mlpf
 

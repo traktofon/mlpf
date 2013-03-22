@@ -7,7 +7,7 @@ obj/dvr_exp_m.o obj/dvr_exp_m.mod: core/dvr_exp_m.f90 obj/dvr_m.mod \
 obj/dvr_ho_m.o obj/dvr_ho_m.mod: core/dvr_ho_m.f90 obj/dvr_m.mod \
  obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
 obj/dvr_leg_m.o obj/dvr_leg_m.mod: core/dvr_leg_m.f90 obj/dvr_m.mod \
- obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
+ obj/dof_m.mod obj/tokenize_m.mod obj/base_m.mod
 obj/dvr_m.o obj/dvr_m.mod: core/dvr_m.f90 obj/dof_m.mod obj/base_m.mod
 obj/dvr_sin_m.o obj/dvr_sin_m.mod: core/dvr_sin_m.f90 obj/dvr_m.mod \
  obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
@@ -37,7 +37,7 @@ obj/parse_pbasis_m.o obj/parse_pbasis_m.mod: core/parse_pbasis_m.f90 \
 obj/parse_pot_m.o obj/parse_pot_m.mod: core/parse_pot_m.f90 \
  obj/tokenize_m.mod obj/strutil_m.mod
 obj/parse_run_m.o obj/parse_run_m.mod: core/parse_run_m.f90 \
- obj/tokenize_m.mod obj/strutil_m.mod obj/runopts_m.mod
+ obj/tokenize_m.mod obj/units_m.mod obj/strutil_m.mod obj/runopts_m.mod
 obj/parse_tree_m.o obj/parse_tree_m.mod: core/parse_tree_m.f90 \
  obj/tokenize_m.mod obj/inp_tree_m.mod obj/base_m.mod
 obj/runopts_m.o obj/runopts_m.mod: core/runopts_m.f90 obj/base_m.mod
