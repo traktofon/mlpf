@@ -7,6 +7,7 @@ module runopts_m
       logical           :: lgendvr
       logical           :: lgenpot
       logical           :: lgendot
+      character(len=c5) :: namedir
       character(len=c5) :: dvrfile
       character(len=c5) :: potfile
       character(len=c5) :: dotfile
