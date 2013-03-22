@@ -1,6 +1,7 @@
 module parse_run_m
 
    use tokenize_m
+   use units_m
    use strutil_m
    use runopts_m
    implicit none
@@ -31,6 +32,7 @@ module parse_run_m
       opts%potfile = NOFILE
       opts%dotfile = NOFILE
       opts%vpotfmt = 1
+      opts%rmse = 0.d0
 
       do
          token = tkner%get()
@@ -78,6 +80,14 @@ module parse_run_m
                token = tkner%get()
                opts%dotfile = trim(token)
                call tkner%gofwd
+            endif
+
+         elseif (token == "rmse") then
+            call tkner%gofwd
+            if (have_option1(tkner)) then
+               opts%rmse = parse_energy(tkner)
+            else
+               call tkner%error("keyword needs an option: "//trim(token))
             endif
 
          elseif (token == "=" .or. token == ",") then

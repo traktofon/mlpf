@@ -11,6 +11,7 @@ module runopts_m
       character(len=c5) :: potfile
       character(len=c5) :: dotfile
       integer           :: vpotfmt
+      real(dbl)         :: rmse
    end type runopts_t
 
    character(len=*),parameter :: NOFILE = "(NONE)"
