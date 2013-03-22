@@ -10,6 +10,7 @@ FSOURCES := \
    dvr_leg_m.f90      \
    dvr_m.f90          \
    dvr_sin_m.f90      \
+   fileutil_m.f90     \
    genpot_m.f90       \
    graphviz_m.f90     \
    hiertuck_m.f90     \

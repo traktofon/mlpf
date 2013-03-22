@@ -28,6 +28,7 @@ module parse_run_m
       opts%lgendvr = .true.
       opts%lgenpot = .true.
       opts%lgendot = .false.
+      opts%namedir = NOFILE
       opts%dvrfile = NOFILE
       opts%potfile = NOFILE
       opts%dotfile = NOFILE
@@ -39,7 +40,17 @@ module parse_run_m
          if (token == "(END)") exit
          call lcase(token)
       
-         if (token == "gendvr") then
+         if (token == "name") then
+            call tkner%gofwd
+            if (have_option1(tkner)) then
+               token = tkner%get()
+               opts%namedir = trim(token)
+               call tkner%gofwd
+            else
+               call tkner%error("keyword needs an option: "//trim(token))
+            endif
+
+         elseif (token == "gendvr") then
             opts%lgendvr = .true.
             call tkner%gofwd
 

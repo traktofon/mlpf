@@ -17,6 +17,7 @@ program mlpf
    use graphviz_m
    use units_m
    use strutil_m
+   use fileutil_m
    use base_m
    implicit none
 
@@ -46,8 +47,13 @@ program mlpf
 
    ! parse the input file
    call runinp
+
+   ! do some elementary checks
    if (.not.have_run) &
       call stopnow("missing RUN-SECTION")
+   if (runopts%namedir == NOFILE) &
+      call stopnow("no name-directory specified")
+   call mkdir(runopts%namedir)
 
    ! create the DVR definition -> dofs
    call rundvr
@@ -252,8 +258,8 @@ program mlpf
 
       if (runopts%lgendot) then
          dotfile = runopts%dotfile
-         if (dotfile == NOFILE) &
-            dotfile="tree.dot"
+         if (dotfile == NOFILE)  dotfile="tree.dot"
+         dotfile = trim(runopts%namedir) // "/" // trim(dotfile)
          open(newunit=lun, file=trim(dotfile), status="unknown", form="formatted", iostat=ierr)
          if (ierr /= 0) &
             call stopnow("cannot create file: "//trim(dotfile))
