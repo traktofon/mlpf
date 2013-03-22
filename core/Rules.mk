@@ -5,6 +5,7 @@ FSOURCES := \
    dof_io_m.f90       \
    dof_m.f90          \
    dvr_exp_m.f90      \
+   dvr_fft_m.f90      \
    dvr_ho_m.f90       \
    dvr_leg_m.f90      \
    dvr_m.f90          \

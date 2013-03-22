@@ -3,6 +3,7 @@ module meta_dof_m
    use dvr_ho_m
    use dvr_leg_m
    use dvr_sin_m
+   use dvr_fft_m
    use dvr_exp_m
    use dof_m
    use base_m
@@ -14,6 +15,7 @@ module meta_dof_m
       call init_doftyp_ho
       call init_doftyp_leg
       call init_doftyp_sin
+      call init_doftyp_fft
       call init_doftyp_exp
    end subroutine init_doftyps
 
