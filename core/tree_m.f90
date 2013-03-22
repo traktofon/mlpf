@@ -7,7 +7,9 @@ module tree_m
    private
 
    public :: node_t, node_tp, tree_t
-   public :: make_leaf, make_node, make_tree, examine_tree, leaf_shape, set_maxnbasis
+   public :: make_leaf, make_node, make_tree, &
+             examine_tree, leaf_shape, set_maxnbasis, &
+             pickle_tree, unpickle_tree
 
    type :: node_t
       !--- Local node-related data ---
@@ -123,7 +125,7 @@ module tree_m
       enddo
       ! Set tree-related data in nodes.
       do m=1,numnodes
-         node => tree%preorder(m)%p
+         node => tree%postorder(m)%p
          node%tree => tree
          node%num  =  m
       enddo
@@ -296,5 +298,63 @@ module tree_m
          (t%postorder(m)%p%num, m=1,t%numnodes)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
    end subroutine examine_tree
+
+
+   !--------------------------------------------------------------------
+   subroutine pickle_tree(t,lun)
+   ! Write a serialized description of the tree structure.
+   !--------------------------------------------------------------------
+      type(tree_t),intent(in) :: t
+      integer,intent(in)      :: lun
+      integer                 :: m,f
+      type(node_t),pointer    :: no
+      write(lun) t%numnodes
+      do m=1,t%numnodes
+         no => t%postorder(m)%p
+         write(lun) no%isleaf, no%nmodes
+         if (no%isleaf) then
+            write(lun) (no%dofs(f), f=1,no%nmodes)
+         else
+            write(lun) (no%modes(f)%p%num, f=1,no%nmodes)
+         endif
+      enddo
+   end subroutine pickle_tree
+
+
+   !--------------------------------------------------------------------
+   function unpickle_tree(lun) result(t)
+   !--------------------------------------------------------------------
+      integer,intent(in)        :: lun
+      type(tree_t),pointer      :: t
+      integer                   :: numnodes,nmodes,m,f
+      logical                   :: isleaf
+      type(node_tp),allocatable :: nodes(:),children(:)
+      integer,allocatable       :: modes(:)
+      type(node_t),pointer      :: topnode
+      read(lun) numnodes
+      allocate(nodes(numnodes))
+      do m=1,numnodes
+         read(lun) isleaf,nmodes
+         allocate(modes(nmodes))
+         read(lun) (modes(f), f=1,nmodes)
+         if (isleaf) then
+            ! modes contains the DOF numbers
+            nodes(m)%p => make_leaf(modes)
+         else
+            ! modes contains the post-order numbers of the child nodes
+            allocate(children(nmodes))
+            do f=1,nmodes
+               children(f)%p => nodes(modes(f))%p
+            enddo
+            nodes(m)%p => make_node(children)
+            deallocate(children)
+         endif
+         deallocate(modes)
+      enddo
+      ! last node is the topnode
+      topnode => nodes(numnodes)%p
+      deallocate(nodes)
+      t => make_tree(topnode)
+   end function unpickle_tree
 
 end module tree_m
