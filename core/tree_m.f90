@@ -308,13 +308,18 @@ module tree_m
       integer,intent(in)      :: lun
       integer                 :: m,f
       type(node_t),pointer    :: no
+      ! Write number of nodes in tree.
       write(lun) t%numnodes
+      ! Write the nodes in post-order. This makes deserializing easier.
       do m=1,t%numnodes
          no => t%postorder(m)%p
+         ! Write leaf flag and number of dofs/submodes
          write(lun) no%isleaf, no%nmodes
          if (no%isleaf) then
+            ! Leaf: write the DOF numbers
             write(lun) (no%dofs(f), f=1,no%nmodes)
          else
+            ! Non-leaf: write the post-order numbers of the child nodes
             write(lun) (no%modes(f)%p%num, f=1,no%nmodes)
          endif
       enddo
@@ -323,6 +328,8 @@ module tree_m
 
    !--------------------------------------------------------------------
    function unpickle_tree(lun) result(t)
+   ! Read a serialized description of the tree structure and
+   ! construct a tree from it.
    !--------------------------------------------------------------------
       integer,intent(in)        :: lun
       type(tree_t),pointer      :: t
@@ -331,29 +338,37 @@ module tree_m
       type(node_tp),allocatable :: nodes(:),children(:)
       integer,allocatable       :: modes(:)
       type(node_t),pointer      :: topnode
+      ! Read total number of nodes and allocate pointer array.
       read(lun) numnodes
       allocate(nodes(numnodes))
+      ! The nodes are coming in post-order, i.e. all children come
+      ! before their parent.
       do m=1,numnodes
+         ! Read leaf flag and number of dofs/submodes
          read(lun) isleaf,nmodes
+         ! Read the dof/submode numbers
          allocate(modes(nmodes))
          read(lun) (modes(f), f=1,nmodes)
          if (isleaf) then
-            ! modes contains the DOF numbers
+            ! Leaf: modes contains the DOF numbers
             nodes(m)%p => make_leaf(modes)
          else
-            ! modes contains the post-order numbers of the child nodes
+            ! Non-leaf: modes contains the post-order numbers of the child nodes
+            ! Gather pointers to the children in another array...
             allocate(children(nmodes))
             do f=1,nmodes
                children(f)%p => nodes(modes(f))%p
             enddo
+            ! ... and construct a new parent node for these children.
             nodes(m)%p => make_node(children)
             deallocate(children)
          endif
          deallocate(modes)
       enddo
-      ! last node is the topnode
+      ! Last node is the topnode.
       topnode => nodes(numnodes)%p
       deallocate(nodes)
+      ! Link tree structure.
       t => make_tree(topnode)
    end function unpickle_tree
 
