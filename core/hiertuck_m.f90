@@ -72,8 +72,8 @@ module hiertuck_m
          ! Set the maximum number of basis tensors we want.
          mdim = vdim(m)
          if (no%maxnbasis > 0)  mdim=min(mdim,no%maxnbasis)
-         ! Compute basis for this mode, store the basis tensors directly in the node.
-         call compute_basis_svd(v, vdim, m, layerlimit, mdim, no%basis, esq)
+         ! Compute basis for this mode, store the basis weights/tensors directly in the node.
+         call compute_basis_svd(v, vdim, m, layerlimit, mdim, no%wghts, no%basis, esq)
          no%nbasis = mdim
          ! Add the basis to the list, for later contraction.
          basis(m)%btyp = btyp_rect
@@ -220,7 +220,7 @@ module hiertuck_m
                mdim = vdim(d2)
                if (no%maxnbasis > 0)  mdim = min(mdim, no%maxnbasis)
                ! Compute the basis and store it in the node.
-               call compute_basis_svd(v(1:vlen), vdim(1:order), d2, layerlimit, mdim, no%basis, esq)
+               call compute_basis_svd(v(1:vlen), vdim(1:order), d2, layerlimit, mdim, no%wghts, no%basis, esq)
                write (msg,'(a,i0,a,i0,a,es8.2)') '  node ',no%num,' needs ',mdim,' basis tensors, err^2 = ',esq
                call write_log(logid_data, LOGLEVEL_INFO, msg)
                no%nbasis = mdim

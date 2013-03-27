@@ -27,6 +27,7 @@ module tree_m
       integer               :: plen                 ! product(ndim)
       integer               :: nbasis               ! actual number of basis tensors at this node
       integer               :: maxnbasis = 0        ! maximum number of basis tensors at this node
+      real(dbl),pointer     :: wghts(:) => null()   ! basis weights, dim=(nbasis)
       real(dbl),pointer     :: basis(:,:) => null() ! basis tensors, dim=(plen,nbasis)
    end type node_t
 
