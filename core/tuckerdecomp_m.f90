@@ -17,7 +17,7 @@ module tuckerdecomp_m
    contains
 
    !--------------------------------------------------------------------
-   subroutine compute_basis(v, gdim, m, limit, mdim, basis, ee2)
+   subroutine compute_basis(v, gdim, m, limit, mdim, wghts, basis, ee2)
    ! Computes the 1-dim. basis tensors for a Tucker decomposition of the
    ! tensor v along its m-th dimension.
    !--------------------------------------------------------------------
@@ -37,6 +37,7 @@ module tuckerdecomp_m
       integer,intent(in)    :: m          ! mode for which basis should be computed
       real(dbl),intent(in)  :: limit      ! accuracy limit for keeping the basis tensors
       integer,intent(inout) :: mdim       ! in:maximum/out:actual number of basis tensors
+      real(dbl),pointer     :: wghts(:)   ! the computed basis weights (allocated here)
       real(dbl),pointer     :: basis(:,:) ! the computed basis tensors (allocated here)
       real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
       integer               :: vd,gd,nd,lwork,info,nw,i
@@ -64,8 +65,10 @@ module tuckerdecomp_m
       nw  = min(mdim,nw)
       ee2 = basis_error_sq(eval,nw)
       ! Copy the important basis tensors.
+      allocate(wghts(nw))
       allocate(basis(gd,nw))
       do i=1,nw
+         wghts(i) = max(0.d0,eval(gd-i+1))
          basis(:,i) = dmat(:,gd-i+1)
       enddo
       mdim = nw
@@ -111,7 +114,7 @@ module tuckerdecomp_m
 
 
    !--------------------------------------------------------------------
-   subroutine compute_basis_svd(v, gdim, m, limit, mdim, basis, ee2)
+   subroutine compute_basis_svd(v, gdim, m, limit, mdim, wghts, basis, ee2)
    !--------------------------------------------------------------------
    ! Computes the 1-dim. basis tensors for a Tucker decomposition of the
    ! tensor v along its m-th dimension.
@@ -136,6 +139,7 @@ module tuckerdecomp_m
       integer,intent(in)    :: m          ! mode for which basis should be computed
       real(dbl),intent(in)  :: limit      ! accuracy limit for keeping the basis tensors
       integer,intent(inout) :: mdim       ! in:maximum/out:actual number of basis tensors
+      real(dbl),pointer     :: wghts(:)   ! the computed basis weights (allocated here)
       real(dbl),pointer     :: basis(:,:) ! the computed basis tensors (allocated here)
       real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
       real(dbl),allocatable :: vmat(:,:)  ! matricization of v
@@ -165,8 +169,10 @@ module tuckerdecomp_m
       nw  = min(mdim,nw)
       ee2 = basis_error_sq(sval,nw)
       ! Copy the important basis tensors.
+      allocate(wghts(nw))
       allocate(basis(gd,nw))
       do i=1,nw
+         wghts(i) = max(0.d0,sval(i))**2
          basis(:,i) = vmat(i,:)
       enddo
       mdim = nw
