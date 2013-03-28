@@ -245,15 +245,14 @@ program mlpf
       tree => make_tree(topnode)
       !call examine_tree(tree)
 
-      ! run over all leaf nodes
+      ! record the tree-order of the DOFs
+      ! and renumber the DOFs sequentially
       f = 1
       do m=1,tree%numleaves
          no => tree%leaves(m)%p
-         ! copy some DOF information into the leaf
-         call init_leaf(no, dofs)
-         ! record the tree-order of the DOFs
          do f1=1,no%nmodes
             tord(f) = no%dofs(f1)
+            no%dofs(f1) = f
             f = f+1
          enddo
       enddo
@@ -267,15 +266,13 @@ program mlpf
       enddo
       deallocate(dofs)
       dofs => dofs1
-      f = 1
+      !print *, "dof-order = ", ( trim(dofs(f)%p%label)//" ", f=1,size(dofs) )
+
+      ! now copy some DOF information into the leaf
       do m=1,tree%numleaves
          no => tree%leaves(m)%p
-         do f1=1,no%nmodes
-            no%dofs(f1) = f
-            f = f+1
-         enddo
+         call init_leaf(no, dofs)
       enddo
-      !print *, "dof-order = ", ( trim(dofs(f)%p%label)//" ", f=1,size(dofs) )
 
    end subroutine runtree
 
