@@ -2,6 +2,7 @@ module dof_m
 
    use base_m
    use tokenize_m
+   use strutil_m
    implicit none
 
    type,abstract :: dof_t
@@ -101,7 +102,7 @@ module dof_m
       integer                     :: i
       nullify(doftyp)
       do i=1,num_doftyps
-         if (doftyps(i)%sname == sname) then
+         if (strcmpci(doftyps(i)%sname,sname) == 0) then
             doftyp => doftyps(i)
             return
          endif

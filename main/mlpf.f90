@@ -233,7 +233,7 @@ program mlpf
    !--------------------------------------------------------------------
       type(node_t),pointer :: topnode,no
       integer              :: ndof,m,f,f1
-      integer              :: tord(tree%numdofs)
+      integer              :: tord(size(dofs))
       type(dof_tp),pointer :: dofs1(:)
 
 
@@ -243,6 +243,7 @@ program mlpf
       ! convert the input tree into an MLPF-tree
       topnode => inp2node(inptree,dofs)
       tree => make_tree(topnode)
+      !call examine_tree(tree)
 
       ! run over all leaf nodes
       f = 1
