@@ -115,7 +115,6 @@ module genpot_m
          if (fmap(f) == 0) &
             call stopnow("DOF not present in vpot: "//trim(dofs(f)%p%label))
       enddo
-      print *, "fmap = ", fmap
 
       ! check vpot DOFs and system DOFs for consistency
       !do f=1,ndof
