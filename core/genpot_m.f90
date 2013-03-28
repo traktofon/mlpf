@@ -142,8 +142,8 @@ module genpot_m
          ! Separate file with vpot data (no record markers).
          close(lun)
          fname1 = trim(fname)//".raw"
-         open(unit=lun, file=trim(fname1), status="old", &
-              form="unformatted", access="stream", err=510)
+         open(newunit=lun, file=trim(fname1), status="old", &
+              form="unformatted", access="stream", iostat=ierr)
          nitems = vlen
          niobuf = min(128*1024, nitems)
       endif
