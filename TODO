@@ -9,4 +9,5 @@
 * output generated MLPF
 
 * DOF order !?!
+  reorder data on reading
 
