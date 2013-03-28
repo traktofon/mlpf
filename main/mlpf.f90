@@ -267,6 +267,14 @@ program mlpf
       enddo
       deallocate(dofs)
       dofs => dofs1
+      f = 1
+      do m=1,tree%numleaves
+         no => tree%leaves(m)%p
+         do f1=1,no%nmodes
+            no%dofs(f1) = f
+            f = f+1
+         enddo
+      enddo
       !print *, "dof-order = ", ( trim(dofs(f)%p%label)//" ", f=1,size(dofs) )
 
    end subroutine runtree
