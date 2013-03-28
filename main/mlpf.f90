@@ -58,12 +58,12 @@ program mlpf
    ! create the DVR definition -> dofs
    call rundvr
 
-   ! create the potential data -> v
-   call runpot
-
    ! create the MLPF tree -> tree
    call runtree
    call dispose_inp_node(inptree)
+
+   ! create the potential data -> v
+   call runpot
 
    ! create an initial potfit
    call runpf
@@ -153,8 +153,9 @@ program mlpf
       else
          ! read the DVR
          fname = runopts%dvrfile
-         if (fname == NOFILE) &
-            return ! DVR info from vpot file will be used
+         if (fname == NOFILE) fname = ""
+         if (fname == "" .or. endswith(fname,"/")) &
+            fname = trim(fname)//"dvr"
          ! open the DVR file
          open(newunit=lun, file=trim(fname), status="old", form="unformatted", iostat=ierr)
          if (ierr /= 0) &
@@ -187,7 +188,6 @@ program mlpf
    subroutine runpot
    !--------------------------------------------------------------------
       character(len=c5)    :: fname
-      type(dof_tp),pointer :: vdofs(:)
 
       ! several possibilities:
       ! - have to build potential
@@ -195,12 +195,13 @@ program mlpf
       ! - have to load 1st stage potfit (natpot)
       ! determined by input file!
 
+      if (.not.associated(dofs)) &
+         call stopnow("runpot: missing DVR definition")
+
       if (runopts%lgenpot) then
          ! build potential
          if (.not.have_pot) &
             call stopnow("missing POTENTIAL-SECTION")
-         if (.not.associated(dofs)) &
-            call stopnow("cannot build potential without DVR definition")
          call initdvr(dofs)
          ! TODO:
          ! implement parsing of POT-SECTION
@@ -221,11 +222,7 @@ program mlpf
                fname = trim(fname)//"vpot2"
             endif
          endif
-         call loadpot(fname, runopts%vpotfmt, vdofs, v)
-         ! TODO: check DVR consistency
-         if (have_pbasis) &
-            write(*,*) 'WARNING: using DVR from vpot file, ignoring PBASIS-SECTION'
-         dofs => vdofs
+         call loadpot(fname, runopts%vpotfmt, dofs, v)
 
       endif
    end subroutine runpot
@@ -234,17 +231,42 @@ program mlpf
    !--------------------------------------------------------------------
    subroutine runtree
    !--------------------------------------------------------------------
-      type(node_t),pointer :: topnode
-      integer              :: m
+      type(node_t),pointer :: topnode,no
+      integer              :: ndof,m,f,f1
+      integer              :: tord(tree%numdofs)
+      type(dof_tp),pointer :: dofs1(:)
+
 
       if (.not.have_tree) &
          call stopnow("missing TREE-SECTION")
 
+      ! convert the input tree into an MLPF-tree
       topnode => inp2node(inptree,dofs)
       tree => make_tree(topnode)
+
+      ! run over all leaf nodes
+      f = 1
       do m=1,tree%numleaves
-         call init_leaf(tree%leaves(m)%p, dofs)
+         no => tree%leaves(m)%p
+         ! copy some DOF information into the leaf
+         call init_leaf(no, dofs)
+         ! record the tree-order of the DOFs
+         do f1=1,no%nmodes
+            tord(f) = no%dofs(f1)
+            f = f+1
+         enddo
       enddo
+
+      ! reorder the DOFs according to the tree-order
+      ndof = size(dofs)
+      !print *, "dof-order = ", ( trim(dofs(f)%p%label)//" ", f=1,size(dofs) )
+      allocate(dofs1(ndof))
+      do f=1,ndof
+         dofs1(f)%p => dofs(tord(f))%p
+      enddo
+      deallocate(dofs)
+      dofs => dofs1
+      !print *, "dof-order = ", ( trim(dofs(f)%p%label)//" ", f=1,size(dofs) )
 
    end subroutine runtree
 
