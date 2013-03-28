@@ -5,7 +5,6 @@ module genpot_m
    use logging_m
    use dof_m
    use dof_io_m
-   use mmap_m
    implicit none
 
    contains
@@ -83,60 +82,105 @@ module genpot_m
       integer,intent(in)          :: vfmt
       type(dof_tp),pointer        :: dofs(:)
       real(dbl),pointer           :: v(:)
-      integer                     :: lun,ierr,f,j
+      integer                     :: lun,ierr,ndof,f,j,k
+      type(dof_tp),pointer        :: vdofs(:)
+      real(dbl),allocatable       :: buf(:)
       real(dbl)                   :: fver
       integer*8                   :: vlen
-      integer                     :: nitems,niobuf,vpos,nleft,nread
+      integer                     :: nitems,niobuf,nleft,nread
+      character(len=c5)           :: fname1
+      integer                     :: vdim(size(dofs))
+      integer                     :: vidx(size(dofs))
+      integer                     :: fmap(size(dofs))
 
       ! Open the vpot file.
-      open(newunit=lun, file=trim(fname), status="old", form="unformatted", iostat=ierr)
-      if (ierr /= 0) &
-         call stopnow("cannot open file: "//trim(fname))
+      fname1 = fname
+      open(newunit=lun, file=trim(fname1), status="old", form="unformatted", err=510)
 
       ! Read Headers...
       ! File version
       read(unit=lun,iostat=ierr) fver
       if (ierr /=0 ) &
-         call stopnow("cannot read file version: "//trim(fname))
+         call stopnow("cannot read file version: "//trim(fname1))
       ! DVR information
-      dofs => rddvrdef(lun,fver)
+      vdofs => rddvrdef(lun,fver)
       ! vpot parameters -- TODO: which of those information do we need?
       call rdvpotpars(lun)
       ! ...done.
 
+      ! map vpot-DOFs to system-DOFs
+      ndof = size(dofs)
+      do f=1,ndof
+         fmap(f) = find_dofnum_by_label(dofs(f)%p%label, vdofs)
+         if (fmap(f) == 0) &
+            call stopnow("DOF not present in vpot: "//trim(dofs(f)%p%label))
+      enddo
+      print *, "fmap = ", fmap
+
+      ! check vpot DOFs and system DOFs for consistency
+      !do f=1,ndof
+      !   call chkdvr(vdofs(f), dofs(fmap(f))) TODO
+      !enddo
+
       ! How much data is there?
       vlen = 1
-      do f=1,size(dofs)
-         vlen = vlen * dofs(f)%p%gdim
+      do f=1,size(vdofs)
+         vdim(f) = vdofs(f)%p%gdim
+         vlen = vlen * vdim(f)
       enddo
+      allocate(v(vlen),stat=ierr)
+      if (ierr /=0 ) &
+         call stopnow("loadpot: cannot allocate memory")
 
-      ! Get the data.
+      ! Prepare for reading the data.
       if (vfmt==1) then
-         ! Traditional vpot file. No mapping.
-         allocate(v(vlen),stat=ierr)
-         if (ierr /=0 ) &
-            call stopnow("loadpot: cannot allocate memory")
+         ! Traditional vpot file.
          read(unit=lun,err=500) nitems,niobuf
          if (nitems /= vlen) &
             call stopnow("loadpot: inconsistent data sizes")
-         vpos = 0
-         nleft = nitems
-         do while (nleft>0)
-            nread = min(nleft,niobuf)
-            read(unit=lun,err=500) (v(vpos+j), j=1,nread)
-            nleft = nleft - nread
-            vpos = vpos + nread
-         enddo
-         close(lun)
-
       else
          ! Separate file with vpot data (no record markers).
          close(lun)
-         v => mmap_dbl(trim(fname)//".raw", vlen, 0)
+         fname1 = trim(fname)//".raw"
+         open(unit=lun, file=trim(fname1), status="old", &
+              form="unformatted", access="stream", err=510)
+         nitems = vlen
+         niobuf = min(128*1024, nitems)
       endif
+
+      ! Read all data.
+      allocate(buf(niobuf))
+      vidx = 0
+      nleft = nitems
+      do while (nleft>0)
+         nread = min(nleft,niobuf)
+         read(unit=lun,err=500) (buf(j), j=1,nread)
+         do j=1,nread
+            ! remap the grid point from vpot-order to system-order
+            k = 0
+            do f=ndof,1,-1
+               k = k*vdim(fmap(f)) + vidx(fmap(f))
+            enddo
+            ! store data of this grid point
+            v(k+1) = buf(j)
+            ! advance to next grid point
+            do f=1,ndof
+               vidx(f) = vidx(f)+1
+               if (vidx(f) < vdim(f)) exit
+               vidx(f) = 0
+            enddo
+         enddo
+         nleft = nleft - nread
+      enddo
+
+      close(lun)
+      deallocate(buf)
       return
  
- 500  call stopnow("error reading file: "//trim(fname))
+ 500  call stopnow("error reading file: "//trim(fname1))
+ 510  call stopnow("cannot open file: "//trim(fname1))
+
+      contains
 
    end subroutine loadpot
 
