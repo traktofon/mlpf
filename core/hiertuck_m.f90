@@ -205,7 +205,9 @@ module hiertuck_m
          if (l==1) then
             no => t%topnode
             no%nbasis = 1
+            allocate(no%wghts(1))
             allocate(no%basis(no%plen,1))
+            no%wghts(1) = 1.d0
             no%basis(:,1) = v(1:vlen)
             write (msg,'(a,g22.15)') '||v~|| = ', sqrt(sum(v(1:vlen)**2))
             call write_log(logid_data, LOGLEVEL_DEBUG, msg)
