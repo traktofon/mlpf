@@ -2,6 +2,8 @@
 
 TGT := $(dd)/mlpf
 
+vpath %.f90 $(dd)
+
 SOURCES := \
    mlpf.f90
 
@@ -11,8 +13,8 @@ SRC_$(dd) := \
 OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(SOURCES:.f90=.o))
 
-PROGS := $(PROGS) $(TGT)
-ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
+PROGS += $(TGT)
+ALLSOURCES += $(SRC_$(dd))
 
 # build rule
 
