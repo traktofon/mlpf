@@ -14,5 +14,5 @@ while ! gfortran -cpp -MM -J${objdir} "$@" >|${tmpdep} 2>/dev/null; do
    fi
 done
 echo "Generated dependencies after ${try} iterations." >&2
-cat ${tmpdep} | sed -e "s@^\(\S\)@${objdir}/\1@"
+cat ${tmpdep} | sed -e "s@^\(\S\)@${objdir}/\1@" -e "s@\(\S\+\.f90\)@@"
 rm -f ${tmpdep}
