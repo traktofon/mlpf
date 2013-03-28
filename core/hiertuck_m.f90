@@ -11,17 +11,29 @@ module hiertuck_m
 
    !--------------------------------------------------------------------
    subroutine init_leaf(no,dofs)
+   ! A leaf contains one or more DOFs.
    !--------------------------------------------------------------------
       implicit none
       type(node_t),intent(inout)  :: no
       type(dof_tp),intent(in)     :: dofs(:)
       integer                     :: ndofs,f,idof
+      character(len=80)           :: msg
       ndofs = no%nmodes
+      ! Check that the DOFs are actually consecutive.
+      do f=2,ndofs
+         if (no%dofs(f) - no%dofs(f-1) /= 1) then
+            write(msg,'(a,i0,a)') &
+               'DOFs in node ',no%num,' are not consecutive!'
+            call stopnow(msg)
+         endif
+      enddo
+      ! Copy the DOFs' dimensions into the node.
       allocate(no%ndim(ndofs))
       do f=1,ndofs
          idof = no%dofs(f)
          no%ndim(f) = dofs(idof)%p%gdim
       enddo
+      ! Calculate size of product grid.
       no%plen = product(no%ndim)
    end subroutine init_leaf
 
