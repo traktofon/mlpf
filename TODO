@@ -1,13 +1,5 @@
-* vpot-format=2 cannot work
-  -- v(:) will be mmap'd data => read-only
-  -- but contract_core will try to overwrite it
-  => must re-allocate v(:)
-
 * chkdvr
   if readpot, compare DVR with the one from PBASIS-SECTION
 
 * output generated MLPF
-
-* DOF order !?!
-  reorder data on reading
 
