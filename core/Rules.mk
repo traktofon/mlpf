@@ -1,5 +1,8 @@
 # vim: set ts=8 noexpandtab :
 
+vpath %.f90 $(dd)
+vpath %.c   $(dd)
+
 FSOURCES := \
    base_m.f90         \
    dof_io_m.f90       \
@@ -47,4 +50,4 @@ OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(FSOURCES:.f90=.o)) \
    $(addprefix $(OBJDIR)/,$(CSOURCES:.c=.o))
 
-ALLSOURCES := $(ALLSOURCES) $(SRC_$(dd))
+ALLSOURCES += $(SRC_$(dd))
