@@ -9,7 +9,7 @@ module tree_m
    public :: node_t, node_tp, tree_t
    public :: make_leaf, make_node, make_tree, &
              examine_tree, leaf_shape, set_maxnbasis, &
-             pickle_tree, unpickle_tree
+             pickle_tree, unpickle_tree, write_tree_data, read_tree_data
 
    type :: node_t
       !--- Local node-related data ---
@@ -372,5 +372,55 @@ module tree_m
       ! Link tree structure.
       t => make_tree(topnode)
    end function unpickle_tree
+
+
+
+   !--------------------------------------------------------------------
+   subroutine write_tree_data(t,lun)
+   !--------------------------------------------------------------------
+      type(tree_t),pointer :: t
+      integer,intent(in)   :: lun
+      type(node_t),pointer :: no
+      integer              :: m,g,j
+      do m=1,t%numnodes
+         no => t%postorder(m)%p
+         print *,shape(no%wghts)
+         print *,shape(no%basis)
+         write(lun) no%plen, no%nbasis
+         write(lun) (no%wghts(j), j=1,no%nbasis)
+         write(lun) ((no%basis(g,j), g=1,no%plen), j=1,no%nbasis)
+      enddo
+   end subroutine write_tree_data
+   
+
+   !--------------------------------------------------------------------
+   subroutine read_tree_data(t,lun)
+   !--------------------------------------------------------------------
+      type(tree_t),pointer :: t
+      integer,intent(in)   :: lun
+      type(node_t),pointer :: no
+      integer              :: m,g,j,f,plen,nbasis
+      do m=1,t%numnodes
+         no => t%postorder(m)%p
+         if (.not. no%isleaf) then
+            allocate(no%ndim(no%nmodes))
+            do f=1,no%nmodes
+               no%ndim(f) = no%modes(f)%p%nbasis
+            enddo
+            no%plen = product(no%ndim)
+         endif
+         read(lun,err=500) plen,nbasis
+         if (plen /= no%plen) &
+            call stopnow("tree data doesn't match system tree")
+         no%nbasis = nbasis
+         allocate(no%wghts(nbasis))
+         allocate(no%basis(plen,nbasis))
+         read(lun,err=500) (no%wghts(j), j=1,nbasis)
+         read(lun,err=500) ((no%basis(g,j), g=1,plen), j=1,nbasis)
+      enddo
+      return
+ 500  call stopnow("error reading tree data")
+   end subroutine read_tree_data
+
 
 end module tree_m

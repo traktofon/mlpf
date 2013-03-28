@@ -74,6 +74,9 @@ program mlpf
    ! create the graphviz input file
    call rundot
 
+   ! output the tree
+   call outtree
+
 !=======================================================================
    contains
 !=======================================================================
@@ -325,6 +328,23 @@ program mlpf
 
    end subroutine runmlpf
 
+
+   !--------------------------------------------------------------------
+   subroutine outtree
+   !--------------------------------------------------------------------
+      integer           :: lun,ierr
+      character(len=c5) :: tfile
+
+      tfile = trim(runopts%namedir)//"/mlpf.dat"
+      open(newunit=lun, file=trim(tfile), status="unknown", form="unformatted", iostat=ierr)
+      if (ierr /= 0) &
+         call stopnow("cannot create file: "//trim(tfile))
+      call pickle_tree(tree,lun)
+      call write_tree_data(tree,lun)
+      call flush(lun)
+      close(lun)
+
+   end subroutine outtree
 
 end program mlpf
 
