@@ -7,7 +7,7 @@ module vtree_m
    private
 
    public :: vnode_t, vnode_tp, vtree_t
-   public :: make_vleaf, make_vnode, make_vtree, &
+   public :: make_vleaf, make_vnode, make_vtree, dispose_vtree, &
              examine_vtree, leaf_shape, set_maxnbasis, &
              dump_vtree_def, load_vtree_def, dump_vtree_data, load_vtree_data
 
@@ -420,5 +420,36 @@ module vtree_m
  500  call stopnow("error reading tree data")
    end subroutine load_vtree_data
 
+
+   !--------------------------------------------------------------------
+   recursive subroutine dispose_vnode(node)
+   !--------------------------------------------------------------------
+      type(vnode_t),pointer :: node
+      integer               :: m
+      if (node%isleaf) then
+         deallocate(node%dofs)
+      else
+         do m=1,node%nmodes
+            call dispose_vnode(node%modes(m)%p)
+         enddo
+         deallocate(node%modes)
+      endif
+      deallocate(node%basis)
+      deallocate(node%wghts)
+      deallocate(node%ndim)
+      deallocate(node)
+   end subroutine dispose_vnode
+
+
+   !--------------------------------------------------------------------
+   subroutine dispose_vtree(tree)
+   !--------------------------------------------------------------------
+      type(vtree_t),pointer :: tree
+      deallocate(tree%preorder)
+      deallocate(tree%postorder)
+      deallocate(tree%leaves)
+      call dispose_vnode(tree%topnode)
+      deallocate(tree)
+   end subroutine dispose_vtree
 
 end module vtree_m
