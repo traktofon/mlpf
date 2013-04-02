@@ -3,6 +3,7 @@ module dof_m
    use base_m
    use tokenize_m
    use strutil_m
+   use numutil_m
    implicit none
 
    type,abstract :: dof_t
@@ -66,14 +67,18 @@ module dof_m
    contains
 
 
+   !--------------------------------------------------------------------
    subroutine set_label(dof,label)
+   !--------------------------------------------------------------------
       class(dof_t),intent(inout)  :: dof
       character(len=*),intent(in) :: label
       dof%label = label
    end subroutine set_label
 
 
+   !--------------------------------------------------------------------
    function find_dofnum_by_label(label,dofs) result(dofnum)
+   !--------------------------------------------------------------------
       character(len=*),intent(in) :: label
       type(dof_tp),intent(in)     :: dofs(:)
       integer                     :: dofnum
@@ -88,7 +93,9 @@ module dof_m
    end function find_dofnum_by_label
 
 
+   !--------------------------------------------------------------------
    subroutine register_doftyp(sname,id,parse,unpickle)
+   !--------------------------------------------------------------------
       character(len=*),intent(in)     :: sname
       integer                         :: id
       procedure(parse_dof),pointer    :: parse
@@ -105,7 +112,9 @@ module dof_m
    end subroutine register_doftyp
 
 
+   !--------------------------------------------------------------------
    function find_doftyp_by_name(sname) result(doftyp)
+   !--------------------------------------------------------------------
       type(doftyp_t),pointer      :: doftyp
       character(len=*),intent(in) :: sname
       integer                     :: i
@@ -119,7 +128,9 @@ module dof_m
    end function find_doftyp_by_name
 
 
+   !--------------------------------------------------------------------
    function find_doftyp_by_id(id) result(doftyp)
+   !--------------------------------------------------------------------
       type(doftyp_t),pointer :: doftyp
       integer,intent(in)     :: id
       integer                :: i
@@ -133,7 +144,9 @@ module dof_m
    end function find_doftyp_by_id
 
 
+   !--------------------------------------------------------------------
    function gridsize(dofs)
+   !--------------------------------------------------------------------
       integer*8               :: gridsize
       type(dof_tp),intent(in) :: dofs(:)
       integer                 :: f
@@ -144,7 +157,9 @@ module dof_m
    end function gridsize
 
 
+   !--------------------------------------------------------------------
    subroutine dofs_shape(dofs,vdim)
+   !--------------------------------------------------------------------
       type(dof_tp),intent(in) :: dofs(:)
       integer,intent(out)     :: vdim(:)
       integer                 :: f
@@ -152,5 +167,30 @@ module dof_m
          vdim(f) = dofs(f)%p%gdim
       enddo
    end subroutine dofs_shape
+
+
+   !--------------------------------------------------------------------
+   function are_dofs_compatible(f1,f2) result(flag)
+   !--------------------------------------------------------------------
+      class(dof_t),intent(inout) :: f1,f2
+      logical                    :: flag
+      integer                    :: id1,id2
+      integer                    :: ipar1(6),ipar2(6)
+      real(dbl)                  :: rpar1(6),rpar2(6)
+      flag = .false.
+      ! get the basis parameters of the DOFs
+      call f1%pickle(id1,ipar1,rpar1)
+      call f2%pickle(id2,ipar2,rpar2)
+      ! basis types must be the same -- TODO: this could be relaxed
+      if (id1 /= id2) return
+      ! number of grid points must be the same
+      if (f1%gdim /= f2%gdim) return
+      ! basis parameters must be the same
+      if (ANY(ipar1/=ipar2)) return
+      if (.NOT.ALL(deql(rpar1,rpar2))) return
+      ! everything ok
+      flag = .true.
+      return
+   end function are_dofs_compatible
 
 end module dof_m
