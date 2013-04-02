@@ -7,8 +7,8 @@ program mlpf
    use parse_pot_m
    use parse_pbasis_m
    use parse_tree_m
-   use inp_tree_m
-   use tree_m
+   use itree_m
+   use vtree_m
    use runopts_m
    use meta_dof_m
    use dof_io_m
@@ -22,8 +22,8 @@ program mlpf
    implicit none
 
    character(len=c5)        :: inpfile
-   type(inp_node_t),pointer :: inptree => null()
-   type(tree_t),pointer     :: tree
+   type(inode_t),pointer    :: inptree => null()
+   type(vtree_t),pointer    :: tree
    type(runopts_t)          :: runopts
    type(dof_tp),pointer     :: dofs(:)  => null()
    type(dof_tp),pointer     :: pdofs(:) => null()
@@ -60,7 +60,7 @@ program mlpf
 
    ! create the MLPF tree -> tree
    call runtree
-   call dispose_inp_node(inptree)
+   call dispose_inode(inptree)
 
    ! create the potential data -> v
    call runpot
@@ -234,19 +234,19 @@ program mlpf
    !--------------------------------------------------------------------
    subroutine runtree
    !--------------------------------------------------------------------
-      type(node_t),pointer :: topnode,no
-      integer              :: ndof,m,f,f1
-      integer              :: tord(size(dofs))
-      type(dof_tp),pointer :: dofs1(:)
+      type(vnode_t),pointer :: topnode,no
+      integer               :: ndof,m,f,f1
+      integer               :: tord(size(dofs))
+      type(dof_tp),pointer  :: dofs1(:)
 
 
       if (.not.have_tree) &
          call stopnow("missing TREE-SECTION")
 
       ! convert the input tree into an MLPF-tree
-      topnode => inp2node(inptree,dofs)
-      tree => make_tree(topnode)
-      !call examine_tree(tree)
+      topnode => i2vnode(inptree,dofs)
+      tree => make_vtree(topnode)
+      !call examine_vtree(tree)
 
       ! record the tree-order of the DOFs
       ! and renumber the DOFs sequentially
@@ -274,7 +274,7 @@ program mlpf
       ! now copy some DOF information into the leaf
       do m=1,tree%numleaves
          no => tree%leaves(m)%p
-         call init_leaf(no, dofs)
+         call init_vleaf(no, dofs)
       enddo
 
    end subroutine runtree
@@ -339,8 +339,8 @@ program mlpf
       open(newunit=lun, file=trim(tfile), status="unknown", form="unformatted", iostat=ierr)
       if (ierr /= 0) &
          call stopnow("cannot create file: "//trim(tfile))
-      call dump_tree_def(tree,lun)
-      call dump_tree_data(tree,lun)
+      call dump_vtree_def(tree,lun)
+      call dump_vtree_data(tree,lun)
       call flush(lun)
       close(lun)
 

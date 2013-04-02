@@ -17,7 +17,7 @@ FSOURCES := \
    genpot_m.f90       \
    graphviz_m.f90     \
    hiertuck_m.f90     \
-   inp_tree_m.f90     \
+   itree_m.f90        \
    linear_m.f90       \
    logging_m.f90      \
    map_str2dbl_m.f90  \
@@ -32,9 +32,9 @@ FSOURCES := \
    runopts_m.f90      \
    strutil_m.f90      \
    tokenize_m.f90     \
-   tree_m.f90         \
    tuckerdecomp_m.f90 \
-   units_m.f90
+   units_m.f90        \
+   vtree_m.f90
 
 CSOURCES := \
    c_io.c
