@@ -117,9 +117,12 @@ module genpot_m
       enddo
 
       ! check vpot DOFs and system DOFs for consistency
-      !do f=1,ndof
-      !   call chkdvr(vdofs(f), dofs(fmap(f))) TODO
-      !enddo
+      do f=1,ndof
+         if (.not. are_dofs_compatible(dofs(f)%p, vdofs(fmap(f))%p)) then
+            call stopnow('Definition of DOF "' // trim(dofs(f)%p%label) // &
+               '" from vpot-file differs from system definition.')
+         endif
+      enddo
 
       ! How much data is there?
       vlen = 1

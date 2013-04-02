@@ -16,7 +16,7 @@ module numutil_m
    !--------------------------------------------------------------------
       real(dbl),intent(in) :: x,y
       logical              :: deql
-      deql = (abs(x-y) < 0.5d0*eps*(abs(x)+abs(y)))
+      deql = (abs(x-y) <= 0.5d0*eps*(abs(x)+abs(y)))
     end function deql
 
 end module numutil_m

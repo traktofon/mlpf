@@ -2,7 +2,7 @@ obj/base_m.o obj/base_m.mod:
 obj/dof_io_m.o obj/dof_io_m.mod:  obj/dof_m.mod \
  obj/base_m.mod
 obj/dof_m.o obj/dof_m.mod:  obj/base_m.mod obj/tokenize_m.mod \
- obj/strutil_m.mod
+ obj/strutil_m.mod obj/numutil_m.mod
 obj/dvr_exp_m.o obj/dvr_exp_m.mod:  obj/dvr_m.mod \
  obj/dof_m.mod obj/dof_fft_m.mod obj/base_m.mod
 obj/dof_fft_m.o obj/dof_fft_m.mod:  obj/dof_m.mod \
