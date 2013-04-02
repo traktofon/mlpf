@@ -9,7 +9,7 @@ module tree_m
    public :: node_t, node_tp, tree_t
    public :: make_leaf, make_node, make_tree, &
              examine_tree, leaf_shape, set_maxnbasis, &
-             pickle_tree, unpickle_tree, write_tree_data, read_tree_data
+             dump_tree_def, load_tree_def, dump_tree_data, load_tree_data
 
    type :: node_t
       !--- Local node-related data ---
@@ -302,7 +302,7 @@ module tree_m
 
 
    !--------------------------------------------------------------------
-   subroutine pickle_tree(t,lun)
+   subroutine dump_tree_def(t,lun)
    ! Write a serialized description of the tree structure.
    !--------------------------------------------------------------------
       type(tree_t),intent(in) :: t
@@ -324,11 +324,11 @@ module tree_m
             write(lun) (no%modes(f)%p%num, f=1,no%nmodes)
          endif
       enddo
-   end subroutine pickle_tree
+   end subroutine dump_tree_def
 
 
    !--------------------------------------------------------------------
-   function unpickle_tree(lun) result(t)
+   function load_tree_def(lun) result(t)
    ! Read a serialized description of the tree structure and
    ! construct a tree from it.
    !--------------------------------------------------------------------
@@ -371,12 +371,12 @@ module tree_m
       deallocate(nodes)
       ! Link tree structure.
       t => make_tree(topnode)
-   end function unpickle_tree
+   end function load_tree_def
 
 
 
    !--------------------------------------------------------------------
-   subroutine write_tree_data(t,lun)
+   subroutine dump_tree_data(t,lun)
    !--------------------------------------------------------------------
       type(tree_t),pointer :: t
       integer,intent(in)   :: lun
@@ -384,17 +384,15 @@ module tree_m
       integer              :: m,g,j
       do m=1,t%numnodes
          no => t%postorder(m)%p
-         print *,shape(no%wghts)
-         print *,shape(no%basis)
          write(lun) no%plen, no%nbasis
          write(lun) (no%wghts(j), j=1,no%nbasis)
          write(lun) ((no%basis(g,j), g=1,no%plen), j=1,no%nbasis)
       enddo
-   end subroutine write_tree_data
+   end subroutine dump_tree_data
    
 
    !--------------------------------------------------------------------
-   subroutine read_tree_data(t,lun)
+   subroutine load_tree_data(t,lun)
    !--------------------------------------------------------------------
       type(tree_t),pointer :: t
       integer,intent(in)   :: lun
@@ -420,7 +418,7 @@ module tree_m
       enddo
       return
  500  call stopnow("error reading tree data")
-   end subroutine read_tree_data
+   end subroutine load_tree_data
 
 
 end module tree_m

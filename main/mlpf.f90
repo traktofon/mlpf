@@ -339,8 +339,8 @@ program mlpf
       open(newunit=lun, file=trim(tfile), status="unknown", form="unformatted", iostat=ierr)
       if (ierr /= 0) &
          call stopnow("cannot create file: "//trim(tfile))
-      call pickle_tree(tree,lun)
-      call write_tree_data(tree,lun)
+      call dump_tree_def(tree,lun)
+      call dump_tree_data(tree,lun)
       call flush(lun)
       close(lun)
 
