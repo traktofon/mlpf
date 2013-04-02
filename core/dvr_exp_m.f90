@@ -2,8 +2,7 @@ module dvr_exp_m
 
    use dvr_m
    use dof_m
-   use tokenize_m
-   use units_m
+   use dof_fft_m
    use base_m
    implicit none
 
@@ -18,51 +17,6 @@ module dvr_exp_m
    integer,parameter,private :: typid = 5 ! MCTDH basis type
 
    contains
-
-
-   !--------------------------------------------------------------------
-   subroutine parse_fft_bounds(tkner,gdim,xi,xf)
-   !--------------------------------------------------------------------
-   ! fftdvr :~ INTEGER ( length length | angle ) ( "linear" | "periodic" | "s-periodic" )?
-   !--------------------------------------------------------------------
-      type(tokenizer_t),intent(inout) :: tkner
-      integer,intent(out)             :: gdim
-      real(dbl),intent(out)           :: xi,xf
-      character(len=maxtoklen)        :: token
-      logical                         :: have2pi
-      real(dbl)                       :: r1,dx
-      integer                         :: ptyp
-      gdim = parse_int(tkner)
-      r1 = parse_angle(tkner,have2pi)
-      if (have2pi) then
-         xi = 0.d0
-         xf = r1
-         ptyp = 1 ! default periodic
-      else
-         xi = parse_length(tkner)
-         xf = parse_length(tkner)
-         ptyp = 0 ! default linear
-      endif
-      token = tkner%get()
-      if (token=="linear") then
-         ptyp = 0
-         call tkner%gofwd
-      elseif (token=="periodic") then
-         ptyp = 1
-         call tkner%gofwd
-      elseif (token=="s-periodic") then
-         ptyp = 2
-         call tkner%gofwd
-      endif
-      if (ptyp==1) then
-         dx = (xf-xi)/gdim
-         xf = xf-dx ! shift last gridpoint
-      elseif (ptyp==2) then
-         dx = (xf-xi)/(2*gdim)
-         xi = xi+dx ! shift first and
-         xf = xf-dx ! last gridpoints
-      endif
-   end subroutine parse_fft_bounds
 
 
    !--------------------------------------------------------------------

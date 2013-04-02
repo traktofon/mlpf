@@ -1,19 +1,18 @@
-module dvr_fft_m
+module dof_fft_m
 
-   use dvr_m
    use dof_m
    use tokenize_m
-   use dvr_exp_m
+   use units_m
    use base_m
    implicit none
 
-   type,extends(dvr_t) :: dvr_fft_t
+   type,extends(dof_t) :: dof_fft_t
       real(dbl) :: xi  ! first grid point
       real(dbl) :: xf  ! last grid point
       contains
       procedure :: init   => init_fft
       procedure :: pickle => pickle_fft
-   end type dvr_fft_t
+   end type dof_fft_t
 
    integer,parameter,private :: typid = 4 ! MCTDH basis type
 
@@ -21,13 +20,58 @@ module dvr_fft_m
 
 
    !--------------------------------------------------------------------
+   subroutine parse_fft_bounds(tkner,gdim,xi,xf)
+   !--------------------------------------------------------------------
+   ! fftdvr :~ INTEGER ( length length | angle ) ( "linear" | "periodic" | "s-periodic" )?
+   !--------------------------------------------------------------------
+      type(tokenizer_t),intent(inout) :: tkner
+      integer,intent(out)             :: gdim
+      real(dbl),intent(out)           :: xi,xf
+      character(len=maxtoklen)        :: token
+      logical                         :: have2pi
+      real(dbl)                       :: r1,dx
+      integer                         :: ptyp
+      gdim = parse_int(tkner)
+      r1 = parse_angle(tkner,have2pi)
+      if (have2pi) then
+         xi = 0.d0
+         xf = r1
+         ptyp = 1 ! default periodic
+      else
+         xi = parse_length(tkner)
+         xf = parse_length(tkner)
+         ptyp = 0 ! default linear
+      endif
+      token = tkner%get()
+      if (token=="linear") then
+         ptyp = 0
+         call tkner%gofwd
+      elseif (token=="periodic") then
+         ptyp = 1
+         call tkner%gofwd
+      elseif (token=="s-periodic") then
+         ptyp = 2
+         call tkner%gofwd
+      endif
+      if (ptyp==1) then
+         dx = (xf-xi)/gdim
+         xf = xf-dx ! shift last gridpoint
+      elseif (ptyp==2) then
+         dx = (xf-xi)/(2*gdim)
+         xi = xi+dx ! shift first and
+         xf = xf-dx ! last gridpoints
+      endif
+   end subroutine parse_fft_bounds
+
+
+   !--------------------------------------------------------------------
    subroutine parse_fft(dof,tkner)
    !--------------------------------------------------------------------
       class(dof_t),pointer            :: dof
       type(tokenizer_t),intent(inout) :: tkner
-      allocate(dvr_fft_t::dof)
+      allocate(dof_fft_t::dof)
       select type (dof)
-      type is (dvr_fft_t)
+      type is (dof_fft_t)
       call parse_fft_bounds(tkner, dof%gdim, dof%xi, dof%xf)
       end select
    end subroutine parse_fft
@@ -40,10 +84,10 @@ module dvr_fft_m
       integer,intent(in)          :: gdim
       integer,intent(in)          :: ipar(:)
       real(dbl),intent(in)        :: rpar(:)
-      allocate(dvr_fft_t::dof)
+      allocate(dof_fft_t::dof)
       dof%gdim  = gdim
       select type(dof)
-      type is (dvr_fft_t)
+      type is (dof_fft_t)
       dof%xi = rpar(1)
       dof%xf = rpar(2)
       end select
@@ -53,7 +97,7 @@ module dvr_fft_m
    !--------------------------------------------------------------------
    subroutine pickle_fft(dof,id,ipar,rpar)
    !--------------------------------------------------------------------
-      class(dvr_fft_t),intent(inout) :: dof
+      class(dof_fft_t),intent(inout) :: dof
       integer,intent(out)            :: id
       integer,intent(out)            :: ipar(:)
       real(dbl),intent(out)          :: rpar(:)
@@ -68,11 +112,9 @@ module dvr_fft_m
    !--------------------------------------------------------------------
    subroutine init_fft(dof)
    !--------------------------------------------------------------------
-      class(dvr_fft_t),intent(inout) :: dof
+      class(dof_fft_t),intent(inout) :: dof
       real(dbl)                      :: dx,w
       integer                        :: g
-      ! call general DVR constructor
-      call dof%init_dvr
       ! gridpoints are simply equidistant
       ! weights are constant
       dx = (dof%xf - dof%xi) / (dof%gdim - 1)
@@ -81,10 +123,7 @@ module dvr_fft_m
          dof%x(g) = dof%xi + (g-1)*dx
          dof%w(g) = w 
       enddo
-      ! TODO: set trafo,d1mat,d2mat
-      dof%trafo = 0.d0
-      dof%d1mat = 0.d0
-      dof%d2mat = 0.d0
+      ! TODO: precompute transformation arrays
    end subroutine init_fft
 
 
@@ -100,4 +139,4 @@ module dvr_fft_m
       call register_doftyp("fft", typid, p, u)
    end subroutine init_doftyp_fft
 
-end module dvr_fft_m
+end module dof_fft_m

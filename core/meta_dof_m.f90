@@ -3,7 +3,7 @@ module meta_dof_m
    use dvr_ho_m
    use dvr_leg_m
    use dvr_sin_m
-   use dvr_fft_m
+   use dof_fft_m
    use dvr_exp_m
    use dof_m
    use base_m
