@@ -3,18 +3,18 @@ module hiertuck_m
 
    use logging_m
    use dof_m
-   use tree_m
+   use vtree_m
    use tuckerdecomp_m
    implicit none
 
    contains
 
    !--------------------------------------------------------------------
-   subroutine init_leaf(no,dofs)
+   subroutine init_vleaf(no,dofs)
    ! A leaf contains one or more DOFs.
    !--------------------------------------------------------------------
       implicit none
-      type(node_t),intent(inout)  :: no
+      type(vnode_t),intent(inout) :: no
       type(dof_tp),intent(in)     :: dofs(:)
       integer                     :: ndofs,f,idof
       character(len=80)           :: msg
@@ -35,7 +35,7 @@ module hiertuck_m
       enddo
       ! Calculate size of product grid.
       no%plen = product(no%ndim)
-   end subroutine init_leaf
+   end subroutine init_vleaf
 
 
    !--------------------------------------------------------------------
@@ -44,19 +44,19 @@ module hiertuck_m
    ! in-memory tensor v.
    !--------------------------------------------------------------------
       implicit none
-      type(tree_t),intent(in) :: t
-      real(dbl),intent(inout) :: v(:)
-      integer,intent(inout)   :: vdim(:)
-      real(dbl),intent(in)    :: limit      ! total allowed err^2
-      real(dbl),intent(out)   :: acesq      ! accumulated squared error (estimate)
-      type(node_t),pointer    :: no
-      real(dbl)               :: layerlimit ! allowed err^2 for each node of this layer
-      real(dbl)               :: esq
-      integer,save            :: logid_data=0
-      integer,save            :: logid_progress=0
-      character(len=160)      :: msg
-      integer                 :: nmodes,m,mdim
-      type(basis_t)           :: basis(size(vdim))
+      type(vtree_t),intent(in) :: t
+      real(dbl),intent(inout)  :: v(:)
+      integer,intent(inout)    :: vdim(:)
+      real(dbl),intent(in)     :: limit      ! total allowed err^2
+      real(dbl),intent(out)    :: acesq      ! accumulated squared error (estimate)
+      type(vnode_t),pointer    :: no
+      real(dbl)                :: layerlimit ! allowed err^2 for each node of this layer
+      real(dbl)                :: esq
+      integer,save             :: logid_data=0
+      integer,save             :: logid_progress=0
+      character(len=160)       :: msg
+      integer                  :: nmodes,m,mdim
+      type(basis_t)            :: basis(size(vdim))
 
       ! Set up logging.
       call get_logger(logid_data,"data")
@@ -109,24 +109,24 @@ module hiertuck_m
    subroutine compute_ht(t,v,vdim,limit,acesq)
    !--------------------------------------------------------------------
       implicit none
-      type(tree_t),intent(in) :: t
-      real(dbl),intent(inout) :: v(:)
-      integer,intent(inout)   :: vdim(:)
-      real(dbl),intent(in)    :: limit
-      real(dbl),intent(out)   :: acesq
-      integer                 :: l,m,nc,d1,d2,f,i
-      integer                 :: order,mdim,vlen
-      type(node_t),pointer    :: no
-      integer                 :: udim(size(vdim))
-      integer                 :: xmode(size(vdim))
-      type(node_tp)           :: xnode(size(vdim))
-      type(basis_t)           :: basis(size(vdim))
-      real(dbl)               :: esq,limitleft,layerlimit
-      integer                 :: nodesleft
-      logical                 :: lhosvd
-      integer,save            :: logid_data=0
-      integer,save            :: logid_progress=0
-      character(len=160)      :: msg
+      type(vtree_t),intent(in) :: t
+      real(dbl),intent(inout)  :: v(:)
+      integer,intent(inout)    :: vdim(:)
+      real(dbl),intent(in)     :: limit
+      real(dbl),intent(out)    :: acesq
+      integer                  :: l,m,nc,d1,d2,f,i
+      integer                  :: order,mdim,vlen
+      type(vnode_t),pointer    :: no
+      integer                  :: udim(size(vdim))
+      integer                  :: xmode(size(vdim))
+      type(vnode_tp)           :: xnode(size(vdim))
+      type(basis_t)            :: basis(size(vdim))
+      real(dbl)                :: esq,limitleft,layerlimit
+      integer                  :: nodesleft
+      logical                  :: lhosvd
+      integer,save             :: logid_data=0
+      integer,save             :: logid_progress=0
+      character(len=160)       :: msg
 
       ! Set up logging.
       call get_logger(logid_data,"data")
@@ -263,16 +263,16 @@ module hiertuck_m
    subroutine expand_ht(t,v)
    !--------------------------------------------------------------------
       implicit none
-      type(tree_t),intent(in) :: t
-      real(dbl),pointer       :: v(:)
-      type(node_t),pointer    :: no
-      integer                 :: vdim(t%numdofs)
-      integer                 :: xdim(t%numdofs)
-      type(basis_t)           :: basis(t%numdofs)
-      integer                 :: order,l,m,d1,d2,i,f
-      integer,save            :: logid_data=0
-      integer,save            :: logid_progress=0
-      character(len=160)      :: msg
+      type(vtree_t),intent(in) :: t
+      real(dbl),pointer        :: v(:)
+      type(vnode_t),pointer    :: no
+      integer                  :: vdim(t%numdofs)
+      integer                  :: xdim(t%numdofs)
+      type(basis_t)            :: basis(t%numdofs)
+      integer                  :: order,l,m,d1,d2,i,f
+      integer,save             :: logid_data=0
+      integer,save             :: logid_progress=0
+      character(len=160)       :: msg
 
       ! Set up logging.
       call get_logger(logid_data,"data")

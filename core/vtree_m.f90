@@ -1,62 +1,62 @@
 ! vim: set ts=3 sw=3 :
-module tree_m
+module vtree_m
 
    use base_m
    use logging_m
    implicit none
    private
 
-   public :: node_t, node_tp, tree_t
-   public :: make_leaf, make_node, make_tree, &
-             examine_tree, leaf_shape, set_maxnbasis, &
-             dump_tree_def, load_tree_def, dump_tree_data, load_tree_data
+   public :: vnode_t, vnode_tp, vtree_t
+   public :: make_vleaf, make_vnode, make_vtree, &
+             examine_vtree, leaf_shape, set_maxnbasis, &
+             dump_vtree_def, load_vtree_def, dump_vtree_data, load_vtree_data
 
-   type :: node_t
+   type :: vnode_t
       !--- Local node-related data ---
-      logical               :: isleaf               ! .true. => children are dofs
-      integer               :: nmodes               ! number of submodes/dofs
-      type(node_tp),pointer :: modes(:) => null()   ! pointers to submodes
-      integer,pointer       :: dofs(:)  => null()   ! list of dofs
-      type(node_t),pointer  :: parent   => null()   ! pointer to parent node
+      logical                :: isleaf               ! .true. => children are dofs
+      integer                :: nmodes               ! number of submodes/dofs
+      type(vnode_tp),pointer :: modes(:) => null()   ! pointers to submodes
+      integer,pointer        :: dofs(:)  => null()   ! list of dofs
+      type(vnode_t),pointer  :: parent   => null()   ! pointer to parent node
       !--- Tree-related data ---
-      type(tree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
-      integer               :: num                  ! internal number of this node
-      integer               :: layer                ! layer (level) of this node inside the tree
+      type(vtree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
+      integer                :: num                  ! internal number of this node
+      integer                :: layer                ! layer (level) of this node inside the tree
       !--- MLPF-related data ----
-      integer,pointer       :: ndim(:) => null()    ! number of basis tensors/grid points of the children
-      integer               :: plen                 ! product(ndim)
-      integer               :: nbasis               ! actual number of basis tensors at this node
-      integer               :: maxnbasis = 0        ! maximum number of basis tensors at this node
-      real(dbl),pointer     :: wghts(:) => null()   ! basis weights, dim=(nbasis)
-      real(dbl),pointer     :: basis(:,:) => null() ! basis tensors, dim=(plen,nbasis)
-   end type node_t
+      integer,pointer        :: ndim(:) => null()    ! number of basis tensors/grid points of the children
+      integer                :: plen                 ! product(ndim)
+      integer                :: nbasis               ! actual number of basis tensors at this node
+      integer                :: maxnbasis = 0        ! maximum number of basis tensors at this node
+      real(dbl),pointer      :: wghts(:) => null()   ! basis weights, dim=(nbasis)
+      real(dbl),pointer      :: basis(:,:) => null() ! basis tensors, dim=(plen,nbasis)
+   end type vnode_t
 
 
-   type :: node_tp
-      type(node_t),pointer  :: p => null()
-   end type node_tp
+   type :: vnode_tp
+      type(vnode_t),pointer  :: p => null()
+   end type vnode_tp
 
 
-   type :: tree_t
-      type(node_t),pointer  :: topnode => null()      ! the top node
-      integer               :: numnodes               ! total number of nodes in tree
-      integer               :: numdofs                ! total number of DOFs in tree
-      integer               :: numleaves              ! total number of leaves in tree
-      integer               :: numlayers              ! number of layers in tree
-      type(node_tp),pointer :: preorder(:) => null()  ! nodes in pre-order
-      type(node_tp),pointer :: postorder(:) => null() ! nodes in post-order
-      type(node_tp),pointer :: leaves(:) => null()    ! leaf nodes
-   end type tree_t
+   type :: vtree_t
+      type(vnode_t),pointer  :: topnode => null()      ! the top node
+      integer                :: numnodes               ! total number of nodes in tree
+      integer                :: numdofs                ! total number of DOFs in tree
+      integer                :: numleaves              ! total number of leaves in tree
+      integer                :: numlayers              ! number of layers in tree
+      type(vnode_tp),pointer :: preorder(:) => null()  ! nodes in pre-order
+      type(vnode_tp),pointer :: postorder(:) => null() ! nodes in post-order
+      type(vnode_tp),pointer :: leaves(:) => null()    ! leaf nodes
+   end type vtree_t
 
    contains
 
 
    !--------------------------------------------------------------------
-   function make_leaf(dofs) result(leaf)
+   function make_vleaf(dofs) result(leaf)
    !--------------------------------------------------------------------
-      type(node_t),pointer :: leaf
-      integer,intent(in)   :: dofs(:)
-      integer              :: ndofs,f
+      type(vnode_t),pointer :: leaf
+      integer,intent(in)    :: dofs(:)
+      integer               :: ndofs,f
       ndofs = size(dofs)
       allocate(leaf)
       ! Mark node as leaf.
@@ -67,15 +67,15 @@ module tree_m
       do f=1,ndofs
          leaf%dofs(f) = dofs(f)
       enddo
-   end function make_leaf
+   end function make_vleaf
 
 
    !--------------------------------------------------------------------
-   function make_node(children) result(node)
+   function make_vnode(children) result(node)
    !--------------------------------------------------------------------
-      type(node_t),pointer        :: node       
-      type(node_tp),intent(inout) :: children(:)
-      integer                     :: nmodes,m   
+      type(vnode_t),pointer        :: node       
+      type(vnode_tp),intent(inout) :: children(:)
+      integer                      :: nmodes,m   
       nmodes = size(children)
       allocate(node)
       ! Mark node as non-leaf.
@@ -87,17 +87,17 @@ module tree_m
          node%modes(m)%p => children(m)%p
          children(m)%p%parent => node
       enddo
-   end function make_node
+   end function make_vnode
 
 
    !--------------------------------------------------------------------
-   function make_tree(topnode) result(tree)
+   function make_vtree(topnode) result(tree)
    !--------------------------------------------------------------------
-      type(tree_t),pointer              :: tree                
-      type(node_t),target,intent(inout) :: topnode             
-      integer                           :: numnodes,numdofs,numleaves,numlayers
-      integer                           :: idx,m,f
-      type(node_t),pointer              :: node
+      type(vtree_t),pointer              :: tree                
+      type(vnode_t),target,intent(inout) :: topnode             
+      integer                            :: numnodes,numdofs,numleaves,numlayers
+      integer                            :: idx,m,f
+      type(vnode_t),pointer              :: node
       allocate(tree)
       ! Set the top node.
       tree%topnode => topnode
@@ -131,7 +131,7 @@ module tree_m
          node%num  =  m
       enddo
       call set_layer(topnode,1)
-   end function make_tree
+   end function make_vtree
 
 
    !--------------------------------------------------------------------
@@ -141,10 +141,10 @@ module tree_m
    ! a certain node, itself included.
    !--------------------------------------------------------------------
       implicit none
-      type(node_t),intent(in) :: node            
-      integer,intent(out)     :: numnodes,numdofs,numleaves,numlayers
-      type(node_t),pointer    :: child           
-      integer                 :: m,chnodes,chdofs,chleaves,chlayers
+      type(vnode_t),intent(in) :: node            
+      integer,intent(out)      :: numnodes,numdofs,numleaves,numlayers
+      type(vnode_t),pointer    :: child           
+      integer                  :: m,chnodes,chdofs,chleaves,chlayers
       if (node%isleaf) then
          numnodes  = 1
          numdofs   = node%nmodes
@@ -170,11 +170,11 @@ module tree_m
    !--------------------------------------------------------------------
    recursive subroutine set_preorder(node,seq,idx)
    !--------------------------------------------------------------------
-      type(node_t),target,intent(in) :: node  
-      type(node_tp),intent(inout)    :: seq(:)
-      integer,intent(inout)          :: idx   
-      type(node_t),pointer           :: child 
-      integer                        :: m     
+      type(vnode_t),target,intent(in) :: node  
+      type(vnode_tp),intent(inout)    :: seq(:)
+      integer,intent(inout)           :: idx   
+      type(vnode_t),pointer           :: child 
+      integer                         :: m     
       ! First record this node.
       seq(idx)%p => node
       idx = idx+1
@@ -191,11 +191,11 @@ module tree_m
    !--------------------------------------------------------------------
    recursive subroutine set_postorder(node,seq,idx)
    !--------------------------------------------------------------------
-      type(node_t),target,intent(in) :: node  
-      type(node_tp),intent(inout)    :: seq(:)
-      integer,intent(inout)          :: idx   
-      type(node_t),pointer           :: child 
-      integer                        :: m     
+      type(vnode_t),target,intent(in) :: node  
+      type(vnode_tp),intent(inout)    :: seq(:)
+      integer,intent(inout)           :: idx   
+      type(vnode_t),pointer           :: child 
+      integer                         :: m     
       ! First record all children, if any.
       if (.not. node%isleaf) then
          do m=1,node%nmodes
@@ -212,10 +212,10 @@ module tree_m
    !--------------------------------------------------------------------
    recursive subroutine set_layer(node,layer)
    !--------------------------------------------------------------------
-      type(node_t),intent(inout) :: node 
-      integer,intent(in)         :: layer
-      type(node_t),pointer       :: child
-      integer                    :: m    
+      type(vnode_t),intent(inout) :: node 
+      integer,intent(in)          :: layer
+      type(vnode_t),pointer       :: child
+      integer                     :: m    
       ! Set the layer of this node.
       node%layer = layer
       ! Set the layer of all its children.
@@ -232,7 +232,7 @@ module tree_m
    subroutine leaf_shape(t,vdim,vlen)
    ! Returns the potential's shape according to the leaf-layer.
    !-------------------------------------------------------------------
-      type(tree_t),intent(in)      :: t
+      type(vtree_t),intent(in)     :: t
       integer,intent(out)          :: vdim(:)
       integer,intent(out),optional :: vlen
       integer                      :: nmodes,m
@@ -247,22 +247,22 @@ module tree_m
    !--------------------------------------------------------------------
    subroutine set_maxnbasis(node,maxnb)
    !--------------------------------------------------------------------
-      type(node_t),intent(inout) :: node
-      integer,intent(in)         :: maxnb
+      type(vnode_t),intent(inout) :: node
+      integer,intent(in)          :: maxnb
       node%maxnbasis = maxnb
    end subroutine set_maxnbasis
       
 
    !-------------------------------------------------------------------
-   subroutine examine_tree(t)
+   subroutine examine_vtree(t)
    ! Print various information about the tree structure.
    ! Mainly for debugging.
    !--------------------------------------------------------------------
-      type(tree_t),intent(in) :: t
-      integer                 :: m
-      integer,save            :: logid=0
-      character(len=400)      :: msg
-      character,parameter     :: NL = ACHAR(10)
+      type(vtree_t),intent(in) :: t
+      integer                  :: m
+      integer,save             :: logid=0
+      character(len=400)       :: msg
+      character,parameter      :: NL = ACHAR(10)
 
       call get_logger(logid,"tree")
 
@@ -298,17 +298,17 @@ module tree_m
          'Post-order is:', NL, &
          (t%postorder(m)%p%num, m=1,t%numnodes)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
-   end subroutine examine_tree
+   end subroutine examine_vtree
 
 
    !--------------------------------------------------------------------
-   subroutine dump_tree_def(t,lun)
+   subroutine dump_vtree_def(t,lun)
    ! Write a serialized description of the tree structure.
    !--------------------------------------------------------------------
-      type(tree_t),intent(in) :: t
-      integer,intent(in)      :: lun
-      integer                 :: m,f
-      type(node_t),pointer    :: no
+      type(vtree_t),intent(in) :: t
+      integer,intent(in)       :: lun
+      integer                  :: m,f
+      type(vnode_t),pointer    :: no
       ! Write number of nodes in tree.
       write(lun) t%numnodes
       ! Write the nodes in post-order. This makes deserializing easier.
@@ -324,21 +324,21 @@ module tree_m
             write(lun) (no%modes(f)%p%num, f=1,no%nmodes)
          endif
       enddo
-   end subroutine dump_tree_def
+   end subroutine dump_vtree_def
 
 
    !--------------------------------------------------------------------
-   function load_tree_def(lun) result(t)
+   function load_vtree_def(lun) result(t)
    ! Read a serialized description of the tree structure and
    ! construct a tree from it.
    !--------------------------------------------------------------------
-      integer,intent(in)        :: lun
-      type(tree_t),pointer      :: t
-      integer                   :: numnodes,nmodes,m,f
-      logical                   :: isleaf
-      type(node_tp),allocatable :: nodes(:),children(:)
-      integer,allocatable       :: modes(:)
-      type(node_t),pointer      :: topnode
+      integer,intent(in)         :: lun
+      type(vtree_t),pointer      :: t
+      integer                    :: numnodes,nmodes,m,f
+      logical                    :: isleaf
+      type(vnode_tp),allocatable :: nodes(:),children(:)
+      integer,allocatable        :: modes(:)
+      type(vnode_t),pointer      :: topnode
       ! Read total number of nodes and allocate pointer array.
       read(lun) numnodes
       allocate(nodes(numnodes))
@@ -352,7 +352,7 @@ module tree_m
          read(lun) (modes(f), f=1,nmodes)
          if (isleaf) then
             ! Leaf: modes contains the DOF numbers
-            nodes(m)%p => make_leaf(modes)
+            nodes(m)%p => make_vleaf(modes)
          else
             ! Non-leaf: modes contains the post-order numbers of the child nodes
             ! Gather pointers to the children in another array...
@@ -361,7 +361,7 @@ module tree_m
                children(f)%p => nodes(modes(f))%p
             enddo
             ! ... and construct a new parent node for these children.
-            nodes(m)%p => make_node(children)
+            nodes(m)%p => make_vnode(children)
             deallocate(children)
          endif
          deallocate(modes)
@@ -370,34 +370,34 @@ module tree_m
       topnode => nodes(numnodes)%p
       deallocate(nodes)
       ! Link tree structure.
-      t => make_tree(topnode)
-   end function load_tree_def
+      t => make_vtree(topnode)
+   end function load_vtree_def
 
 
 
    !--------------------------------------------------------------------
-   subroutine dump_tree_data(t,lun)
+   subroutine dump_vtree_data(t,lun)
    !--------------------------------------------------------------------
-      type(tree_t),pointer :: t
-      integer,intent(in)   :: lun
-      type(node_t),pointer :: no
-      integer              :: m,g,j
+      type(vtree_t),pointer :: t
+      integer,intent(in)    :: lun
+      type(vnode_t),pointer :: no
+      integer               :: m,g,j
       do m=1,t%numnodes
          no => t%postorder(m)%p
          write(lun) no%plen, no%nbasis
          write(lun) (no%wghts(j), j=1,no%nbasis)
          write(lun) ((no%basis(g,j), g=1,no%plen), j=1,no%nbasis)
       enddo
-   end subroutine dump_tree_data
+   end subroutine dump_vtree_data
    
 
    !--------------------------------------------------------------------
-   subroutine load_tree_data(t,lun)
+   subroutine load_vtree_data(t,lun)
    !--------------------------------------------------------------------
-      type(tree_t),pointer :: t
-      integer,intent(in)   :: lun
-      type(node_t),pointer :: no
-      integer              :: m,g,j,f,plen,nbasis
+      type(vtree_t),pointer :: t
+      integer,intent(in)    :: lun
+      type(vnode_t),pointer :: no
+      integer               :: m,g,j,f,plen,nbasis
       do m=1,t%numnodes
          no => t%postorder(m)%p
          if (.not. no%isleaf) then
@@ -418,7 +418,7 @@ module tree_m
       enddo
       return
  500  call stopnow("error reading tree data")
-   end subroutine load_tree_data
+   end subroutine load_vtree_data
 
 
-end module tree_m
+end module vtree_m

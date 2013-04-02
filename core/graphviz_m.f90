@@ -2,7 +2,7 @@
 module graphviz_m
 
    use dof_m
-   use tree_m
+   use vtree_m
    implicit none
 
    contains
@@ -16,10 +16,10 @@ module graphviz_m
    !--------------------------------------------------------------------
       implicit none
       integer,intent(in)          :: iout    ! output channel
-      type(tree_t),intent(in)     :: t       ! the tree
+      type(vtree_t),intent(in)    :: t       ! the tree
       type(dof_tp),intent(in)     :: dofs(:) ! the DOFs
       integer,intent(in),optional :: edgectrl
-      type(node_t),pointer        :: cnode
+      type(vnode_t),pointer       :: cnode
       integer                     :: i,f,idof,ectl,enum
       ! check edgectrl
       if (present(edgectrl)) then

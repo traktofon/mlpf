@@ -8,7 +8,7 @@ module parse_tree_m
 !=======================================================================
 
    use tokenize_m
-   use inp_tree_m
+   use itree_m
    use base_m
    implicit none
    private
@@ -23,7 +23,7 @@ module parse_tree_m
    function parse_leaf(t) result(leaf)
    !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: t
-      type(inp_node_t),pointer        :: leaf
+      type(inode_t),pointer           :: leaf
       character(len=maxtoklen)        :: token
       integer                         :: nf
       character(len=c1)               :: labels(maxndof)
@@ -45,7 +45,7 @@ module parse_tree_m
          call t%gofwd
       enddo
       ! create leaf 
-      leaf => make_inp_leaf(labels(1:nf))
+      leaf => make_ileaf(labels(1:nf))
    end function parse_leaf
 
 
@@ -53,10 +53,10 @@ module parse_tree_m
    recursive function parse_node(t) result(node)
    !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: t
-      type(inp_node_t),pointer        :: node
+      type(inode_t),pointer           :: node
       character(len=maxtoklen)        :: token
       integer                         :: nm
-      type(inp_node_tp)               :: ms(maxndof)
+      type(inode_tp)                  :: ms(maxndof)
       if (t%is_stopped()) &
          call t%error("expected start or end of mode definition")
       token = t%get()
@@ -74,7 +74,7 @@ module parse_tree_m
                exit
             endif
          enddo
-         node => make_inp_node(ms(1:nm))
+         node => make_inode(ms(1:nm))
       else
          node => parse_leaf(t)
       endif
@@ -90,7 +90,7 @@ module parse_tree_m
    function parse_tree(t,topnode) result(flag)
    !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: t
-      type(inp_node_t),pointer        :: topnode
+      type(inode_t),pointer           :: topnode
       character(len=maxtoklen)        :: token
       logical                         :: flag
 
