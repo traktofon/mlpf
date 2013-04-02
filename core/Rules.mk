@@ -25,6 +25,7 @@ FSOURCES := \
    meta_dof_m.f90     \
    mmap_m.f90         \
    modeutil_m.f90     \
+   numutil_m.f90      \
    parse_pbasis_m.f90 \
    parse_pot_m.f90    \
    parse_run_m.f90    \

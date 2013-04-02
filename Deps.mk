@@ -34,6 +34,7 @@ obj/meta_dof_m.o obj/meta_dof_m.mod:  obj/dvr_ho_m.mod \
  obj/dof_m.mod obj/base_m.mod
 obj/mmap_m.o obj/mmap_m.mod:  obj/base_m.mod
 obj/modeutil_m.o obj/modeutil_m.mod: 
+obj/numutil_m.o obj/numutil_m.mod:  obj/base_m.mod
 obj/parse_pbasis_m.o obj/parse_pbasis_m.mod:  \
  obj/tokenize_m.mod obj/units_m.mod obj/dof_m.mod obj/strutil_m.mod \
  obj/base_m.mod
