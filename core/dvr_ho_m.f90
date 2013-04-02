@@ -12,8 +12,11 @@ module dvr_ho_m
       real(dbl) :: fm  ! frequency*mass | xf-xi
       integer   :: typ ! 0=fm 1=xi-xf
       contains
-      procedure :: init => init_ho
+      procedure :: init   => init_ho
+      procedure :: pickle => pickle_ho
    end type dvr_ho_t
+
+   integer,parameter,private :: typid = 1 ! MCTDH basis type
 
    contains
 
@@ -54,7 +57,9 @@ module dvr_ho_m
    end subroutine parse_ho
 
 
+   !--------------------------------------------------------------------
    subroutine unpickle_ho(dof,gdim,ipar,rpar)
+   !--------------------------------------------------------------------
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
       integer,intent(in)          :: ipar(:)
@@ -78,7 +83,28 @@ module dvr_ho_m
    end subroutine unpickle_ho
 
 
+   !--------------------------------------------------------------------
+   subroutine pickle_ho(dof,id,ipar,rpar)
+   !--------------------------------------------------------------------
+      class(dvr_ho_t),intent(inout) :: dof
+      integer,intent(out)           :: id
+      integer,intent(out)           :: ipar(:)
+      real(dbl),intent(out)         :: rpar(:)
+      id = typid
+      ipar = 0
+      rpar = 0.d0
+      ! normalize HO-DVR parameters before pickling
+      if (dof%typ == 1) call dof%init
+      ipar(1) = dof%typ
+      rpar(1) = dof%xeq
+      rpar(2) = dof%fm
+      rpar(3) = 1.d0
+   end subroutine pickle_ho
+
+
+   !--------------------------------------------------------------------
    subroutine init_ho(dof)
+   !--------------------------------------------------------------------
       class(dvr_ho_t),intent(inout) :: dof
       integer                       :: g,ierr
       real(dbl)                     :: dx,fac,pi4,ep,w
@@ -136,7 +162,9 @@ module dvr_ho_m
    end subroutine init_ho
 
 
+   !--------------------------------------------------------------------
    subroutine init_doftyp_ho
+   !--------------------------------------------------------------------
       integer                         :: id
       procedure(parse_dof),pointer    :: p
       procedure(unpickle_dof),pointer :: u

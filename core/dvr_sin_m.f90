@@ -12,8 +12,11 @@ module dvr_sin_m
       real(dbl) :: xf  ! last grid point
       integer   :: typ ! 0=normal 1=sdq 2=spin
       contains
-      procedure :: init => init_sin
+      procedure :: init   => init_sin
+      procedure :: pickle => pickle_sin
    end type dvr_sin_t
+
+   integer,parameter,private :: typid = 3 ! MCTDH basis type
 
    contains
 
@@ -62,7 +65,9 @@ module dvr_sin_m
    end subroutine parse_sin
 
 
+   !--------------------------------------------------------------------
    subroutine unpickle_sin(dof,gdim,ipar,rpar)
+   !--------------------------------------------------------------------
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
       integer,intent(in)          :: ipar(:)
@@ -78,7 +83,25 @@ module dvr_sin_m
    end subroutine unpickle_sin
 
 
+   !--------------------------------------------------------------------
+   subroutine pickle_sin(dof,id,ipar,rpar)
+   !--------------------------------------------------------------------
+      class(dvr_sin_t),intent(inout) :: dof
+      integer,intent(out)            :: id
+      integer,intent(out)            :: ipar(:)
+      real(dbl),intent(out)          :: rpar(:)
+      id = typid
+      ipar = 0
+      rpar = 0.d0
+      ipar(1) = dof%typ
+      rpar(1) = dof%xi
+      rpar(2) = dof%xf
+   end subroutine pickle_sin
+
+
+   !--------------------------------------------------------------------
    subroutine init_sin(dof)
+   !--------------------------------------------------------------------
       class(dvr_sin_t),intent(inout) :: dof
       real(dbl)                      :: dx,w
       integer                        :: g
@@ -99,16 +122,16 @@ module dvr_sin_m
    end subroutine init_sin
 
 
+   !--------------------------------------------------------------------
    subroutine init_doftyp_sin
-      integer                         :: id
+   !--------------------------------------------------------------------
       procedure(parse_dof),pointer    :: p
       procedure(unpickle_dof),pointer :: u
-      id = 3 ! MCTDH basis type
       ! using pointers is not strictly necessary, but this makes it
       ! more likely that the compiler checks for interface mismatch
       p => parse_sin
       u => unpickle_sin
-      call register_doftyp("sin", id, p, u)
+      call register_doftyp("sin", typid, p, u)
    end subroutine init_doftyp_sin
 
 end module dvr_sin_m

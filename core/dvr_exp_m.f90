@@ -11,8 +11,11 @@ module dvr_exp_m
       real(dbl) :: xi  ! first grid point
       real(dbl) :: xf  ! last grid point
       contains
-      procedure :: init => init_exp
+      procedure :: init   => init_exp
+      procedure :: pickle => pickle_exp
    end type dvr_exp_t
+
+   integer,parameter,private :: typid = 5 ! MCTDH basis type
 
    contains
 
@@ -75,7 +78,9 @@ module dvr_exp_m
    end subroutine parse_exp
 
 
+   !--------------------------------------------------------------------
    subroutine unpickle_exp(dof,gdim,ipar,rpar)
+   !--------------------------------------------------------------------
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
       integer,intent(in)          :: ipar(:)
@@ -90,7 +95,24 @@ module dvr_exp_m
    end subroutine unpickle_exp
 
 
+   !--------------------------------------------------------------------
+   subroutine pickle_exp(dof,id,ipar,rpar)
+   !--------------------------------------------------------------------
+      class(dvr_exp_t),intent(inout) :: dof
+      integer,intent(out)            :: id
+      integer,intent(out)            :: ipar(:)
+      real(dbl),intent(out)          :: rpar(:)
+      id = typid
+      ipar = 0
+      rpar = 0.d0
+      rpar(1) = dof%xi
+      rpar(2) = dof%xf
+   end subroutine pickle_exp
+
+
+   !--------------------------------------------------------------------
    subroutine init_exp(dof)
+   !--------------------------------------------------------------------
       class(dvr_exp_t),intent(inout) :: dof
       real(dbl)                      :: dx,w
       integer                        :: g
@@ -114,16 +136,16 @@ module dvr_exp_m
    end subroutine init_exp
 
 
+   !--------------------------------------------------------------------
    subroutine init_doftyp_exp
-      integer                         :: id
+   !--------------------------------------------------------------------
       procedure(parse_dof),pointer    :: p
       procedure(unpickle_dof),pointer :: u
-      id = 5 ! MCTDH basis type
-      ! uexpg pointers is not strictly necessary, but this makes it
+      ! using pointers is not strictly necessary, but this makes it
       ! more likely that the compiler checks for interface mismatch
       p => parse_exp
       u => unpickle_exp
-      call register_doftyp("exp", id, p, u)
+      call register_doftyp("exp", typid, p, u)
    end subroutine init_doftyp_exp
 
 end module dvr_exp_m
