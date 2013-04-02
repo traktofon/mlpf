@@ -11,8 +11,9 @@ module dof_m
       real(dbl),allocatable :: x(:)
       real(dbl),allocatable :: w(:)
       contains
-      procedure(init_dof),deferred :: init
-      procedure                    :: set_label
+      procedure(init_dof),deferred   :: init
+      procedure(pickle_dof),deferred :: pickle
+      procedure                      :: set_label
    end type dof_t
 
    type :: dof_tp
@@ -25,6 +26,14 @@ module dof_m
          import :: dof_t
          class(dof_t),intent(inout) :: dof
       end subroutine init_dof
+
+      subroutine pickle_dof(dof,id,ipar,rpar)
+         import :: dof_t,dbl
+         class(dof_t),intent(inout) :: dof
+         integer,intent(out)        :: id
+         integer,intent(out)        :: ipar(:)
+         real(dbl),intent(out)      :: rpar(:)
+      end subroutine pickle_dof
 
       subroutine parse_dof(dof,tkner)
          import :: dof_t,tokenizer_t

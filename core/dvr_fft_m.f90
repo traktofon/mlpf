@@ -11,8 +11,11 @@ module dvr_fft_m
       real(dbl) :: xi  ! first grid point
       real(dbl) :: xf  ! last grid point
       contains
-      procedure :: init => init_fft
+      procedure :: init   => init_fft
+      procedure :: pickle => pickle_fft
    end type dvr_fft_t
+
+   integer,parameter,private :: typid = 4 ! MCTDH basis type
 
    contains
 
@@ -30,7 +33,9 @@ module dvr_fft_m
    end subroutine parse_fft
 
 
+   !--------------------------------------------------------------------
    subroutine unpickle_fft(dof,gdim,ipar,rpar)
+   !--------------------------------------------------------------------
       class(dof_t),pointer        :: dof
       integer,intent(in)          :: gdim
       integer,intent(in)          :: ipar(:)
@@ -45,7 +50,24 @@ module dvr_fft_m
    end subroutine unpickle_fft
 
 
+   !--------------------------------------------------------------------
+   subroutine pickle_fft(dof,id,ipar,rpar)
+   !--------------------------------------------------------------------
+      class(dvr_fft_t),intent(inout) :: dof
+      integer,intent(out)            :: id
+      integer,intent(out)            :: ipar(:)
+      real(dbl),intent(out)          :: rpar(:)
+      id = typid
+      ipar = 0
+      rpar = 0.d0
+      rpar(1) = dof%xi
+      rpar(2) = dof%xf
+   end subroutine pickle_fft
+
+
+   !--------------------------------------------------------------------
    subroutine init_fft(dof)
+   !--------------------------------------------------------------------
       class(dvr_fft_t),intent(inout) :: dof
       real(dbl)                      :: dx,w
       integer                        :: g
@@ -66,16 +88,16 @@ module dvr_fft_m
    end subroutine init_fft
 
 
+   !--------------------------------------------------------------------
    subroutine init_doftyp_fft
-      integer                         :: id
+   !--------------------------------------------------------------------
       procedure(parse_dof),pointer    :: p
       procedure(unpickle_dof),pointer :: u
-      id = 4 ! MCTDH basis type
       ! using pointers is not strictly necessary, but this makes it
       ! more likely that the compiler checks for interface mismatch
       p => parse_fft
       u => unpickle_fft
-      call register_doftyp("fft", id, p, u)
+      call register_doftyp("fft", typid, p, u)
    end subroutine init_doftyp_fft
 
 end module dvr_fft_m
