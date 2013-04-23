@@ -37,7 +37,7 @@ core : $(OBJS_core)
 targets: $(PROGS)
 
 clean:
-	rm -f $(OBJDIR)/* $(PROGS) .hgstamp
+	rm -f $(OBJDIR)/* $(PROGS)
 
 # dependencies
 

@@ -7,5 +7,3 @@ tags
 obj/
 main/mlpf
 main/test
-.hgstamp
-core/version_m.f90
