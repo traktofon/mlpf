@@ -54,6 +54,13 @@ OBJS_$(dd) := \
 
 ALLSOURCES += $(SRC_$(dd))
 
-$(dd)/version_m.f90: $(dd)/version_m.ftl .hgstamp
-	bin/ftl-expand hgid='$(HGID)' <$< >$@
+# get the Mercurial revision into version_m
 
+HGID := $(shell hg id 2>/dev/null || echo 'N/A')
+
+$(OBJDIR)/version_m.o: version_m.f90 .hgstamp
+	$(FC) -cpp $(FFLAGS) -DHGID='"$(HGID)"' -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
+.PHONY: .hgstamp
+.hgstamp:
+	[ -f $@ ] || touch $@
+	echo '$(HGID)' | cmp -s $@ - || echo '$(HGID)' >$@
