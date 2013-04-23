@@ -11,6 +11,7 @@ module dof_m
       integer               :: gdim
       real(dbl),allocatable :: x(:)
       real(dbl),allocatable :: w(:)
+      logical               :: initialized = .false.
       contains
       procedure(init_dof),deferred   :: init
       procedure(pickle_dof),deferred :: pickle

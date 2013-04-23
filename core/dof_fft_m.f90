@@ -115,6 +115,8 @@ module dof_fft_m
       class(dof_fft_t),intent(inout) :: dof
       real(dbl)                      :: dx,w
       integer                        :: g
+      if (dof%initialized) return
+      dof%initialized = .true.
       ! gridpoints are simply equidistant
       ! weights are constant
       dx = (dof%xf - dof%xi) / (dof%gdim - 1)

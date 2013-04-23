@@ -16,6 +16,8 @@ module dvr_m
 
    subroutine init_dvr(dof)
       class(dvr_t),intent(inout) :: dof
+      if (dof%initialized) return
+      dof%initialized = .true.
       allocate(dof%x(dof%gdim))
       allocate(dof%w(dof%gdim))
       allocate(dof%trafo(dof%gdim, dof%gdim))
