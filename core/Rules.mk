@@ -57,10 +57,10 @@ ALLSOURCES += $(SRC_$(dd))
 # get the Mercurial revision into version_m
 
 HGID := $(shell hg id 2>/dev/null || echo 'N/A')
+COMPDATE := $(shell date +'%Y-%m-%d %H:%M:%S')
 
-$(OBJDIR)/version_m.o: version_m.f90 .hgstamp
-	$(FC) -cpp $(FFLAGS) -DHGID='"$(HGID)"' -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
-.PHONY: .hgstamp
-.hgstamp:
-	[ -f $@ ] || touch $@
-	echo '$(HGID)' | cmp -s $@ - || echo '$(HGID)' >$@
+$(OBJDIR)/version_m.o: version_m.f90 FORCE
+	$(FC) -cpp $(FFLAGS) -DHGID='"$(HGID)"' -DCOMPDATE='"$(COMPDATE)"' -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
+
+.PHONY: FORCE
+FORCE:
