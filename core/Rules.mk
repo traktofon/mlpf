@@ -53,3 +53,7 @@ OBJS_$(dd) := \
    $(addprefix $(OBJDIR)/,$(CSOURCES:.c=.o))
 
 ALLSOURCES += $(SRC_$(dd))
+
+$(dd)/version_m.f90: $(dd)/version_m.ftl .hgstamp
+	bin/ftl-expand hgid='$(HGID)' <$< >$@
+

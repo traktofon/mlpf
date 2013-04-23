@@ -35,6 +35,7 @@ program mlpf
    real(dbl),pointer        :: v(:)
    integer,pointer          :: vdim(:)
    real(dbl)                :: accerr2,err2limit
+   integer                  :: logid
 
    call get_command_argument(1,inpfile)
    if (inpfile == "") then
@@ -45,6 +46,10 @@ program mlpf
    ! initialize global data structures
    call init_doftyps
    call init_units
+
+   ! setup logging
+   call get_logger(logid, "main")
+   call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
 
    ! parse the input file
    call runinp
