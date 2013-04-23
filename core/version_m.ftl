@@ -18,9 +18,10 @@ module version_m
 
 
    pure function verstring()
-      character(len=16) :: verstring
-      write(verstring,'(i0,a,i0,a,i0)') &
-         v_major, '.', v_minor, '.', v_patch
+      character(len=80) :: verstring
+      write(verstring,'(i0,a,i0,a,i0,a)') &
+         v_major, '.', v_minor, '.', v_patch, ' (hg id = #hgid#)'
    end function verstring
    
 end module version_m
+! vim: syntax=fortran :

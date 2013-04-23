@@ -39,6 +39,17 @@ targets: $(PROGS)
 clean:
 	rm -f $(OBJDIR)/* $(PROGS)
 
+# stamps
+
+HGID := $(shell hg id 2>/dev/null || echo 'N/A')
+
+.hgstamp: hgstamp
+
+.PHONY: hgstamp
+hgstamp: 
+	[ -f .hgstamp ] || touch .hgstamp
+	echo '$(HGID)' | cmp -s .hgstamp - || echo '$(HGID)' >.hgstamp
+
 # dependencies
 
 -include Deps.mk
