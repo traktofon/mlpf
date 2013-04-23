@@ -18,6 +18,7 @@ program mlpf
    use units_m
    use strutil_m
    use fileutil_m
+   use version_m
    use base_m
    implicit none
 
@@ -342,6 +343,8 @@ program mlpf
       open(newunit=lun, file=trim(tfile), status="unknown", form="unformatted", iostat=ierr)
       if (ierr /= 0) &
          call stopnow("cannot create file: "//trim(tfile))
+      write(lun) mctdh_compat_versnum
+      call wrdvrdef(lun,dofs)
       call dump_vtree_def(tree,lun)
       call dump_vtree_data(tree,lun)
       call flush(lun)

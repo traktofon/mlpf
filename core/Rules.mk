@@ -35,6 +35,7 @@ FSOURCES := \
    tokenize_m.f90     \
    tuckerdecomp_m.f90 \
    units_m.f90        \
+   version_m.f90      \
    vtree_m.f90
 
 CSOURCES := \
