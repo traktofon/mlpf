@@ -19,15 +19,14 @@ module version_m
 
    pure function verstring()
       character(len=80) :: verstring
-      write(verstring,'(i0,a,i0,a,i0,3a)') &
-         v_major, '.', v_minor, '.', v_patch, &
-         ' (hg id = ', trim(HGID), ')'
+      write(verstring,'(i0,a,i0,a,i0,a)') &
+         v_major, '.', v_minor, '.', v_patch, ' (hg id = #HGID#)'
    end function verstring
    
 
    pure function compdate()
       character(len=80) :: compdate
-      write(compdate,'(2a)') 'compiled on: ',trim(COMPDATE)
+      write(compdate,'(a)') 'compiled on: #COMPDATE#'
    end function compdate
 
 

@@ -5,11 +5,16 @@ tmpdep="dep$$.tmp"
 objdir="$1"
 shift
 nfiles=$#
+maxtry=5
 try=1
 while ! gfortran -cpp -MM -J${objdir} "$@" >|${tmpdep} 2>/dev/null; do
    try=$[$try+1]
-   if [ $try -gt $nfiles ]; then
-      echo "Cannot generate dependencies after ${nfiles} iterations." >&2
+   if [ $try -gt $maxtry ]; then
+      echo "Cannot generate dependencies after ${maxtry} iterations." >&2
+      echo "Here's the problem:" >&2
+      echo >&2
+      sleep 1
+      gfortran -cpp -MM -J${objdir} "$@" >/dev/null
       exit 1
    fi
 done
