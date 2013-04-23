@@ -57,4 +57,56 @@ module dof_io_m
 
    end function rddvrdef
 
+
+
+   subroutine wrdvrdef(lun,dofs)
+      implicit none
+      integer,intent(in)              :: lun
+      type(dof_tp),intent(in)         :: dofs(:)
+      class(dof_t),pointer            :: dof
+      integer                         :: ndof,f,i
+      integer,parameter               :: mbaspar = 6
+      integer,allocatable             :: basis(:), ipbaspar(:,:)
+      real(dbl),allocatable           :: rpbaspar(:,:), xend(:,:)
+
+      ndof = size(dofs)
+      write(unit=lun,err=500) ndof
+      write(unit=lun,err=500) (dofs(f)%p%label, f=1,ndof)
+      write(unit=lun,err=500) (dofs(f)%p%gdim, f=1,ndof)
+      write(unit=lun,err=500) mbaspar
+      allocate(basis(ndof))
+      allocate(ipbaspar(mbaspar,ndof))
+      allocate(rpbaspar(mbaspar,ndof))
+      allocate(xend(2,ndof))
+      do f=1,ndof
+         dof => dofs(f)%p
+         call dof%pickle(basis(f), ipbaspar(:,f), rpbaspar(:,f))
+         xend(1,f) = dof%x(1)
+         xend(2,f) = dof%x(dof%gdim)
+      end do
+      write(unit=lun,err=500) (basis(f), f=1,ndof)
+      write(unit=lun,err=500) (ildvr(basis(f)), f=1,ndof)
+      write(unit=lun,err=500) ((ipbaspar(i,f), i=1,mbaspar), f=1,ndof)
+      write(unit=lun,err=500) ((rpbaspar(i,f), i=1,mbaspar), f=1,ndof)
+      write(unit=lun,err=500) ((xend(i,f), i=1,2), f=1,ndof)
+      deallocate(xend,rpbaspar,ipbaspar,basis)
+      return
+
+  500 call stopnow("wrdvrdef: error writing dvr information")
+
+   end subroutine wrdvrdef
+
+
+
+   pure function ildvr(id)
+      integer,intent(in) :: id
+      integer            :: ildvr
+      select case (id)
+         case (-1,0,4,6)
+            ildvr = 0
+         case default
+            ildvr = 1
+      end select
+   end function ildvr
+
 end module dof_io_m
