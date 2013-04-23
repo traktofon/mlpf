@@ -170,11 +170,11 @@ module vtree_m
    !--------------------------------------------------------------------
    recursive subroutine set_preorder(node,seq,idx)
    !--------------------------------------------------------------------
-      type(vnode_t),target,intent(in) :: node  
-      type(vnode_tp),intent(inout)    :: seq(:)
-      integer,intent(inout)           :: idx   
-      type(vnode_t),pointer           :: child 
-      integer                         :: m     
+      type(vnode_t),target,intent(inout) :: node
+      type(vnode_tp),intent(inout)       :: seq(:)
+      integer,intent(inout)              :: idx
+      type(vnode_t),pointer              :: child
+      integer                            :: m
       ! First record this node.
       seq(idx)%p => node
       node%num = idx
@@ -192,11 +192,11 @@ module vtree_m
    !--------------------------------------------------------------------
    recursive subroutine set_postorder(node,seq,idx)
    !--------------------------------------------------------------------
-      type(vnode_t),target,intent(in) :: node  
-      type(vnode_tp),intent(inout)    :: seq(:)
-      integer,intent(inout)           :: idx   
-      type(vnode_t),pointer           :: child 
-      integer                         :: m     
+      type(vnode_t),target,intent(inout) :: node
+      type(vnode_tp),intent(inout)       :: seq(:)
+      integer,intent(inout)              :: idx
+      type(vnode_t),pointer              :: child
+      integer                            :: m
       ! First record all children, if any.
       if (.not. node%isleaf) then
          do m=1,node%nmodes
