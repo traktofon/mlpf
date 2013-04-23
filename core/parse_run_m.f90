@@ -8,33 +8,30 @@ module parse_run_m
 
    contains
 
+   !--------------------------------------------------------------------
    function parse_run(tkner,opts) result (flag)
+   !--------------------------------------------------------------------
       type(tokenizer_t),intent(inout) :: tkner
-      type(runopts_t),intent(out)     :: opts
+      type(runopts_t),intent(inout)   :: opts
       logical                         :: flag
       character(len=maxtoklen)        :: token
 
+      ! Check if the RUN-SECTION is starting.
       token = tkner%get()
       if (strcmpci(token,"RUN-SECTION") /= 0) then
          flag = .false.
          return
       endif
+
+      ! Watch out for the end of this section.
       call tkner%clear_stop
       call tkner%add_stop("END-RUN-SECTION")
       call tkner%gofwd
       flag = .true.
 
-      ! Set defaults.
-      opts%lgendvr = .true.
-      opts%lgenpot = .true.
-      opts%lgendot = .false.
-      opts%namedir = NOFILE
-      opts%dvrfile = NOFILE
-      opts%potfile = NOFILE
-      opts%dotfile = NOFILE
-      opts%vpotfmt = 1
-      opts%rmse = 0.d0
+      ! Defaults for options are already set.
 
+      ! Loop until the end of the section.
       do
          token = tkner%get()
          if (token == "(END)") exit
@@ -108,6 +105,7 @@ module parse_run_m
          endif
       enddo
 
+      ! Check if the section ended or if there was sth unexpected.
       if (tkner%stopreason() /= STOPREASON_STOPWORD) &
          call tkner%error("expected end of section")
       call tkner%clear_stop

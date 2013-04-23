@@ -59,8 +59,9 @@ ALLSOURCES += $(SRC_$(dd))
 HGID := $(shell hg id 2>/dev/null || echo 'N/A')
 COMPDATE := $(shell date +'%Y-%m-%d %H:%M:%S')
 
-$(OBJDIR)/version_m.o: version_m.f90 FORCE
-	$(FC) -cpp $(FFLAGS) -DHGID='"$(HGID)"' -DCOMPDATE='"$(COMPDATE)"' -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
+$(dd)/version_m.f90: $(dd)/version_m.ftl FORCE
+	bin/ftl-expand HGID='$(HGID)' COMPDATE='$(COMPDATE)' <$< >$@
 
 .PHONY: FORCE
 FORCE:
+

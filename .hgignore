@@ -7,3 +7,4 @@ tags
 obj/
 main/mlpf
 main/test
+core/version_m.f90

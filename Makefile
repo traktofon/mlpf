@@ -43,7 +43,7 @@ clean:
 
 -include Deps.mk
 
-dep:
+dep: $(ALLSOURCES)
 	bin/mkdep $(OBJDIR) $(ALLSOURCES) > Deps.mk
 
 # ctags

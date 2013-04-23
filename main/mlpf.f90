@@ -35,7 +35,7 @@ program mlpf
    real(dbl),pointer        :: v(:)
    integer,pointer          :: vdim(:)
    real(dbl)                :: accerr2,err2limit
-   integer                  :: logid
+   integer                  :: logid = 0
 
    ! setup logging
    call get_logger(logid, "main")
