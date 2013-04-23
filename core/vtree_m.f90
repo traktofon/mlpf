@@ -21,6 +21,7 @@ module vtree_m
       !--- Tree-related data ---
       type(vtree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
       integer                :: num                  ! internal number of this node
+      integer                :: postnum              ! post-order number of this node
       integer                :: layer                ! layer (level) of this node inside the tree
       !--- MLPF-related data ----
       integer,pointer        :: ndim(:) => null()    ! number of basis tensors/grid points of the children
@@ -126,9 +127,8 @@ module vtree_m
       enddo
       ! Set tree-related data in nodes.
       do m=1,numnodes
-         node => tree%postorder(m)%p
+         node => tree%preorder(m)%p
          node%tree => tree
-         node%num  =  m
       enddo
       call set_layer(topnode,1)
    end function make_vtree
@@ -177,6 +177,7 @@ module vtree_m
       integer                         :: m     
       ! First record this node.
       seq(idx)%p => node
+      node%num = idx
       idx = idx+1
       ! Then record all children, if any.
       if (.not. node%isleaf) then
@@ -205,6 +206,7 @@ module vtree_m
       endif
       ! Then record this node.
       seq(idx)%p => node
+      node%postnum = idx
       idx = idx+1
    end subroutine set_postorder
 
@@ -321,7 +323,7 @@ module vtree_m
             write(lun) (no%dofs(f), f=1,no%nmodes)
          else
             ! Non-leaf: write the post-order numbers of the child nodes
-            write(lun) (no%modes(f)%p%num, f=1,no%nmodes)
+            write(lun) (no%modes(f)%p%postnum, f=1,no%nmodes)
          endif
       enddo
    end subroutine dump_vtree_def
