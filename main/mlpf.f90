@@ -53,16 +53,15 @@ program mlpf
    ! override input file options by command line
    call runcmd(.true.)
 
-   ! setup logging
-   call get_logger(logid, "main")
-   call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
-
    ! do some elementary checks
    if (.not.have_run) &
       call stopnow("missing RUN-SECTION")
    if (runopts%namedir == NOFILE) &
       call stopnow("no name-directory specified")
    call mkdir(runopts%namedir)
+
+   ! start logging
+   call runlog
 
    ! create the DVR definition -> dofs
    call rundvr
@@ -402,6 +401,27 @@ program mlpf
       close(lun)
 
    end subroutine outtree
+
+
+   !--------------------------------------------------------------------
+   subroutine runlog
+   !--------------------------------------------------------------------
+      integer :: loglun,ierr
+      
+      open (newunit = loglun, &
+            file    = trim(runopts%namedir)//"/log", &
+            status  = "unknown", &
+            form    = "formatted", &
+            iostat  = ierr)
+      if (ierr /= 0) &
+         call stopnow("cannot create log file")
+      call set_logger("main", LOGLEVEL_INFO, loglun)
+      call set_logger("data", LOGLEVEL_INFO, loglun)
+      call set_logger("tree", LOGLEVEL_INFO, loglun)
+      call get_logger(logid, "main")
+      call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
+
+   end subroutine runlog
 
 end program mlpf
 
