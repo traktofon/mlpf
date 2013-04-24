@@ -4,8 +4,7 @@ module logging_m
    implicit none
    private
 
-   public :: open_logfile, close_logfile, &
-             get_logger, set_logger, write_log
+   public :: get_logger, set_logger, write_log
 
    integer,parameter,public :: &
       LOGLEVEL_DEBUG = 10, &
@@ -86,44 +85,5 @@ module logging_m
          call flush(lun)
       endif
    end subroutine write_log
-
-
-   subroutine open_logfile(lun,filename)
-      implicit none
-      character(len=*),intent(in) :: filename
-      integer,intent(out)         :: lun
-      integer                     :: ierr
-      lun = getlun()
-      if (lun < 0) then
-         write (*,'(a)') 'open_logfile: no I/O unit available'
-      endif
-      open (unit=lun,iostat=ierr,file=filename,form='formatted',status='unknown')
-      if (ierr /= 0) then
-         write (*,'(a,i0,2a)') &
-            'open_logfile: cannot open, status=', ierr, ', file=', trim(filename)
-         stop 1
-      endif
-   end subroutine open_logfile
-
-
-   subroutine close_logfile(lun)
-      implicit none
-      integer,intent(in) :: lun
-      close(lun)
-   end subroutine close_logfile
-
-
-   function getlun() result (lun)
-   ! finds an unused unit number
-      implicit none      
-      integer :: lun
-      logical :: isopen,exists
-      do lun=maxunit,1,-1
-         inquire(unit=lun,exist=exists,opened=isopen)
-         if (exists.and..not.isopen) return
-      enddo
-      lun = -1 ! signal error
-   end function getlun
-
 
 end module logging_m
