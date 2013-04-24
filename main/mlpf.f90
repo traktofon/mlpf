@@ -50,7 +50,7 @@ program mlpf
    ! parse the input file
    call runinp
 
-   ! override input file optiony by command line
+   ! override input file options by command line
    call runcmd(.true.)
 
    ! setup logging
