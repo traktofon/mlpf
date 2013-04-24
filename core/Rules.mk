@@ -5,6 +5,7 @@ vpath %.c   $(dd)
 
 FSOURCES := \
    base_m.f90         \
+   cmdline_m.f90      \
    dof_io_m.f90       \
    dof_m.f90          \
    dvr_exp_m.f90      \

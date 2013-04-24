@@ -10,10 +10,10 @@ try=1
 while ! gfortran -cpp -MM -J${objdir} "$@" >|${tmpdep} 2>/dev/null; do
    try=$[$try+1]
    if [ $try -gt $maxtry ]; then
+      rm -f ${tmpdep}
       echo "Cannot generate dependencies after ${maxtry} iterations." >&2
       echo "Here's the problem:" >&2
       echo >&2
-      sleep 1
       gfortran -cpp -MM -J${objdir} "$@" >/dev/null
       exit 1
    fi

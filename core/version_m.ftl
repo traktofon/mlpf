@@ -26,9 +26,16 @@ module version_m
 
    pure function compdate()
       character(len=80) :: compdate
-      write(compdate,'(a)') 'compiled on: #COMPDATE#'
+      write(compdate,'(a)') '#COMPDATE#'
    end function compdate
 
 
+   subroutine print_version
+      write (*,'(4a)') &
+         'MLPF version ',trim(verstring()), &
+         ', compiled on: ',trim(compdate())
+   end subroutine print_version
+
+
 end module version_m
-! vim: syntax=fortran :
+! vim: syntax=fortran ts=3 sw=3 expandtab:
