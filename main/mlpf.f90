@@ -35,7 +35,7 @@ program mlpf
    logical                  :: have_tree
    real(dbl),pointer        :: v(:)
    integer,pointer          :: vdim(:)
-   real(dbl)                :: accerr2,err2limit
+   real(dbl)                :: accerr2, err2limit
    integer                  :: logid = 0
 
    ! process command line -> inpfile
@@ -74,6 +74,7 @@ program mlpf
    call runpot
 
    ! create an initial potfit
+   accerr2 = 0.d0
    call runpf
 
    ! create the multi-layer potfit
@@ -243,20 +244,16 @@ program mlpf
 
    !--------------------------------------------------------------------
    subroutine runpot
+   ! This creates the potential data on the product grid,
+   ! either by evaluating a potential function, or by reading a file.
    !--------------------------------------------------------------------
       character(len=c5)    :: fname
-
-      ! several possibilities:
-      ! - have to build potential
-      ! - have to load potential (vpot)
-      ! - have to load 1st stage potfit (natpot)
-      ! determined by input file!
 
       if (.not.associated(dofs)) &
          call stopnow("runpot: missing DVR definition")
 
       if (runopts%lgenpot) then
-         ! build potential
+         ! Build the potential on the product grid.
          if (.not.have_pot) &
             call stopnow("missing POTENTIAL-SECTION")
          call initdvr(dofs)
@@ -264,11 +261,12 @@ program mlpf
          ! implement parsing of POT-SECTION
          ! map defined DOFs to the DOFs required by the pot.func.
          ! call buildpot
-         call stopnow("TODO buildpot")
+         call stopnow("Building the potential is not implemented yet. Sorry.")
 
-      else
-         ! read potential
-         fname = runopts%potfile
+      else if (runopts%lgenpf) then
+         ! Read the potential from a file, so that we can create an
+         ! initial potfit from it.
+         fname = runopts%vpotfile
          if (fname == NOFILE) fname = ""
          if (fname == "" .or. endswith(fname,"/")) then
             ! if no filename was specified, set default
@@ -357,16 +355,32 @@ program mlpf
 
    !--------------------------------------------------------------------
    subroutine runpf
+   ! This creates the initial (bottom-layer) PotFit,
+   ! either by doing a Tucker decomposition of the full potential on
+   ! the product grid (as obtained in RUNPOT), or by reading the
+   ! core tensor and leaf potentials from a directory.
    !--------------------------------------------------------------------
       integer   :: vlen
       real(dbl) :: err2
 
-      allocate(vdim(tree%numleaves))
-      call leaf_shape(tree,vdim,vlen)
-      err2limit = vlen * (runopts%rmse)**2
-      call potfit_from_v(tree, v, vdim, err2limit, err2)
-      accerr2 = accerr2 + err2
+      if (runopts%lgenpf) then
+         ! Compute the initial PotFit by Tucker decomposition.
+         allocate(vdim(tree%numleaves))
+         call leaf_shape(tree,vdim,vlen)
+         err2limit = vlen * (runopts%rmse)**2
+         call potfit_from_v(tree, v, vdim, err2limit, err2)
+         accerr2 = accerr2 + err2
+         ! The leaf potentials have been stored in the leaves of the
+         ! tree, and v contains the core tensor.
 
+      else
+         ! Read core tensor and leaf potentials.
+         allocate(vdim(tree%numleaves))
+         call potfit_from_dir(runopts%pfdir, dofs, tree, v, vdim)
+         ! The leaf potentials have been stored in the leaves of the
+         ! tree, and v contains the core tensor.
+
+      endif
    end subroutine runpf
    
 

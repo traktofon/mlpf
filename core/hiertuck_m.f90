@@ -104,6 +104,17 @@ module hiertuck_m
    end subroutine potfit_from_v
 
 
+   !--------------------------------------------------------------------
+   subroutine potfit_from_dir(dir,dofs,t,v,vdim)
+   !--------------------------------------------------------------------
+      character(len=c5),intent(in) :: dir
+      type(dof_tp),pointer         :: dofs(:)
+      type(vtree_t),intent(in)     :: t
+      real(dbl),pointer            :: v(:)
+      integer,intent(inout)        :: vdim(:)
+      stop 1
+   end subroutine potfit_from_dir
+
 
    !--------------------------------------------------------------------
    subroutine compute_ht(t,v,vdim,limit,acesq)
