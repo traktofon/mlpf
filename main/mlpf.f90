@@ -96,15 +96,15 @@ program mlpf
    !--------------------------------------------------------------------
    subroutine usage
    !--------------------------------------------------------------------
-      write (*,'(a,8(/a))') &
+      write (*,'(a,7(/a))') &
          "Usage: mlpf [ options ] inputfile",&
          "Options:",&
-         "  -h -? --help --usage:",&
-         "      print this help text",&
-         "  -v --version:",&
-         "      print version information",&
-         "  -D name:",&
-         "      specify name directory (overrides input file)"
+         "  -h | -? | --help | --usage",&
+         "     print this help text",&
+         "  -v | --version",&
+         "     print version information",&
+         "  -D name",&
+         "     specify name directory (overrides input file)"
    end subroutine usage
 
 
