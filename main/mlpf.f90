@@ -43,16 +43,19 @@ program mlpf
    if (inpfile == "") &
       call stopnow("no input file given")
 
-   ! setup logging
-   call get_logger(logid, "main")
-   call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
-
    ! initialize global data structures
    call init_doftyps
    call init_units
 
    ! parse the input file
    call runinp
+
+   ! override input file optiony by command line
+   call runcmd(.true.)
+
+   ! setup logging
+   call get_logger(logid, "main")
+   call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
 
    ! do some elementary checks
    if (.not.have_run) &
@@ -93,13 +96,15 @@ program mlpf
    !--------------------------------------------------------------------
    subroutine usage
    !--------------------------------------------------------------------
-      write (*,'(a,6(/a))') &
+      write (*,'(a,8(/a))') &
          "Usage: mlpf [ options ] inputfile",&
          "Options:",&
          "  -h -? --help --usage:",&
          "      print this help text",&
          "  -v --version:",&
-         "      print version information"
+         "      print version information",&
+         "  -D name:",&
+         "      specify name directory (overrides input file)"
    end subroutine usage
 
 
@@ -122,6 +127,13 @@ program mlpf
                if (lopts) cycle
                call usage
                stop 0
+
+            case ('-D')
+               arg = cmdline_next_arg()
+               if (arg == "") &
+                  call stopnow("option -D needs an argument")
+               if (.not.lopts) cycle
+               runopts%namedir = arg
 
             case default
                if (lopts) cycle
