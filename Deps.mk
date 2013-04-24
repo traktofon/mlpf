@@ -1,4 +1,5 @@
 obj/base_m.o obj/base_m.mod: 
+obj/cmdline_m.o obj/cmdline_m.mod:  obj/base_m.mod
 obj/dof_io_m.o obj/dof_io_m.mod:  obj/dof_m.mod \
  obj/base_m.mod
 obj/dof_m.o obj/dof_m.mod:  obj/base_m.mod obj/tokenize_m.mod \
@@ -56,9 +57,9 @@ obj/version_m.o obj/version_m.mod:  obj/base_m.mod
 obj/vtree_m.o obj/vtree_m.mod:  obj/base_m.mod \
  obj/logging_m.mod
 obj/c_io.o: core/c_io.c
-obj/mlpf.o:  obj/tokenize_m.mod obj/parse_run_m.mod \
- obj/parse_pot_m.mod obj/parse_pbasis_m.mod obj/parse_tree_m.mod \
- obj/itree_m.mod obj/vtree_m.mod obj/runopts_m.mod obj/meta_dof_m.mod \
- obj/dof_io_m.mod obj/genpot_m.mod obj/hiertuck_m.mod obj/graphviz_m.mod \
- obj/units_m.mod obj/strutil_m.mod obj/fileutil_m.mod obj/version_m.mod \
- obj/base_m.mod
+obj/mlpf.o:  obj/cmdline_m.mod obj/tokenize_m.mod \
+ obj/parse_run_m.mod obj/parse_pot_m.mod obj/parse_pbasis_m.mod \
+ obj/parse_tree_m.mod obj/itree_m.mod obj/vtree_m.mod obj/runopts_m.mod \
+ obj/meta_dof_m.mod obj/dof_io_m.mod obj/genpot_m.mod obj/hiertuck_m.mod \
+ obj/graphviz_m.mod obj/units_m.mod obj/strutil_m.mod obj/fileutil_m.mod \
+ obj/version_m.mod obj/base_m.mod

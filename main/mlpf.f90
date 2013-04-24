@@ -2,6 +2,7 @@
 program mlpf
 !=======================================================================
 
+   use cmdline_m
    use tokenize_m
    use parse_run_m
    use parse_pot_m
@@ -22,7 +23,7 @@ program mlpf
    use base_m
    implicit none
 
-   character(len=c5)        :: inpfile
+   character(len=c5)        :: inpfile = ""
    type(inode_t),pointer    :: inptree => null()
    type(vtree_t),pointer    :: tree
    type(runopts_t)          :: runopts
@@ -37,15 +38,14 @@ program mlpf
    real(dbl)                :: accerr2,err2limit
    integer                  :: logid = 0
 
+   ! process command line -> inpfile
+   call runcmd(.false.)
+   if (inpfile == "") &
+      call stopnow("no input file given")
+
    ! setup logging
    call get_logger(logid, "main")
    call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
-
-   call get_command_argument(1,inpfile)
-   if (inpfile == "") then
-      call usage
-      stop 1
-   endif
 
    ! initialize global data structures
    call init_doftyps
@@ -93,12 +93,46 @@ program mlpf
    !--------------------------------------------------------------------
    subroutine usage
    !--------------------------------------------------------------------
-      write (*,'(a,2(/a))') &
+      write (*,'(a,6(/a))') &
          "Usage: mlpf [ options ] inputfile",&
          "Options:",&
-         "  (currently none)"
+         "  -h -? --help --usage:",&
+         "      print this help text",&
+         "  -v --version:",&
+         "      print version information"
    end subroutine usage
 
+
+   !--------------------------------------------------------------------
+   subroutine runcmd(lopts)
+   !--------------------------------------------------------------------
+      logical,intent(in) :: lopts
+      character(len=c5)  :: arg
+      call cmdline_init
+      do
+         arg = cmdline_next_arg()
+         if (arg == "") exit
+         select case (arg)
+            case ('-v', '--version')
+               if (lopts) cycle
+               call print_version
+               stop 0
+
+            case ('-h', '--help', '--usage', '-?')
+               if (lopts) cycle
+               call usage
+               stop 0
+
+            case default
+               if (lopts) cycle
+               if (inpfile /= "") &
+                  call stopnow("extraneous argument: "//trim(arg))
+               inpfile = arg
+
+         end select
+      end do
+   end subroutine runcmd
+   
 
    !--------------------------------------------------------------------
    subroutine runinp
