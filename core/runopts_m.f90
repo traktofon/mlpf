@@ -7,11 +7,13 @@ module runopts_m
 
    type :: runopts_t
       logical           :: lgendvr = .true.
-      logical           :: lgenpot = .true.
+      logical           :: lgenpot = .false.
+      logical           :: lgenpf  = .false.
       logical           :: lgendot = .false.
       character(len=c5) :: namedir = NOFILE
       character(len=c5) :: dvrfile = NOFILE
-      character(len=c5) :: potfile = NOFILE
+      character(len=c5) :: vpotfile = NOFILE
+      character(len=c5) :: pfdir   = NOFILE
       character(len=c5) :: dotfile = NOFILE
       integer           :: vpotfmt = 1
       real(dbl)         :: rmse    = 0.d0
