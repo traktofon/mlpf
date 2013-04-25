@@ -108,15 +108,13 @@ module genpot_m
       call rdvpotpars(lun)
       ! ...done.
 
-      ! map vpot-DOFs to system-DOFs
-      ndof = size(dofs)
-      do f=1,ndof
-         fmap(f) = find_dofnum_by_label(dofs(f)%p%label, vdofs)
-         if (fmap(f) == 0) &
-            call stopnow("DOF not present in vpot: "//trim(dofs(f)%p%label))
-      enddo
+      ! map system-DOFs to vpot-DOFs
+      call map_dofs(dofs, vdofs, fmap, ierr)
+      if (ierr /= 0) &
+         call stopnow("DOF not present in vpot: "//trim(dofs(ierr)%p%label))
 
       ! check vpot DOFs and system DOFs for consistency
+      ndof = size(dofs)
       do f=1,ndof
          if (.not. are_dofs_compatible(dofs(f)%p, vdofs(fmap(f))%p)) then
             call stopnow('Definition of DOF "' // trim(dofs(f)%p%label) // &
