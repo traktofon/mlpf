@@ -171,6 +171,35 @@ module dof_m
 
 
    !--------------------------------------------------------------------
+   subroutine map_dofs(dofs1,dofs2,fmap,ierr)
+   ! For each dof in dofs1, find a dof in dofs2 with the same label.
+   ! fmap(f) == i  <=>  dofs1(f).label == dofs2(i).label
+   ! ierr == 0 if all dofs can be mapped
+   ! ierr == f if dof f cannot be mapped
+   !--------------------------------------------------------------------
+      type(dof_tp),intent(in) :: dofs1(:)
+      type(dof_tp),intent(in) :: dofs2(:)
+      integer,intent(out)     :: fmap(:)
+      integer,intent(out)     :: ierr
+      class(dof_t),pointer    :: dof
+      integer                 :: ndof,f,i
+   
+      ierr = 0
+      ndof = size(dofs1)
+      do f=1,ndof
+         dof => dofs1(f)%p
+         i = find_dofnum_by_label(dof%label, dofs2)
+         if (i == 0) then
+            ierr = f
+            exit
+         else
+            fmap(f) = i
+         endif
+      enddo
+   end subroutine map_dofs
+
+
+   !--------------------------------------------------------------------
    function are_dofs_compatible(f1,f2) result(flag)
    !--------------------------------------------------------------------
       class(dof_t),intent(inout) :: f1,f2
