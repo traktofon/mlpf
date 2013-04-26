@@ -105,15 +105,15 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine potfit_from_dir(dir,dofs,t,v,vdim)
+   subroutine potfit_from_npot(npfile,dofs,t,v,vdim)
    !--------------------------------------------------------------------
-      character(len=c5),intent(in) :: dir
+      character(len=c5),intent(in) :: npfile
       type(dof_tp),pointer         :: dofs(:)
       type(vtree_t),intent(in)     :: t
       real(dbl),pointer            :: v(:)
       integer,intent(inout)        :: vdim(:)
       stop 1
-   end subroutine potfit_from_dir
+   end subroutine potfit_from_npot
 
 
    !--------------------------------------------------------------------
