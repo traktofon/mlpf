@@ -141,7 +141,7 @@ module tuckerdecomp_m
       integer,intent(inout) :: mdim       ! in:maximum/out:actual number of basis tensors
       real(dbl),pointer     :: wghts(:)   ! the computed basis weights (allocated here)
       real(dbl),pointer     :: basis(:,:) ! the computed basis tensors (allocated here)
-      real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
+      real(dbl),intent(out) :: ee2        ! error estimate (squared), will be <= limit
       real(dbl),allocatable :: vmat(:,:)  ! matricization of v
       real(dbl),allocatable :: sval(:),work(:)
       integer               :: vd,gd,nd,lwork,info,nw,i
