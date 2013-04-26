@@ -16,7 +16,7 @@ module vtree_m
       logical                :: isleaf               ! .true. => children are dofs
       integer                :: nmodes               ! number of submodes/dofs
       type(vnode_tp),pointer :: modes(:) => null()   ! pointers to submodes
-      integer,pointer        :: dofs(:)  => null()   ! list of dofs
+      integer,pointer        :: dofnums(:) => null() ! list of dofs
       type(vnode_t),pointer  :: parent   => null()   ! pointer to parent node
       !--- Tree-related data ---
       type(vtree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
@@ -53,20 +53,20 @@ module vtree_m
 
 
    !--------------------------------------------------------------------
-   function make_vleaf(dofs) result(leaf)
+   function make_vleaf(dofnums) result(leaf)
    !--------------------------------------------------------------------
       type(vnode_t),pointer :: leaf
-      integer,intent(in)    :: dofs(:)
+      integer,intent(in)    :: dofnums(:)
       integer               :: ndofs,f
-      ndofs = size(dofs)
+      ndofs = size(dofnums)
       allocate(leaf)
       ! Mark node as leaf.
       leaf%isleaf = .true.
       ! Link the dofs into the node.
       leaf%nmodes = ndofs
-      allocate(leaf%dofs(ndofs))
+      allocate(leaf%dofnums(ndofs))
       do f=1,ndofs
-         leaf%dofs(f) = dofs(f)
+         leaf%dofnums(f) = dofnums(f)
       enddo
    end function make_vleaf
 
@@ -320,7 +320,7 @@ module vtree_m
          write(lun) no%isleaf, no%nmodes
          if (no%isleaf) then
             ! Leaf: write the DOF numbers
-            write(lun) (no%dofs(f), f=1,no%nmodes)
+            write(lun) (no%dofnums(f), f=1,no%nmodes)
          else
             ! Non-leaf: write the post-order numbers of the child nodes
             write(lun) (no%modes(f)%p%postnum, f=1,no%nmodes)
@@ -429,7 +429,7 @@ module vtree_m
       type(vnode_t),pointer :: node
       integer               :: m
       if (node%isleaf) then
-         deallocate(node%dofs)
+         deallocate(node%dofnums)
       else
          do m=1,node%nmodes
             call dispose_vnode(node%modes(m)%p)

@@ -306,8 +306,8 @@ program mlpf
       do m=1,tree%numleaves
          no => tree%leaves(m)%p
          do f1=1,no%nmodes
-            tord(f) = no%dofs(f1)
-            no%dofs(f1) = f
+            tord(f) = no%dofnums(f1)
+            no%dofnums(f1) = f
             f = f+1
          enddo
       enddo
@@ -376,7 +376,7 @@ program mlpf
 
       else
          ! Read natpot file.
-         fname = runopts%vpotfile
+         fname = runopts%npotfile
          if (fname == NOFILE) fname = ""
          if (fname == "" .or. endswith(fname,"/")) then
             ! if no filename was specified, set default
@@ -439,7 +439,7 @@ program mlpf
          call stopnow("cannot create log file")
       call set_logger("main", LOGLEVEL_INFO, loglun)
       call set_logger("data", LOGLEVEL_INFO, loglun)
-      call set_logger("tree", LOGLEVEL_INFO, loglun)
+      call set_logger("tree", LOGLEVEL_DEBUG, loglun)
       call get_logger(logid, "main")
       call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
 
