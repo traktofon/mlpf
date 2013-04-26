@@ -357,11 +357,12 @@ program mlpf
    subroutine runpf
    ! This creates the initial (bottom-layer) PotFit,
    ! either by doing a Tucker decomposition of the full potential on
-   ! the product grid (as obtained in RUNPOT), or by reading the
-   ! core tensor and leaf potentials from a directory.
+   ! the product grid (as obtained in RUNPOT), or by reading a natpot
+   ! file.
    !--------------------------------------------------------------------
-      integer   :: vlen
-      real(dbl) :: err2
+      integer           :: vlen
+      real(dbl)         :: err2
+      character(len=c5) :: fname
 
       if (runopts%lgenpf) then
          ! Compute the initial PotFit by Tucker decomposition.
@@ -374,9 +375,16 @@ program mlpf
          ! tree, and v contains the core tensor.
 
       else
-         ! Read core tensor and leaf potentials.
+         ! Read natpot file.
+         fname = runopts%vpotfile
+         if (fname == NOFILE) fname = ""
+         if (fname == "" .or. endswith(fname,"/")) then
+            ! if no filename was specified, set default
+            ! if pathname was specified, add default natpot filename
+            fname = trim(fname)//"natpot"
+         endif
          allocate(vdim(tree%numleaves))
-         call potfit_from_dir(runopts%pfdir, dofs, tree, v, vdim)
+         call potfit_from_npot(fname, dofs, tree, v, vdim)
          ! The leaf potentials have been stored in the leaves of the
          ! tree, and v contains the core tensor.
 

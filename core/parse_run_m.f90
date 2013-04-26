@@ -75,16 +75,14 @@ module parse_run_m
                call tkner%gofwd
             endif
 
-         elseif (token == "readpf") then
+         elseif (token == "readnpot") then
             opts%lgenpot = .false.
             opts%lgenpf  = .false.
             call tkner%gofwd
             if (have_option1(tkner)) then
                token = tkner%get()
-               opts%pfdir = trim(token)
+               opts%npotfile = trim(token)
                call tkner%gofwd
-            else
-               call tkner%error("keyword needs an option: "//trim(token))
             endif
           
          elseif (token == "vpot-format") then

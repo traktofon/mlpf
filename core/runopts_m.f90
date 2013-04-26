@@ -13,7 +13,7 @@ module runopts_m
       character(len=c5) :: namedir = NOFILE
       character(len=c5) :: dvrfile = NOFILE
       character(len=c5) :: vpotfile = NOFILE
-      character(len=c5) :: pfdir   = NOFILE
+      character(len=c5) :: npotfile = NOFILE
       character(len=c5) :: dotfile = NOFILE
       integer           :: vpotfmt = 1
       real(dbl)         :: rmse    = 0.d0
