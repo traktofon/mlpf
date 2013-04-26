@@ -3,31 +3,38 @@ module hiertuck_m
 
    use logging_m
    use dof_m
+   use dof_io_m
    use vtree_m
-   use genpot_m
+   use graphviz_m
    use tuckerdecomp_m
    implicit none
 
    contains
 
    !--------------------------------------------------------------------
-   subroutine init_vleaf(no,dofs)
+   subroutine init_vleaf(no,dofs,lcheck)
    ! A leaf contains one or more DOFs.
    !--------------------------------------------------------------------
       implicit none
       type(vnode_t),intent(inout) :: no
       type(dof_tp),intent(in)     :: dofs(:)
+      logical,optional            :: lcheck
       integer                     :: ndofs,f,idof
       character(len=80)           :: msg
+      logical                     :: lc
+      lc = .true.
+      if (present(lcheck)) lc = lcheck
       ndofs = no%nmodes
       ! Check that the DOFs are actually consecutive.
-      do f=2,ndofs
-         if (no%dofnums(f) - no%dofnums(f-1) /= 1) then
-            write(msg,'(a,i0,a)') &
-               'DOFs in node ',no%num,' are not consecutive!'
-            call stopnow(msg)
-         endif
-      enddo
+      if (lc) then
+         do f=2,ndofs
+            if (no%dofnums(f) - no%dofnums(f-1) /= 1) then
+               write(msg,'(a,i0,a)') &
+                  'DOFs in node ',no%num,' are not consecutive!'
+               call stopnow(msg)
+            endif
+         enddo
+      endif
       ! Copy the DOFs' dimensions into the node.
       allocate(no%ndim(ndofs))
       do f=1,ndofs
@@ -343,5 +350,70 @@ module hiertuck_m
 
    end subroutine expand_ht
 
+
+   !--------------------------------------------------------------------
+   subroutine load_natpot(fname,dofs,nptree)
+   !--------------------------------------------------------------------
+      character(len=c5),intent(in) :: fname
+      type(dof_tp),pointer         :: dofs(:)
+      type(vtree_t),pointer        :: nptree
+      integer                      :: lun,lcount,l
+      real(dbl)                    :: fver
+      integer                      :: ndof,f,modc,nmode,m
+      integer,allocatable          :: onedpot(:),potdim(:)
+      type(vnode_t),pointer :: no
+      integer :: idot
+
+      nullify(nptree)
+      open(newunit=lun, file=trim(fname), status="old", form="unformatted", err=510)
+      ! File version.
+      read(unit=lun,err=500) fver
+      ! Skip obsolete information.
+      read(unit=lun,err=500)
+      ! DVR information.
+      dofs => rddvrdef(lun,fver)
+      ! Skip textual information.
+      read(unit=lun,err=500)
+      read(unit=lun,err=500) lcount
+      do l=1,lcount
+         read(unit=lun,err=500)
+      enddo
+
+      ! Number of contracted mode, and subtracted 1D-potentials.
+      ndof = size(dofs)
+      allocate(onedpot(ndof))
+      read(unit=lun,err=500) modc, (onedpot(f), f=1,ndof)
+      read(unit=lun,err=500) ! skip lpconm
+      ! Leaf structure (DOFs of each primitive mode)
+      nptree => rdgrddef(lun)
+      nmode = nptree%numleaves
+      do m=1,nmode
+         no => nptree%leaves(m)%p
+         call init_vleaf(no,dofs,lcheck=.false.)
+      enddo
+
+      ! Number of natural potentials for each mode.
+      allocate(potdim(nmode))
+      read(unit=lun,err=500) (potdim(m), m=1,nmode)
+      do m=1,nmode
+         no => nptree%leaves(m)%p
+         no%nbasis = potdim(m)
+      enddo
+      ! Ignore the subtracted 1D-potentials.
+      do f=1,ndof
+         if (onedpot(f) > 0) read(unit=lun,err=500)
+      enddo
+
+      ! TODO
+      ! DEBUG: dump natpot tree
+      open(newunit=idot,file="natpot.dot",form="formatted",status="unknown")
+      call mkdot(idot,nptree,dofs)
+      close(idot)
+      return
+
+ 500  call stopnow("error reading file: "//trim(fname))
+ 510  call stopnow("cannot open file: "//trim(fname))
+
+   end subroutine load_natpot
 
 end module hiertuck_m

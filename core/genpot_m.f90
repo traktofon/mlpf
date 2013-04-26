@@ -5,8 +5,6 @@ module genpot_m
    use logging_m
    use dof_m
    use dof_io_m
-   use vtree_m
-   use graphviz_m
    implicit none
 
    contains
@@ -184,50 +182,6 @@ module genpot_m
 
    end subroutine loadpot
 
-
-
-   !--------------------------------------------------------------------
-   subroutine load_natpot(fname,dofs,nptree)
-   !--------------------------------------------------------------------
-      character(len=c5),intent(in) :: fname
-      type(dof_tp),pointer         :: dofs(:)
-      type(vtree_t),pointer        :: nptree
-      integer                      :: lun,lcount,l
-      real(dbl)                    :: fver
-      integer                      :: modc,idot
-
-      nullify(nptree)
-      open(newunit=lun, file=trim(fname), status="old", form="unformatted", err=510)
-      ! File version.
-      read(unit=lun,err=500) fver
-      ! Skip obsolete information.
-      read(unit=lun,err=500)
-      ! DVR information.
-      dofs => rddvrdef(lun,fver)
-      ! Skip textual information.
-      read(unit=lun,err=500)
-      read(unit=lun,err=500) lcount
-      do l=1,lcount
-         read(unit=lun,err=500)
-      enddo
-
-      ! Number of contracted mode.
-      read(unit=lun,err=500) modc ! skip onedipot
-      read(unit=lun,err=500) ! skip lpconm
-      ! Leaf structure (DOFs of each primitive mode)
-      nptree => rdgrddef(lun)
-      ! DEBUG: dump natpot tree
-      open(newunit=idot,file="natpot.dot",form="formatted",status="unknown")
-      call mkdot(idot,nptree,dofs,0)
-      close(idot)
-      ! TODO
-      return
-
- 500  call stopnow("error reading file: "//trim(fname))
- 510  call stopnow("cannot open file: "//trim(fname))
-
-   end subroutine load_natpot
-   
 
 
    !--------------------------------------------------------------------
