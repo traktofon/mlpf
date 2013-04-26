@@ -4,6 +4,7 @@ module hiertuck_m
    use logging_m
    use dof_m
    use vtree_m
+   use genpot_m
    use tuckerdecomp_m
    implicit none
 
@@ -21,7 +22,7 @@ module hiertuck_m
       ndofs = no%nmodes
       ! Check that the DOFs are actually consecutive.
       do f=2,ndofs
-         if (no%dofs(f) - no%dofs(f-1) /= 1) then
+         if (no%dofnums(f) - no%dofnums(f-1) /= 1) then
             write(msg,'(a,i0,a)') &
                'DOFs in node ',no%num,' are not consecutive!'
             call stopnow(msg)
@@ -30,7 +31,7 @@ module hiertuck_m
       ! Copy the DOFs' dimensions into the node.
       allocate(no%ndim(ndofs))
       do f=1,ndofs
-         idof = no%dofs(f)
+         idof = no%dofnums(f)
          no%ndim(f) = dofs(idof)%p%gdim
       enddo
       ! Calculate size of product grid.
@@ -112,7 +113,12 @@ module hiertuck_m
       type(vtree_t),intent(in)     :: t
       real(dbl),pointer            :: v(:)
       integer,intent(inout)        :: vdim(:)
+      type(dof_tp),pointer         :: npdofs(:)
+      type(vtree_t),pointer        :: nptree
+
+      call load_natpot(npfile,npdofs,nptree)
       stop 1
+
    end subroutine potfit_from_npot
 
 

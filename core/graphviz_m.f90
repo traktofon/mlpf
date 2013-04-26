@@ -46,7 +46,7 @@ module graphviz_m
          if (cnode%isleaf) then
             ! loop over primitive subnodes
             do f=1,cnode%nmodes
-               idof = cnode%dofs(f)
+               idof = cnode%dofnums(f)
                ! output subnode
                write (iout,'(a,i0,3a)') 'f', idof, &
                   ' [shape=box,label="', trim(dofs(idof)%p%label), '"]'
