@@ -122,10 +122,30 @@ module hiertuck_m
       integer,intent(inout)        :: vdim(:)
       type(dof_tp),pointer         :: npdofs(:)
       type(vtree_t),pointer        :: nptree
+      integer                      :: modc,modcdim
       real(dbl),pointer            :: dtens(:)
       integer,pointer              :: dtensdim(:)
+      real(dbl)                    :: limit,ee2
+      type(vnode_t),pointer        :: cnode
+      integer                      :: idot
 
-      call load_natpot(npfile,npdofs,nptree,dtens,dtensdim)
+      ! Read the natpot file:
+      !   DVR def. + Mode def. + Contr.mode + D-tensor
+      call load_natpot(npfile,npdofs,nptree,modc,dtens,dtensdim)
+
+      ! To get a full Tucker decomposition, we need the basis tensors
+      ! for the contracted mode.
+      cnode => nptree%leaves(modc)%p
+      modcdim = 0
+      limit = 0.d0
+      call compute_basis_svd(dtens,dtensdim,modc,limit,modcdim,cnode%wghts,cnode%basis,ee2)
+
+      ! TODO: C-tensor
+
+      ! DEBUG: dump natpot tree
+      open(newunit=idot,file="natpot.dot",form="formatted",status="unknown")
+      call mkdot(idot,nptree,npdofs)
+      close(idot)
       stop 1
 
    end subroutine potfit_from_npot
@@ -354,20 +374,20 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine load_natpot(fname,dofs,nptree,dtens,dtensdim)
+   subroutine load_natpot(fname,dofs,nptree,modc,dtens,dtensdim)
    !--------------------------------------------------------------------
       character(len=c5),intent(in) :: fname
       type(dof_tp),pointer         :: dofs(:)
       type(vtree_t),pointer        :: nptree
+      integer,intent(out)          :: modc
       real(dbl),pointer            :: dtens(:)
       integer,pointer              :: dtensdim(:)
       integer                      :: lun,lcount,i
       real(dbl)                    :: fver
-      integer                      :: ndof,f,modc,nmode,m,g
+      integer                      :: ndof,f,nmode,m,g
       integer                      :: dimbef,dimaft,dimmodc
       integer,allocatable          :: onedpot(:),potdim(:)
       type(vnode_t),pointer        :: no
-      integer                      :: idot
 
       nullify(nptree)
       open(newunit=lun, file=trim(fname), status="old", form="unformatted", err=510)
@@ -426,11 +446,6 @@ module hiertuck_m
             enddo
          endif
       enddo
-
-      ! DEBUG: dump natpot tree
-      open(newunit=idot,file="natpot.dot",form="formatted",status="unknown")
-      call mkdot(idot,nptree,dofs)
-      close(idot)
 
       ! Clean up.
       deallocate(potdim)
