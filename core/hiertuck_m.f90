@@ -122,8 +122,10 @@ module hiertuck_m
       integer,intent(inout)        :: vdim(:)
       type(dof_tp),pointer         :: npdofs(:)
       type(vtree_t),pointer        :: nptree
+      real(dbl),pointer            :: dtens(:)
+      integer,pointer              :: dtensdim(:)
 
-      call load_natpot(npfile,npdofs,nptree)
+      call load_natpot(npfile,npdofs,nptree,dtens,dtensdim)
       stop 1
 
    end subroutine potfit_from_npot
@@ -352,17 +354,20 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine load_natpot(fname,dofs,nptree)
+   subroutine load_natpot(fname,dofs,nptree,dtens,dtensdim)
    !--------------------------------------------------------------------
       character(len=c5),intent(in) :: fname
       type(dof_tp),pointer         :: dofs(:)
       type(vtree_t),pointer        :: nptree
-      integer                      :: lun,lcount,l
+      real(dbl),pointer            :: dtens(:)
+      integer,pointer              :: dtensdim(:)
+      integer                      :: lun,lcount,i
       real(dbl)                    :: fver
-      integer                      :: ndof,f,modc,nmode,m
+      integer                      :: ndof,f,modc,nmode,m,g
+      integer                      :: dimbef,dimaft,dimmodc
       integer,allocatable          :: onedpot(:),potdim(:)
-      type(vnode_t),pointer :: no
-      integer :: idot
+      type(vnode_t),pointer        :: no
+      integer                      :: idot
 
       nullify(nptree)
       open(newunit=lun, file=trim(fname), status="old", form="unformatted", err=510)
@@ -375,7 +380,7 @@ module hiertuck_m
       ! Skip textual information.
       read(unit=lun,err=500)
       read(unit=lun,err=500) lcount
-      do l=1,lcount
+      do i=1,lcount
          read(unit=lun,err=500)
       enddo
 
@@ -395,24 +400,61 @@ module hiertuck_m
       ! Number of natural potentials for each mode.
       allocate(potdim(nmode))
       read(unit=lun,err=500) (potdim(m), m=1,nmode)
-      do m=1,nmode
-         no => nptree%leaves(m)%p
-         no%nbasis = potdim(m)
-      enddo
       ! Ignore the subtracted 1D-potentials.
       do f=1,ndof
          if (onedpot(f) > 0) read(unit=lun,err=500)
       enddo
 
-      ! TODO
+      ! Read natural potentials and D-tensor.
+      dimbef = product(potdim(1:modc-1))
+      dimaft = product(potdim(modc+1:nmode))
+      dimmodc = nptree%leaves(modc)%p%plen
+      allocate(dtensdim(nmode))
+      allocate(dtens(dimbef*dimmodc*dimaft))
+      do m=1,nmode
+         no => nptree%leaves(m)%p
+         if (m==modc) then ! contracted mode -> D-tensor
+            dtensdim(m) = dimmodc
+            no%nbasis = dimmodc
+            call rddtens(dtens,dimbef,dimmodc,dimaft)
+         else ! other mode
+            dtensdim(m) = potdim(m)
+            no%nbasis = potdim(m)
+            allocate(no%basis(no%plen,no%nbasis))
+            do i=1,no%nbasis
+               read(lun,err=500) (no%basis(g,i), g=1,no%plen)
+            enddo
+         endif
+      enddo
+
       ! DEBUG: dump natpot tree
       open(newunit=idot,file="natpot.dot",form="formatted",status="unknown")
       call mkdot(idot,nptree,dofs)
       close(idot)
+
+      ! Clean up.
+      deallocate(potdim)
+      deallocate(onedpot)
+      close(lun)
       return
 
  500  call stopnow("error reading file: "//trim(fname))
  510  call stopnow("cannot open file: "//trim(fname))
+
+      contains
+
+      subroutine rddtens(v,vdim,gdim,ndim)
+         integer   :: vdim,gdim,ndim
+         real(dbl) :: v(vdim,gdim,ndim)
+         integer   :: i,j,g
+         do i=1,ndim
+            do j=1,vdim
+               read(unit=lun,err=600) (v(j,g,i), g=1,gdim)
+            enddo
+         enddo
+         return
+ 600     call stopnow("error reading D-tensor from file: "//trim(fname))
+      end subroutine rddtens
 
    end subroutine load_natpot
 
