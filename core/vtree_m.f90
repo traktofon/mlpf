@@ -384,10 +384,13 @@ module vtree_m
       integer,intent(in)    :: lun
       type(vnode_t),pointer :: no
       integer               :: m,g,j
+      logical               :: lwghts
       do m=1,t%numnodes
          no => t%postorder(m)%p
-         write(lun) no%plen, no%nbasis
-         write(lun) (no%wghts(j), j=1,no%nbasis)
+         lwghts = associated(no%wghts)
+         write(lun) no%plen, no%nbasis, lwghts
+         if (lwghts) &
+            write(lun) (no%wghts(j), j=1,no%nbasis)
          write(lun) ((no%basis(g,j), g=1,no%plen), j=1,no%nbasis)
       enddo
    end subroutine dump_vtree_data
@@ -400,6 +403,7 @@ module vtree_m
       integer,intent(in)    :: lun
       type(vnode_t),pointer :: no
       integer               :: m,g,j,f,plen,nbasis
+      logical               :: lwghts
       do m=1,t%numnodes
          no => t%postorder(m)%p
          if (.not. no%isleaf) then
@@ -409,13 +413,15 @@ module vtree_m
             enddo
             no%plen = product(no%ndim)
          endif
-         read(lun,err=500) plen,nbasis
+         read(lun,err=500) plen,nbasis,lwghts
          if (plen /= no%plen) &
             call stopnow("tree data doesn't match system tree")
          no%nbasis = nbasis
-         allocate(no%wghts(nbasis))
+         if (lwghts) then
+            allocate(no%wghts(nbasis))
+            read(lun,err=500) (no%wghts(j), j=1,nbasis)
+         endif
          allocate(no%basis(plen,nbasis))
-         read(lun,err=500) (no%wghts(j), j=1,nbasis)
          read(lun,err=500) ((no%basis(g,j), g=1,plen), j=1,nbasis)
       enddo
       return
@@ -436,9 +442,9 @@ module vtree_m
          enddo
          deallocate(node%modes)
       endif
-      deallocate(node%basis)
-      deallocate(node%wghts)
-      deallocate(node%ndim)
+      if (associated(node%basis)) deallocate(node%basis)
+      if (associated(node%wghts)) deallocate(node%wghts)
+      if (associated(node%ndim))  deallocate(node%ndim)
       deallocate(node)
    end subroutine dispose_vnode
 

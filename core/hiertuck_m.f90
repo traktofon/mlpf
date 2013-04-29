@@ -5,7 +5,7 @@ module hiertuck_m
    use dof_m
    use dof_io_m
    use vtree_m
-   use graphviz_m
+   use modeutil_m
    use tuckerdecomp_m
    implicit none
 
@@ -96,7 +96,7 @@ module hiertuck_m
          call compute_basis_svd(v, vdim, m, layerlimit, mdim, no%wghts, no%basis, esq)
          no%nbasis = mdim
          ! Add the basis to the list, for later contraction.
-         basis(m)%btyp = btyp_rect
+         basis(m)%btyp = BTYP_RECT
          basis(m)%b => no%basis
          ! Keep track of error.
          write (msg,'(a,i0,a,i0,a,es8.2)') '  mode ',m,' needs ',mdim,' basis tensors, err^2 = ',esq
@@ -113,57 +113,131 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine potfit_from_npot(npfile,dofs,t,v,vdim)
+   subroutine potfit_from_npot(npfile,dofs,tree,v,vdim)
    !--------------------------------------------------------------------
       character(len=c5),intent(in) :: npfile
       type(dof_tp),pointer         :: dofs(:)
-      type(vtree_t),intent(in)     :: t
+      type(vtree_t),intent(inout)  :: tree
       real(dbl),pointer            :: v(:)
       integer,intent(inout)        :: vdim(:)
       type(dof_tp),pointer         :: npdofs(:)
       type(vtree_t),pointer        :: nptree
-      integer                      :: lun,modc,modcdim
+      integer                      :: lun,nmode,modc,modcdim
       real(dbl),pointer            :: dtens(:)
       integer,pointer              :: potdim(:),dtensdim(:)
-      real(dbl)                    :: limit,ee2
-      type(vnode_t),pointer        :: cnode
-      integer                      :: ierr,idot
+      integer                      :: didx(size(vdim)), vidx(size(vdim))
+      integer,pointer              :: modmap(:)
+      integer                      :: ierr,m,i,k
+      type(basis_t)                :: basis(size(vdim))
+      character(len=80)            :: errmsg
 
+      real(dbl)                    :: limit,ee2
+      type(vnode_t),pointer        :: npno,no
+      
       ! Read the natpot file...
-      open(newunit=lun,file=trim(npfile),form="unformatted",status="old",err=510)
+      open(newunit=lun,file=trim(npfile),form="unformatted",status="old",iostat=ierr)
+      if (ierr /= 0) &
+         call stopnow("cannot open file: "//trim(npfile))
       ! - DVR definition => npdofs
       ! - Mode combination => nptree
       ! - contracted mode => modc
       ! - number of SPPs => potdim
       call load_natpot_def(lun,npdofs,nptree,modc,potdim,ierr)
-      if (ierr /= 0) goto 500
+      if (ierr /= 0) &
+         call stopnow("error reading natpot parameters from file: "//trim(npfile))
       ! - D-tensor => dtens
       ! - D-tensor shape => dtensdim
       call load_natpot_data(lun,nptree,modc,potdim,dtens,dtensdim,ierr)
-      if (ierr /= 0) goto 500
+      if (ierr /= 0) &
+         call stopnow("error reading natpot data from file: "//trim(npfile))
       ! ... done.
+      deallocate(potdim)
       close(lun)
 
-      ! TODO
+      ! Match DOFs/modes from natpot with (bottom layer) of system tree
+      modmap => map_modes(npdofs,nptree,dofs,tree,ierr)
+      if (ierr /= 0) then
+         write(errmsg,'(a,i0)') &
+            "natpot modes don't match system, error code ",ierr
+         call stopnow(errmsg)
+      endif
+
+      ! Move the natural potentials for the uncontracted modes
+      ! from the natpot-tree to the system tree.
+      nmode = nptree%numleaves
+      do m=1,nmode
+         if (m==modc) cycle
+         npno => nptree%leaves(m)%p
+         no => tree%leaves(modmap(m))%p
+         no%nbasis = npno%nbasis
+         no%basis => npno%basis
+         nullify(npno%basis) ! destroy unneeded reference
+      enddo
+      ! Forget the natpot tree.
+      call dispose_vtree(nptree)
+      modc = modmap(modc)
+
+      ! Re-order the D-tensor.
+      ! - shape
+      call iperm(vdim,dtensdim,modmap)
+      ! - data
+      ! (Sadly the RESHAPE intrinsic is restricted to 7 dimensions.)
+      allocate(v(size(dtens)))
+      didx = 0
+      do i=1,size(dtens)
+         ! remap the grid point from natpot-order to system-order
+         call iperm(vidx,didx,modmap)
+         ! make the index flat
+         k = 0
+         do m=nmode,1,-1
+            k = k*vdim(m) + vidx(m)
+         enddo
+         ! store data of this grid point
+         v(k+1) = dtens(i)
+         ! advance to next grid point
+         do m=1,nmode
+            didx(m) = didx(m)+1
+            if (didx(m) < dtensdim(m)) exit
+            didx(m) = 0
+         enddo
+      enddo
+      ! We don't need the original D-tensor any more.
+      deallocate(dtens)
+      deallocate(dtensdim)
 
       ! To get a full Tucker decomposition, we need the basis tensors
       ! for the contracted mode.
-      cnode => nptree%leaves(modc)%p
-      modcdim = 0
-      limit = 0.d0
-      call compute_basis_svd(dtens,dtensdim,modc,limit,modcdim,cnode%wghts,cnode%basis,ee2)
+      no => tree%leaves(modc)%p
+      modcdim = vdim(modc)
+      if (no%maxnbasis > 0) modcdim=min(modcdim,no%maxnbasis)
+      limit = 0.d0 ! TODO
+      call compute_basis_svd(v,vdim,modc,limit,modcdim,no%wghts,no%basis,ee2)
+      no%nbasis = modcdim
+      basis(modc)%btyp = BTYP_RECT
+      basis(modc)%b => no%basis
 
-      ! TODO: C-tensor
+      ! Contract the (re-ordered) D-tensor along the contracted mode.
+      do m=1,nmode
+         if (m /= modc)  basis(m)%btyp = BTYP_UNIT
+      enddo
+      call contract_core(v,vdim,basis)
 
-      ! DEBUG: dump natpot tree
-      open(newunit=idot,file="natpot.dot",form="formatted",status="unknown")
-      call mkdot(idot,nptree,npdofs)
-      close(idot)
-      stop 1
+      ! Clean up.
+      deallocate(modmap)
+
       return
 
- 500  call stopnow("error reading file: "//trim(npfile))
- 510  call stopnow("cannot open file: "//trim(npfile))
+   contains
+      
+      subroutine iperm(olist,ilist,perm)
+         integer,intent(out) :: olist(:)
+         integer,intent(in)  :: ilist(:)
+         integer,intent(in)  :: perm(:)
+         integer :: f
+         do f=1,size(ilist)
+            olist(perm(f)) = ilist(f)
+         enddo
+      end subroutine iperm
 
    end subroutine potfit_from_npot
 
@@ -459,8 +533,8 @@ module hiertuck_m
    !--------------------------------------------------------------------
       integer,intent(in)    :: lun
       type(vtree_t),pointer :: nptree
-      integer,intent(out)   :: modc
-      integer,pointer       :: potdim(:)
+      integer,intent(in)    :: modc
+      integer,intent(in)    :: potdim(:)
       real(dbl),pointer     :: dtens(:)
       integer,pointer       :: dtensdim(:)
       integer,intent(out)   :: ierr
@@ -480,7 +554,7 @@ module hiertuck_m
          no => nptree%leaves(m)%p
          if (m==modc) then ! contracted mode -> D-tensor
             dtensdim(m) = dimmodc
-            no%nbasis = dimmodc
+            no%nbasis = dimmodc ! but it doesn't matter
             call rddtens(dtens,dimbef,dimmodc,dimaft,ierr)
             if (ierr/=0) return
          else ! other mode
