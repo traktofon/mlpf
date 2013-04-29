@@ -122,16 +122,29 @@ module hiertuck_m
       integer,intent(inout)        :: vdim(:)
       type(dof_tp),pointer         :: npdofs(:)
       type(vtree_t),pointer        :: nptree
-      integer                      :: modc,modcdim
+      integer                      :: lun,modc,modcdim
       real(dbl),pointer            :: dtens(:)
-      integer,pointer              :: dtensdim(:)
+      integer,pointer              :: potdim(:),dtensdim(:)
       real(dbl)                    :: limit,ee2
       type(vnode_t),pointer        :: cnode
-      integer                      :: idot
+      integer                      :: ierr,idot
 
-      ! Read the natpot file:
-      !   DVR def. + Mode def. + Contr.mode + D-tensor
-      call load_natpot(npfile,npdofs,nptree,modc,dtens,dtensdim)
+      ! Read the natpot file...
+      open(newunit=lun,file=trim(npfile),form="unformatted",status="old",err=510)
+      ! - DVR definition => npdofs
+      ! - Mode combination => nptree
+      ! - contracted mode => modc
+      ! - number of SPPs => potdim
+      call load_natpot_def(lun,npdofs,nptree,modc,potdim,ierr)
+      if (ierr /= 0) goto 500
+      ! - D-tensor => dtens
+      ! - D-tensor shape => dtensdim
+      call load_natpot_data(lun,nptree,modc,potdim,dtens,dtensdim,ierr)
+      if (ierr /= 0) goto 500
+      ! ... done.
+      close(lun)
+
+      ! TODO
 
       ! To get a full Tucker decomposition, we need the basis tensors
       ! for the contracted mode.
@@ -147,6 +160,10 @@ module hiertuck_m
       call mkdot(idot,nptree,npdofs)
       close(idot)
       stop 1
+      return
+
+ 500  call stopnow("error reading file: "//trim(npfile))
+ 510  call stopnow("cannot open file: "//trim(npfile))
 
    end subroutine potfit_from_npot
 
@@ -374,29 +391,30 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine load_natpot(fname,dofs,nptree,modc,dtens,dtensdim)
+   subroutine load_natpot_def(lun,npdofs,nptree,modc,potdim,ierr)
    !--------------------------------------------------------------------
-      character(len=c5),intent(in) :: fname
-      type(dof_tp),pointer         :: dofs(:)
-      type(vtree_t),pointer        :: nptree
-      integer,intent(out)          :: modc
-      real(dbl),pointer            :: dtens(:)
-      integer,pointer              :: dtensdim(:)
-      integer                      :: lun,lcount,i
-      real(dbl)                    :: fver
-      integer                      :: ndof,f,nmode,m,g
-      integer                      :: dimbef,dimaft,dimmodc
-      integer,allocatable          :: onedpot(:),potdim(:)
-      type(vnode_t),pointer        :: no
+      integer,intent(in)    :: lun
+      type(dof_tp),pointer  :: npdofs(:)
+      type(vtree_t),pointer :: nptree
+      integer,intent(out)   :: modc
+      integer,pointer       :: potdim(:)
+      integer,intent(out)   :: ierr
+      integer               :: lcount,i
+      real(dbl)             :: fver
+      integer               :: ndof,f,nmode,m
+      integer,allocatable   :: onedpot(:)
+      type(vnode_t),pointer :: no
 
+      ierr=0
+      nullify(npdofs)
       nullify(nptree)
-      open(newunit=lun, file=trim(fname), status="old", form="unformatted", err=510)
+
       ! File version.
       read(unit=lun,err=500) fver
       ! Skip obsolete information.
       read(unit=lun,err=500)
       ! DVR information.
-      dofs => rddvrdef(lun,fver)
+      npdofs => rddvrdef(lun,fver)
       ! Skip textual information.
       read(unit=lun,err=500)
       read(unit=lun,err=500) lcount
@@ -405,16 +423,17 @@ module hiertuck_m
       enddo
 
       ! Number of contracted mode, and subtracted 1D-potentials.
-      ndof = size(dofs)
+      ndof = size(npdofs)
       allocate(onedpot(ndof))
       read(unit=lun,err=500) modc, (onedpot(f), f=1,ndof)
       read(unit=lun,err=500) ! skip lpconm
+
       ! Leaf structure (DOFs of each primitive mode)
       nptree => rdgrddef(lun)
       nmode = nptree%numleaves
       do m=1,nmode
          no => nptree%leaves(m)%p
-         call init_vleaf(no,dofs,lcheck=.false.)
+         call init_vleaf(no,npdofs,lcheck=.false.)
       enddo
 
       ! Number of natural potentials for each mode.
@@ -425,6 +444,32 @@ module hiertuck_m
          if (onedpot(f) > 0) read(unit=lun,err=500)
       enddo
 
+      ! Clean up.
+      deallocate(onedpot)
+      return
+
+ 500  ierr=1
+      return
+
+   end subroutine load_natpot_def
+
+
+   !--------------------------------------------------------------------
+   subroutine load_natpot_data(lun,nptree,modc,potdim,dtens,dtensdim,ierr)
+   !--------------------------------------------------------------------
+      integer,intent(in)    :: lun
+      type(vtree_t),pointer :: nptree
+      integer,intent(out)   :: modc
+      integer,pointer       :: potdim(:)
+      real(dbl),pointer     :: dtens(:)
+      integer,pointer       :: dtensdim(:)
+      integer,intent(out)   :: ierr
+      integer               :: nmode,m,i,g
+      integer               :: dimbef,dimaft,dimmodc
+      type(vnode_t),pointer :: no
+ 
+      ierr=0
+      nmode = nptree%numleaves
       ! Read natural potentials and D-tensor.
       dimbef = product(potdim(1:modc-1))
       dimaft = product(potdim(modc+1:nmode))
@@ -436,7 +481,8 @@ module hiertuck_m
          if (m==modc) then ! contracted mode -> D-tensor
             dtensdim(m) = dimmodc
             no%nbasis = dimmodc
-            call rddtens(dtens,dimbef,dimmodc,dimaft)
+            call rddtens(dtens,dimbef,dimmodc,dimaft,ierr)
+            if (ierr/=0) return
          else ! other mode
             dtensdim(m) = potdim(m)
             no%nbasis = potdim(m)
@@ -446,31 +492,27 @@ module hiertuck_m
             enddo
          endif
       enddo
-
-      ! Clean up.
-      deallocate(potdim)
-      deallocate(onedpot)
-      close(lun)
       return
-
- 500  call stopnow("error reading file: "//trim(fname))
- 510  call stopnow("cannot open file: "//trim(fname))
+ 500  ierr=1
+      return
 
       contains
 
-      subroutine rddtens(v,vdim,gdim,ndim)
-         integer   :: vdim,gdim,ndim
+      subroutine rddtens(v,vdim,gdim,ndim,ierr)
+         integer   :: vdim,gdim,ndim,ierr
          real(dbl) :: v(vdim,gdim,ndim)
          integer   :: i,j,g
+         ierr=0
          do i=1,ndim
             do j=1,vdim
                read(unit=lun,err=600) (v(j,g,i), g=1,gdim)
             enddo
          enddo
          return
- 600     call stopnow("error reading D-tensor from file: "//trim(fname))
+ 600     ierr=1
+         return
       end subroutine rddtens
 
-   end subroutine load_natpot
+   end subroutine load_natpot_data
 
 end module hiertuck_m
