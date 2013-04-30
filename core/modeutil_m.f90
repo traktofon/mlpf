@@ -130,9 +130,6 @@ module modeutil_m
          enddo
          ! Modes match, store the result.
          modmap(m1) = m2
-         ! DEBUG
-         write(*,'(a,i0,a,i0)') &
-            "node match: tree1@",no1%num," ~= tree2@",no2%num
       enddo
 
       ! Clean up.

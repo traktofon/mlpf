@@ -113,13 +113,15 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine potfit_from_npot(npfile,dofs,tree,v,vdim)
+   subroutine potfit_from_npot(npfile,dofs,tree,v,vdim,err2limit,err2)
    !--------------------------------------------------------------------
       character(len=c5),intent(in) :: npfile
       type(dof_tp),pointer         :: dofs(:)
       type(vtree_t),intent(inout)  :: tree
       real(dbl),pointer            :: v(:)
       integer,intent(inout)        :: vdim(:)
+      real(dbl),intent(in)         :: err2limit
+      real(dbl),intent(out)        :: err2
       type(dof_tp),pointer         :: npdofs(:)
       type(vtree_t),pointer        :: nptree
       integer                      :: lun,nmode,modc,modcdim
@@ -129,12 +131,27 @@ module hiertuck_m
       integer,pointer              :: modmap(:)
       integer                      :: ierr,m,i,k
       type(basis_t)                :: basis(size(vdim))
-      character(len=80)            :: errmsg
-
-      real(dbl)                    :: limit,ee2
+      integer,save                 :: logid_data=0
+      integer,save                 :: logid_progress=0
+      character(len=80)            :: msg
+      real(dbl)                    :: nodelimit
       type(vnode_t),pointer        :: npno,no
       
+      ! Set up logging.
+      call get_logger(logid_data,"data")
+      call get_logger(logid_progress,"progress")
+
+      ! Initialize error control.
+      ! Altogether, we need to process one leaf node (the one with the combined
+      ! mode) and all internal nodes, but not the top node.  So we set the
+      ! allowed err^2 per node to the total allowed err^2 divided by that
+      ! number.
+      nodelimit = err2limit/(tree%numnodes-tree%numleaves)
+      write (msg,'(a,es22.15)') 'initial potfit: err^2 limit = ', nodelimit
+      call write_log(logid_data, LOGLEVEL_INFO, msg)
+
       ! Read the natpot file...
+      call write_log(logid_progress, LOGLEVEL_INFO, "  Reading natpot file...")
       open(newunit=lun,file=trim(npfile),form="unformatted",status="old",iostat=ierr)
       if (ierr /= 0) &
          call stopnow("cannot open file: "//trim(npfile))
@@ -158,14 +175,19 @@ module hiertuck_m
       ! Match DOFs/modes from natpot with (bottom layer) of system tree
       modmap => map_modes(npdofs,nptree,dofs,tree,ierr)
       if (ierr /= 0) then
-         write(errmsg,'(a,i0)') &
+         write(msg,'(a,i0)') &
             "natpot modes don't match system, error code ",ierr
-         call stopnow(errmsg)
+         call stopnow(msg)
       endif
+      nmode = nptree%numleaves
+      do m=1,nmode
+         write(msg,'(a,i0,a,i0)') &
+            "natpot mode ",m," matches system mode ",modmap(m)
+         call write_log(logid_data, LOGLEVEL_INFO, msg)
+      enddo
 
       ! Move the natural potentials for the uncontracted modes
       ! from the natpot-tree to the system tree.
-      nmode = nptree%numleaves
       do m=1,nmode
          if (m==modc) cycle
          npno => nptree%leaves(m)%p
@@ -211,16 +233,19 @@ module hiertuck_m
       no => tree%leaves(modc)%p
       modcdim = vdim(modc)
       if (no%maxnbasis > 0) modcdim=min(modcdim,no%maxnbasis)
-      limit = 0.d0 ! TODO
-      call compute_basis_svd(v,vdim,modc,limit,modcdim,no%wghts,no%basis,ee2)
+      call compute_basis_svd(v,vdim,modc,nodelimit,modcdim,no%wghts,no%basis,err2)
       no%nbasis = modcdim
       basis(modc)%btyp = BTYP_RECT
       basis(modc)%b => no%basis
+      ! Keep track of error.
+      write (msg,'(a,i0,a,i0,a,es8.2)') '  mode ',modc,' needs ',modcdim,' basis tensors, err^2 = ',err2
+      call write_log(logid_data, LOGLEVEL_INFO, msg)
 
       ! Contract the (re-ordered) D-tensor along the contracted mode.
       do m=1,nmode
          if (m /= modc)  basis(m)%btyp = BTYP_UNIT
       enddo
+      call write_log(logid_progress, LOGLEVEL_INFO, '  Computing core tensor...')
       call contract_core(v,vdim,basis)
 
       ! Clean up.

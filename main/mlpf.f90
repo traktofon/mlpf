@@ -386,7 +386,7 @@ program mlpf
             fname = trim(fname)//"natpot"
          endif
          allocate(vdim(tree%numleaves))
-         call potfit_from_npot(fname, dofs, tree, v, vdim)
+         call potfit_from_npot(fname, dofs, tree, v, vdim, err2limit, err2)
          ! The leaf potentials have been stored in the leaves of the
          ! tree, and v contains the core tensor.
 
@@ -440,7 +440,7 @@ program mlpf
       if (ierr /= 0) &
          call stopnow("cannot create log file")
       call set_logger("main", LOGLEVEL_INFO, loglun)
-      call set_logger("data", LOGLEVEL_DEBUG, loglun)
+      call set_logger("data", LOGLEVEL_INFO, loglun)
       call set_logger("tree", LOGLEVEL_DEBUG, loglun)
       call get_logger(logid, "main")
       call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
