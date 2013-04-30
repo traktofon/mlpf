@@ -365,14 +365,13 @@ program mlpf
       character(len=c5) :: fname
 
       ! Set the limit for the squared L_2 error
+      allocate(vdim(tree%numleaves))
+      call leaf_shape(tree,vdim,vlen)
       err2limit = vlen * (runopts%rmse)**2
 
       if (runopts%lgenpf) then
          ! Compute the initial PotFit by Tucker decomposition.
-         allocate(vdim(tree%numleaves))
-         call leaf_shape(tree,vdim,vlen)
          call potfit_from_v(tree, v, vdim, err2limit, err2)
-         accerr2 = accerr2 + err2
          ! The leaf potentials have been stored in the leaves of the
          ! tree, and v contains the core tensor.
 
@@ -385,12 +384,15 @@ program mlpf
             ! if pathname was specified, add default natpot filename
             fname = trim(fname)//"natpot"
          endif
-         allocate(vdim(tree%numleaves))
          call potfit_from_npot(fname, dofs, tree, v, vdim, err2limit, err2)
          ! The leaf potentials have been stored in the leaves of the
          ! tree, and v contains the core tensor.
 
       endif
+      
+      ! Accumulate error.
+      accerr2 = accerr2 + err2
+
    end subroutine runpf
    
 
