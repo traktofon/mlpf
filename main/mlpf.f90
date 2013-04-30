@@ -306,8 +306,8 @@ program mlpf
       do m=1,tree%numleaves
          no => tree%leaves(m)%p
          do f1=1,no%nmodes
-            tord(f) = no%dofs(f1)
-            no%dofs(f1) = f
+            tord(f) = no%dofnums(f1)
+            no%dofnums(f1) = f
             f = f+1
          enddo
       enddo
@@ -357,26 +357,36 @@ program mlpf
    subroutine runpf
    ! This creates the initial (bottom-layer) PotFit,
    ! either by doing a Tucker decomposition of the full potential on
-   ! the product grid (as obtained in RUNPOT), or by reading the
-   ! core tensor and leaf potentials from a directory.
+   ! the product grid (as obtained in RUNPOT), or by reading a natpot
+   ! file.
    !--------------------------------------------------------------------
-      integer   :: vlen
-      real(dbl) :: err2
+      integer           :: vlen
+      real(dbl)         :: err2
+      character(len=c5) :: fname
+
+      ! Set the limit for the squared L_2 error
+      err2limit = vlen * (runopts%rmse)**2
 
       if (runopts%lgenpf) then
          ! Compute the initial PotFit by Tucker decomposition.
          allocate(vdim(tree%numleaves))
          call leaf_shape(tree,vdim,vlen)
-         err2limit = vlen * (runopts%rmse)**2
          call potfit_from_v(tree, v, vdim, err2limit, err2)
          accerr2 = accerr2 + err2
          ! The leaf potentials have been stored in the leaves of the
          ! tree, and v contains the core tensor.
 
       else
-         ! Read core tensor and leaf potentials.
+         ! Read natpot file.
+         fname = runopts%npotfile
+         if (fname == NOFILE) fname = ""
+         if (fname == "" .or. endswith(fname,"/")) then
+            ! if no filename was specified, set default
+            ! if pathname was specified, add default natpot filename
+            fname = trim(fname)//"natpot"
+         endif
          allocate(vdim(tree%numleaves))
-         call potfit_from_dir(runopts%pfdir, dofs, tree, v, vdim)
+         call potfit_from_npot(fname, dofs, tree, v, vdim, err2limit, err2)
          ! The leaf potentials have been stored in the leaves of the
          ! tree, and v contains the core tensor.
 
@@ -431,7 +441,7 @@ program mlpf
          call stopnow("cannot create log file")
       call set_logger("main", LOGLEVEL_INFO, loglun)
       call set_logger("data", LOGLEVEL_INFO, loglun)
-      call set_logger("tree", LOGLEVEL_INFO, loglun)
+      call set_logger("tree", LOGLEVEL_DEBUG, loglun)
       call get_logger(logid, "main")
       call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))
 

@@ -2,12 +2,14 @@ module dof_io_m
 
    use dof_m
    use base_m
+   use vtree_m
    implicit none
 
    contains
 
+   !--------------------------------------------------------------------
    function rddvrdef(lun,fver) result (dofs)
-      implicit none
+   !--------------------------------------------------------------------
       type(dof_tp),pointer            :: dofs(:)
       integer,intent(in)              :: lun
       real(dbl),intent(in)            :: fver
@@ -59,8 +61,9 @@ module dof_io_m
 
 
 
+   !--------------------------------------------------------------------
    subroutine wrdvrdef(lun,dofs)
-      implicit none
+   !--------------------------------------------------------------------
       integer,intent(in)              :: lun
       type(dof_tp),intent(in)         :: dofs(:)
       class(dof_t),pointer            :: dof
@@ -98,7 +101,9 @@ module dof_io_m
 
 
 
+   !--------------------------------------------------------------------
    pure function ildvr(id)
+   !--------------------------------------------------------------------
       integer,intent(in) :: id
       integer            :: ildvr
       select case (id)
@@ -108,5 +113,47 @@ module dof_io_m
             ildvr = 1
       end select
    end function ildvr
+
+
+
+   !--------------------------------------------------------------------
+   function rdgrddef(lun) result(tree)
+   !--------------------------------------------------------------------
+      integer,intent(in)         :: lun
+      type(vtree_t),pointer      :: tree
+      type(vnode_tp),allocatable :: leaves(:)
+      type(vnode_t),pointer      :: topnode
+      integer                    :: ndof,nmode,m,f
+      integer,allocatable        :: nmoddof(:),dofnums(:)
+
+      nullify(tree)
+      read(lun,err=500) ! skip dentype
+      ! Number of DOFs and number of primitive modes (i.e. leaves)
+      read(lun,err=500) ndof, nmode
+      read(lun,err=500) ! skip nstate,npacket,npackts,feb,meb,fpb,mpb
+      ! Number of DOFs inside each mode.
+      allocate(nmoddof(nmode))
+      read(lun,err=500) (nmoddof(m), m=1,nmode)
+      ! The DOF-numbers for each mode.
+      allocate(dofnums(maxval(nmoddof)))
+      allocate(leaves(nmode))
+      do m=1,nmode
+         read(lun,err=500) (dofnums(f), f=1,nmoddof(m))
+         leaves(m)%p => make_vleaf(dofnums(1:nmoddof(m)))
+      enddo
+      read(lun,err=500) ! skip dofspf
+      read(lun,err=500) ! skip lmult,leb,lmulpack
+      ! Clean up.
+      deallocate(dofnums)
+      deallocate(nmoddof)
+      ! Make a tree out of the leaves.
+      topnode => make_vnode(leaves)
+      tree => make_vtree(topnode)
+      deallocate(leaves)
+      return
+
+  500 call stopnow("rddvrdef: error reading dvr information")
+
+   end function rdgrddef
 
 end module dof_io_m

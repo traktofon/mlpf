@@ -2,12 +2,11 @@
 module tuckerdecomp_m
 
    use base_m
-   use modeutil_m
    use linear_m
    implicit none
 
-   integer,parameter :: btyp_unit = 1
-   integer,parameter :: btyp_rect = 2
+   integer,parameter :: BTYP_UNIT = 1
+   integer,parameter :: BTYP_RECT = 2
 
    type :: basis_t
       integer           :: btyp  
@@ -31,7 +30,6 @@ module tuckerdecomp_m
    ! at most mdim basis tensors are returned, but if the accuracy
    ! limit is reached with less basis tensors, mdim is reduced accordingly.
    !--------------------------------------------------------------------
-      implicit none
       real(dbl),intent(in)  :: v(:)       ! input tensor
       integer,intent(in)    :: gdim(:)    ! shape of v
       integer,intent(in)    :: m          ! mode for which basis should be computed
@@ -79,7 +77,6 @@ module tuckerdecomp_m
    contains
 
       subroutine get_basis_size(wghts, bsz)
-         implicit none
          real(dbl),intent(in) :: wghts(:) ! list of weights in ascending order
          integer,intent(out)  :: bsz      ! result: number of weights to keep
          integer              :: nwghts,i
@@ -98,7 +95,6 @@ module tuckerdecomp_m
       end subroutine get_basis_size
 
       pure function basis_error_sq(wghts, bsz) result (esq)
-         implicit none
          real(dbl),intent(in) :: wghts(:)
          integer,intent(in)   :: bsz
          real(dbl)            :: esq
@@ -133,7 +129,6 @@ module tuckerdecomp_m
    ! at most mdim basis tensors are returned, but if the accuracy
    ! limit is reached with less basis tensors, mdim is reduced accordingly.
    !--------------------------------------------------------------------
-      implicit none
       real(dbl),intent(in)  :: v(:)       ! input tensor
       integer,intent(in)    :: gdim(:)    ! shape of v
       integer,intent(in)    :: m          ! mode for which basis should be computed
@@ -141,7 +136,7 @@ module tuckerdecomp_m
       integer,intent(inout) :: mdim       ! in:maximum/out:actual number of basis tensors
       real(dbl),pointer     :: wghts(:)   ! the computed basis weights (allocated here)
       real(dbl),pointer     :: basis(:,:) ! the computed basis tensors (allocated here)
-      real(dbl),intent(out) :: ee2        ! error estimate (squared), should be < limit
+      real(dbl),intent(out) :: ee2        ! error estimate (squared), will be <= limit
       real(dbl),allocatable :: vmat(:,:)  ! matricization of v
       real(dbl),allocatable :: sval(:),work(:)
       integer               :: vd,gd,nd,lwork,info,nw,i
@@ -200,7 +195,6 @@ module tuckerdecomp_m
       end subroutine build_vmat
 
       subroutine get_basis_size(sval, bsz)
-         implicit none
          real(dbl),intent(in) :: sval(:) ! list of singular values in descending order
          integer,intent(out)  :: bsz     ! number of weights to keep
          integer              :: i
@@ -209,7 +203,7 @@ module tuckerdecomp_m
          ! The remaining weights are those we want to keep.
          wsum = 0.d0
          i = size(sval)
-         do while (wsum < limit .and. i > 0)
+         do while (wsum <= limit .and. i > 0)
             wsum = wsum + max(0.d0,sval(i))**2 ! ignore negative singular values
             i = i-1
          enddo
@@ -217,7 +211,6 @@ module tuckerdecomp_m
       end subroutine get_basis_size
 
       pure function basis_error_sq(sval, bsz) result (esq)
-         implicit none
          real(dbl),intent(in) :: sval(:)
          integer,intent(in)   :: bsz
          real(dbl)            :: esq
@@ -239,7 +232,6 @@ module tuckerdecomp_m
    !--------------------------------------------------------------------
    ! v and vdim will be overwritten!
    !--------------------------------------------------------------------
-      implicit none
       real(dbl),intent(inout)  :: v(:)     ! input tensor/core tensor
       integer,intent(inout)    :: vdim(:)  ! initial/final shape of v
       type(basis_t),intent(in) :: basis(:) ! 1-dim. basis tensors for all modes
@@ -297,7 +289,6 @@ module tuckerdecomp_m
    !--------------------------------------------------------------------
    ! v will be reallocated, and vdim will be overwritten!
    !--------------------------------------------------------------------
-      implicit none
       real(dbl),pointer        :: v(:)
       integer,intent(inout)    :: vdim(:)
       type(basis_t),intent(in) :: basis(:)
@@ -349,7 +340,6 @@ module tuckerdecomp_m
    ! Generate the density matrix along the middle dimension of a
    ! 3-dim. tensor.
    !--------------------------------------------------------------------
-      implicit none
       integer,intent(in)    :: vd,gd,nd
       real(dbl),intent(in)  :: v(vd,gd,nd)
       real(dbl),intent(out) :: dm(gd,gd)
@@ -371,5 +361,20 @@ module tuckerdecomp_m
       enddo
    end subroutine build_dmat
 
+
+   !--------------------------------------------------------------------
+   subroutine vgn_shape(m,gdim,vd,gd,nd)
+   !--------------------------------------------------------------------
+      integer,intent(in)  :: m
+      integer,intent(in)  :: gdim(:)
+      integer,intent(out) :: vd,gd,nd
+      integer             :: nmodes
+      nmodes=size(gdim)
+      vd=1
+      nd=1
+      gd=gdim(m)
+      if(m>1)      vd=product(gdim(1:m-1))
+      if(m<nmodes) nd=product(gdim(m+1:nmodes))
+   end subroutine vgn_shape
 
 end module tuckerdecomp_m

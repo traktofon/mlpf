@@ -180,8 +180,6 @@ module genpot_m
  500  call stopnow("error reading file: "//trim(fname1))
  510  call stopnow("cannot open file: "//trim(fname1))
 
-      contains
-
    end subroutine loadpot
 
 
