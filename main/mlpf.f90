@@ -364,11 +364,13 @@ program mlpf
       real(dbl)         :: err2
       character(len=c5) :: fname
 
+      ! Set the limit for the squared L_2 error
+      err2limit = vlen * (runopts%rmse)**2
+
       if (runopts%lgenpf) then
          ! Compute the initial PotFit by Tucker decomposition.
          allocate(vdim(tree%numleaves))
          call leaf_shape(tree,vdim,vlen)
-         err2limit = vlen * (runopts%rmse)**2
          call potfit_from_v(tree, v, vdim, err2limit, err2)
          accerr2 = accerr2 + err2
          ! The leaf potentials have been stored in the leaves of the
@@ -438,7 +440,7 @@ program mlpf
       if (ierr /= 0) &
          call stopnow("cannot create log file")
       call set_logger("main", LOGLEVEL_INFO, loglun)
-      call set_logger("data", LOGLEVEL_INFO, loglun)
+      call set_logger("data", LOGLEVEL_DEBUG, loglun)
       call set_logger("tree", LOGLEVEL_DEBUG, loglun)
       call get_logger(logid, "main")
       call write_log(logid, LOGLEVEL_INFO, "MLPF version "//trim(verstring()))

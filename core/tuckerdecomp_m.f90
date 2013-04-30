@@ -203,7 +203,7 @@ module tuckerdecomp_m
          ! The remaining weights are those we want to keep.
          wsum = 0.d0
          i = size(sval)
-         do while (wsum < limit .and. i > 0)
+         do while (wsum <= limit .and. i > 0)
             wsum = wsum + max(0.d0,sval(i))**2 ! ignore negative singular values
             i = i-1
          enddo
