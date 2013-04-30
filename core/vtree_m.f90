@@ -16,7 +16,7 @@ module vtree_m
       logical                :: isleaf               ! .true. => children are dofs
       integer                :: nmodes               ! number of submodes/dofs
       type(vnode_tp),pointer :: modes(:) => null()   ! pointers to submodes
-      integer,pointer        :: dofs(:)  => null()   ! list of dofs
+      integer,pointer        :: dofnums(:) => null() ! list of dofs
       type(vnode_t),pointer  :: parent   => null()   ! pointer to parent node
       !--- Tree-related data ---
       type(vtree_t),pointer  :: tree => null()       ! pointer to tree that this node belongs to
@@ -53,20 +53,20 @@ module vtree_m
 
 
    !--------------------------------------------------------------------
-   function make_vleaf(dofs) result(leaf)
+   function make_vleaf(dofnums) result(leaf)
    !--------------------------------------------------------------------
       type(vnode_t),pointer :: leaf
-      integer,intent(in)    :: dofs(:)
+      integer,intent(in)    :: dofnums(:)
       integer               :: ndofs,f
-      ndofs = size(dofs)
+      ndofs = size(dofnums)
       allocate(leaf)
       ! Mark node as leaf.
       leaf%isleaf = .true.
       ! Link the dofs into the node.
       leaf%nmodes = ndofs
-      allocate(leaf%dofs(ndofs))
+      allocate(leaf%dofnums(ndofs))
       do f=1,ndofs
-         leaf%dofs(f) = dofs(f)
+         leaf%dofnums(f) = dofnums(f)
       enddo
    end function make_vleaf
 
@@ -320,7 +320,7 @@ module vtree_m
          write(lun) no%isleaf, no%nmodes
          if (no%isleaf) then
             ! Leaf: write the DOF numbers
-            write(lun) (no%dofs(f), f=1,no%nmodes)
+            write(lun) (no%dofnums(f), f=1,no%nmodes)
          else
             ! Non-leaf: write the post-order numbers of the child nodes
             write(lun) (no%modes(f)%p%postnum, f=1,no%nmodes)
@@ -384,10 +384,13 @@ module vtree_m
       integer,intent(in)    :: lun
       type(vnode_t),pointer :: no
       integer               :: m,g,j
+      logical               :: lwghts
       do m=1,t%numnodes
          no => t%postorder(m)%p
-         write(lun) no%plen, no%nbasis
-         write(lun) (no%wghts(j), j=1,no%nbasis)
+         lwghts = associated(no%wghts)
+         write(lun) no%plen, no%nbasis, lwghts
+         if (lwghts) &
+            write(lun) (no%wghts(j), j=1,no%nbasis)
          write(lun) ((no%basis(g,j), g=1,no%plen), j=1,no%nbasis)
       enddo
    end subroutine dump_vtree_data
@@ -400,6 +403,7 @@ module vtree_m
       integer,intent(in)    :: lun
       type(vnode_t),pointer :: no
       integer               :: m,g,j,f,plen,nbasis
+      logical               :: lwghts
       do m=1,t%numnodes
          no => t%postorder(m)%p
          if (.not. no%isleaf) then
@@ -409,13 +413,15 @@ module vtree_m
             enddo
             no%plen = product(no%ndim)
          endif
-         read(lun,err=500) plen,nbasis
+         read(lun,err=500) plen,nbasis,lwghts
          if (plen /= no%plen) &
             call stopnow("tree data doesn't match system tree")
          no%nbasis = nbasis
-         allocate(no%wghts(nbasis))
+         if (lwghts) then
+            allocate(no%wghts(nbasis))
+            read(lun,err=500) (no%wghts(j), j=1,nbasis)
+         endif
          allocate(no%basis(plen,nbasis))
-         read(lun,err=500) (no%wghts(j), j=1,nbasis)
          read(lun,err=500) ((no%basis(g,j), g=1,plen), j=1,nbasis)
       enddo
       return
@@ -429,16 +435,16 @@ module vtree_m
       type(vnode_t),pointer :: node
       integer               :: m
       if (node%isleaf) then
-         deallocate(node%dofs)
+         deallocate(node%dofnums)
       else
          do m=1,node%nmodes
             call dispose_vnode(node%modes(m)%p)
          enddo
          deallocate(node%modes)
       endif
-      deallocate(node%basis)
-      deallocate(node%wghts)
-      deallocate(node%ndim)
+      if (associated(node%basis)) deallocate(node%basis)
+      if (associated(node%wghts)) deallocate(node%wghts)
+      if (associated(node%ndim))  deallocate(node%ndim)
       deallocate(node)
    end subroutine dispose_vnode
 
