@@ -147,6 +147,7 @@ module hiertuck_m
          call stopnow("error reading natpot parameters from file: "//trim(npfile))
       ! - D-tensor => dtens
       ! - D-tensor shape => dtensdim
+      ! - natural potentials => nptree->leaf->basis
       call load_natpot_data(lun,nptree,modc,potdim,dtens,dtensdim,ierr)
       if (ierr /= 0) &
          call stopnow("error reading natpot data from file: "//trim(npfile))
@@ -306,7 +307,7 @@ module hiertuck_m
             ! such dimensions.
             if (no%isleaf) then
                udim(d2) = vdim(d1) 
-               basis(d2)%btyp = btyp_unit
+               basis(d2)%btyp = BTYP_UNIT
                d1 = d1+1
             ! Dimensions of v corresponding to internal nodes will
             ! be mode-combined.
@@ -376,7 +377,7 @@ module hiertuck_m
                call write_log(logid_data, LOGLEVEL_INFO, msg)
                no%nbasis = mdim
                ! Add this mode's basis to the list, for later projection.
-               basis(d2)%btyp = btyp_rect
+               basis(d2)%btyp = BTYP_RECT
                basis(d2)%b => no%basis
                ! Accumulate estimated error^2.
                if (lhosvd .or. m==1) then
