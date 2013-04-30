@@ -226,6 +226,8 @@ program mlpf
          close(lun)
 
       endif
+      call initdvr(dofs)
+
    end subroutine rundvr
 
 
@@ -256,7 +258,6 @@ program mlpf
          ! Build the potential on the product grid.
          if (.not.have_pot) &
             call stopnow("missing POTENTIAL-SECTION")
-         call initdvr(dofs)
          ! TODO:
          ! implement parsing of POT-SECTION
          ! map defined DOFs to the DOFs required by the pot.func.
