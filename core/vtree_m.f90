@@ -276,27 +276,27 @@ module vtree_m
          NL, t%numlayers, ' layers'
       call write_log(logid, LOGLEVEL_DEBUG, msg)
 
-      write (msg,'(2a,3x,99(x,i0))') &
+      write (msg,'(2a,3x,99(1x,i0))') &
          'Levels are:', NL, &
          (t%preorder(m)%p%layer, m=1,t%numnodes)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
 
-      write (msg,'(2a,3x,99(x,l))') &
+      write (msg,'(2a,3x,99(1x,l1))') &
          'Leaves?', NL, &
          (t%preorder(m)%p%isleaf, m=1,t%numnodes)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
 
-      write (msg,'(2a,3x,99(x,i0))') &
+      write (msg,'(2a,3x,99(1x,i0))') &
          'Leaves are:', NL, &
          (t%leaves(m)%p%num, m=1,t%numleaves)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
 
-      write (msg,'(2a,3x,99(x,i0))') &
+      write (msg,'(2a,3x,99(1x,i0))') &
          'Pre-order is:', NL, &
          (t%preorder(m)%p%num, m=1,t%numnodes)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
 
-      write (msg,'(2a,3x,99(x,i0))') &
+      write (msg,'(2a,3x,99(1x,i0))') &
          'Post-order is:', NL, &
          (t%postorder(m)%p%num, m=1,t%numnodes)
       call write_log(logid, LOGLEVEL_DEBUG, msg)
