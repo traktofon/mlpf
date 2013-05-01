@@ -37,7 +37,8 @@ FSOURCES := \
    tuckerdecomp_m.f90 \
    units_m.f90        \
    version_m.f90      \
-   vtree_m.f90
+   vtree_m.f90        \
+   vtree_dbg_m.f90
 
 CSOURCES := \
    c_io.c
