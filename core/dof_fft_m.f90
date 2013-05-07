@@ -117,6 +117,9 @@ module dof_fft_m
       integer                        :: g
       if (dof%initialized) return
       dof%initialized = .true.
+      ! allocate space for gridpoints and weights
+      allocate(dof%x(dof%gdim))
+      allocate(dof%w(dof%gdim))
       ! gridpoints are simply equidistant
       ! weights are constant
       dx = (dof%xf - dof%xi) / (dof%gdim - 1)
