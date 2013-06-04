@@ -5,6 +5,7 @@ module meta_dof_m
    use dvr_sin_m
    use dof_fft_m
    use dvr_exp_m
+   use dof_k_m
    use dof_m
    use base_m
    implicit none
@@ -17,6 +18,7 @@ module meta_dof_m
       call init_doftyp_sin
       call init_doftyp_fft
       call init_doftyp_exp
+      call init_doftyp_k
    end subroutine init_doftyps
 
 
