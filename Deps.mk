@@ -8,6 +8,8 @@ obj/dvr_exp_m.o obj/dvr_exp_m.mod:  obj/dvr_m.mod \
  obj/dof_m.mod obj/dof_fft_m.mod obj/base_m.mod
 obj/dof_fft_m.o obj/dof_fft_m.mod:  obj/dof_m.mod \
  obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
+obj/dof_k_m.o obj/dof_k_m.mod:  obj/dof_m.mod \
+ obj/tokenize_m.mod obj/base_m.mod
 obj/dvr_ho_m.o obj/dvr_ho_m.mod:  obj/dvr_m.mod \
  obj/dof_m.mod obj/tokenize_m.mod obj/units_m.mod obj/base_m.mod
 obj/dvr_leg_m.o obj/dvr_leg_m.mod:  obj/dvr_m.mod \
@@ -33,7 +35,7 @@ obj/map_str2int_m.o obj/map_str2int_m.mod:  \
  obj/strutil_m.mod
 obj/meta_dof_m.o obj/meta_dof_m.mod:  obj/dvr_ho_m.mod \
  obj/dvr_leg_m.mod obj/dvr_sin_m.mod obj/dof_fft_m.mod obj/dvr_exp_m.mod \
- obj/dof_m.mod obj/base_m.mod
+ obj/dof_k_m.mod obj/dof_m.mod obj/base_m.mod
 obj/mmap_m.o obj/mmap_m.mod:  obj/base_m.mod
 obj/modeutil_m.o obj/modeutil_m.mod:  obj/dof_m.mod \
  obj/vtree_m.mod
