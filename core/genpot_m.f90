@@ -87,7 +87,7 @@ module genpot_m
       real(dbl),allocatable       :: buf(:)
       real(dbl)                   :: fver
       integer*8                   :: vlen
-      integer                     :: nitems,niobuf,nleft,nread
+      integer*4                   :: nitems,niobuf,nleft,nread
       character(len=c5)           :: fname1
       integer                     :: vdim(size(dofs))
       integer                     :: vidx(size(dofs))
@@ -191,7 +191,7 @@ module genpot_m
       character(len=80)  :: datetime
       character(len=c2)  :: peslabel
       character(len=c5)  :: pesopts
-      integer            :: nlines,i,lsp
+      integer*4          :: nlines,i,lsp
       read(unit=lun,err=500) datetime
       ! skip blabla
       read(unit=lun,err=500) nlines
