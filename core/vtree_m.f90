@@ -263,20 +263,30 @@ module vtree_m
       integer,intent(in)       :: lun
       integer                  :: m,f
       type(vnode_t),pointer    :: no
+      integer*4                :: nmodes1
+      logical*4                :: isleaf1
+      integer*4,allocatable    :: modes(:)
       ! Write number of nodes in tree.
       write(lun) t%numnodes
       ! Write the nodes in post-order. This makes deserializing easier.
       do m=1,t%numnodes
          no => t%postorder(m)%p
          ! Write leaf flag and number of dofs/submodes
-         write(lun) no%isleaf, no%nmodes
+         nmodes1 = no%nmodes
+         isleaf1 = no%isleaf
+         write(lun) isleaf1, nmodes1
+         allocate(modes(no%nmodes))
          if (no%isleaf) then
             ! Leaf: write the DOF numbers
-            write(lun) (no%dofnums(f), f=1,no%nmodes)
+            modes = no%dofnums
          else
             ! Non-leaf: write the post-order numbers of the child nodes
-            write(lun) (no%modes(f)%p%postnum, f=1,no%nmodes)
+            do f=1,no%nmodes
+               modes(f) = no%modes(f)%p%postnum
+            enddo
          endif
+         write(lun) (modes(f), f=1,no%nmodes)
+         deallocate(modes)
       enddo
    end subroutine dump_vtree_def
 
@@ -336,11 +346,14 @@ module vtree_m
       integer,intent(in)    :: lun
       type(vnode_t),pointer :: no
       integer               :: m,g,j
-      logical               :: lwghts
+      logical*4             :: lwghts
+      integer*4             :: plen1,nbasis1
       do m=1,t%numnodes
          no => t%postorder(m)%p
          lwghts = associated(no%wghts)
-         write(lun) no%plen, no%nbasis, lwghts
+         plen1 = no%plen
+         nbasis1 = no%nbasis
+         write(lun) plen1, nbasis1, lwghts
          if (lwghts) &
             write(lun) (no%wghts(j), j=1,no%nbasis)
          write(lun) ((no%basis(g,j), g=1,no%plen), j=1,no%nbasis)
