@@ -87,7 +87,8 @@ module genpot_m
       real(dbl),allocatable       :: buf(:)
       real(dbl)                   :: fver
       integer*8                   :: vlen
-      integer*4                   :: nitems,niobuf,nleft,nread
+      integer                     :: nitems,niobuf,nleft,nread
+      integer*4                   :: nitems1,niobuf1
       character(len=c5)           :: fname1
       integer                     :: vdim(size(dofs))
       integer                     :: vidx(size(dofs))
@@ -135,7 +136,9 @@ module genpot_m
       ! Prepare for reading the data.
       if (vfmt==1) then
          ! Traditional vpot file.
-         read(unit=lun,err=500) nitems,niobuf
+         read(unit=lun,err=500) nitems1,niobuf1
+         nitems = nitems1
+         niobuf = niobuf1
          if (nitems /= vlen) &
             call stopnow("loadpot: inconsistent data sizes")
       else
