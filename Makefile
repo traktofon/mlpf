@@ -15,6 +15,8 @@ dd := core
 include $(dd)/Rules.mk
 dd := main
 include $(dd)/Rules.mk
+dd := vinfo
+include $(dd)/Rules.mk
 
 # general build rules
 
