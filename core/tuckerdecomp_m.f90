@@ -145,7 +145,7 @@ module tuckerdecomp_m
       call vgn_shape(m,gdim,vd,gd,nd)
       allocate(vmat(vd*nd,gd))
       call build_vmat(v,vmat)
-      ! Compute SVD and left singular vectors.
+      ! Compute SVD and right singular vectors.
       allocate(sval(min(gd,vd*nd)))
       call dgesvd('N', 'O', vd*nd, gd, vmat, vd*nd, sval, &
                   rdum, 1, rdum, 1, lworkr, -1, info) ! workspace query
