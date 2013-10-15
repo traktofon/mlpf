@@ -499,10 +499,13 @@ module hiertuck_m
       integer,intent(out)   :: modc
       integer,pointer       :: potdim(:)
       integer,intent(out)   :: ierr
-      integer               :: lcount,i
+
+      integer*4             :: modc1
+      integer*4,allocatable :: potdim1(:)
+      integer*4             :: lcount,i
       real(dbl)             :: fver
       integer               :: ndof,f,nmode,m
-      integer,allocatable   :: onedpot(:)
+      integer*4,allocatable :: onedpot(:)
       type(vnode_t),pointer :: no
 
       ierr=0
@@ -525,8 +528,9 @@ module hiertuck_m
       ! Number of contracted mode, and subtracted 1D-potentials.
       ndof = size(npdofs)
       allocate(onedpot(ndof))
-      read(unit=lun,err=500) modc, (onedpot(f), f=1,ndof)
+      read(unit=lun,err=500) modc1, (onedpot(f), f=1,ndof)
       read(unit=lun,err=500) ! skip lpconm
+      modc = modc1
 
       ! Leaf structure (DOFs of each primitive mode)
       nptree => rdgrddef(lun)
@@ -537,14 +541,17 @@ module hiertuck_m
       enddo
 
       ! Number of natural potentials for each mode.
+      allocate(potdim1(nmode))
+      read(unit=lun,err=500) (potdim1(m), m=1,nmode)
       allocate(potdim(nmode))
-      read(unit=lun,err=500) (potdim(m), m=1,nmode)
+      potdim = potdim1
       ! Ignore the subtracted 1D-potentials.
       do f=1,ndof
          if (onedpot(f) > 0) read(unit=lun,err=500)
       enddo
 
       ! Clean up.
+      deallocate(potdim1)
       deallocate(onedpot)
       return
 
