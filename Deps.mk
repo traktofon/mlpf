@@ -68,3 +68,6 @@ obj/mlpf.o:  obj/cmdline_m.mod obj/tokenize_m.mod \
  obj/meta_dof_m.mod obj/dof_io_m.mod obj/genpot_m.mod obj/hiertuck_m.mod \
  obj/graphviz_m.mod obj/units_m.mod obj/strutil_m.mod obj/fileutil_m.mod \
  obj/version_m.mod obj/base_m.mod
+obj/vinfo.o:  obj/base_m.mod obj/cmdline_m.mod \
+ obj/strutil_m.mod obj/dof_m.mod obj/dof_io_m.mod obj/meta_dof_m.mod \
+ obj/genpot_m.mod
