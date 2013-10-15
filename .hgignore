@@ -6,5 +6,5 @@ tags
 *.orig
 obj/
 main/mlpf
-main/test
+vinfo/vinfo
 core/version_m.f90
