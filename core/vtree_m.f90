@@ -234,15 +234,20 @@ module vtree_m
    subroutine leaf_shape(t,vdim,vlen)
    ! Returns the potential's shape according to the leaf-layer.
    !-------------------------------------------------------------------
-      type(vtree_t),intent(in)     :: t
-      integer,intent(out)          :: vdim(:)
-      integer,intent(out),optional :: vlen
-      integer                      :: nmodes,m
+      type(vtree_t),intent(in)       :: t
+      integer,intent(out)            :: vdim(:)
+      real(dbl),intent(out),optional :: vlen
+      integer                        :: nmodes,m
       nmodes = t%numleaves
       do m=1,nmodes
          vdim(m) = t%leaves(m)%p%plen
       enddo
-      if (present(vlen))  vlen = product(vdim)
+      if (present(vlen)) then
+         vlen = 1.d0
+         do m=1,nmodes
+            vlen = vlen * vdim(m)
+         enddo
+      endif
    end subroutine leaf_shape
 
 

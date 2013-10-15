@@ -361,8 +361,7 @@ program mlpf
    ! the product grid (as obtained in RUNPOT), or by reading a natpot
    ! file.
    !--------------------------------------------------------------------
-      integer           :: vlen
-      real(dbl)         :: err2
+      real(dbl)         :: vlen,err2
       character(len=c5) :: fname
 
       ! Set the limit for the squared L_2 error
