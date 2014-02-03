@@ -5,9 +5,9 @@ module version_m
 
    integer,parameter :: v_major = 0
    integer,parameter :: v_minor = 9
-   integer,parameter :: v_patch = 0
+   integer,parameter :: v_patch = 1
 
-   real(dbl),parameter :: mctdh_compat_versnum = 8.5001d0
+   real(dbl),parameter :: mctdh_compat_versnum = 8.5003d0
 
    contains
 

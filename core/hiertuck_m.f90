@@ -423,19 +423,21 @@ module hiertuck_m
 
 
    !--------------------------------------------------------------------
-   subroutine expand_ht(t,v)
+   subroutine expand_ht(t,v,leafexpand)
    !--------------------------------------------------------------------
       implicit none
-      type(vtree_t),intent(in) :: t
-      real(dbl),pointer        :: v(:)
-      type(vnode_t),pointer    :: no
-      integer                  :: vdim(t%numdofs)
-      integer                  :: xdim(t%numdofs)
-      type(basis_t)            :: basis(t%numdofs)
-      integer                  :: order,l,m,d1,d2,i,f
-      integer,save             :: logid_data=0
-      integer,save             :: logid_progress=0
-      character(len=160)       :: msg
+      type(vtree_t),intent(in)    :: t
+      real(dbl),pointer           :: v(:)
+      logical,intent(in),optional :: leafexpand(:)
+      type(vnode_t),pointer       :: no
+      integer                     :: vdim(t%numdofs)
+      integer                     :: xdim(t%numdofs)
+      type(basis_t)               :: basis(t%numdofs)
+      integer                     :: order,l,m,d1,d2,i,f
+      integer,save                :: logid_data=0
+      integer,save                :: logid_progress=0
+      character(len=160)          :: msg
+      logical                     :: doexpand
 
       ! Set up logging.
       call get_logger(logid_data,"data")
@@ -467,12 +469,22 @@ module hiertuck_m
             ! Expand inner nodes of this layer,
             ! as well as leaves at the bottom layer.
             elseif (no%layer == l .or. no%isleaf) then
-               basis(d2)%btyp = btyp_rect
-               basis(d2)%b => no%basis
-               do f=1,no%nmodes
-                  xdim(d1) = no%ndim(f)
+               doexpand = .true.
+               if (no%isleaf .and. present(leafexpand)) then
+                  doexpand = leafexpand(vleaf_modenum(no))
+               endif
+               if (doexpand) then
+                  basis(d2)%btyp = btyp_rect
+                  basis(d2)%b => no%basis
+                  do f=1,no%nmodes
+                     xdim(d1) = no%ndim(f)
+                     d1 = d1+1
+                  enddo
+               else
+                  basis(d2)%btyp = btyp_unit
+                  xdim(d1) = vdim(d2)
                   d1 = d1+1
-               enddo
+               endif
                d2 = d2+1
             endif
          enddo

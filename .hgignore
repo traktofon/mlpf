@@ -7,4 +7,5 @@ tags
 obj/
 main/mlpf
 vinfo/vinfo
+mlpf2npot/mlpf2npot
 core/version_m.f90

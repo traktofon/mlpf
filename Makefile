@@ -17,6 +17,8 @@ dd := main
 include $(dd)/Rules.mk
 dd := vinfo
 include $(dd)/Rules.mk
+dd := mlpf2npot
+include $(dd)/Rules.mk
 
 # general build rules
 
