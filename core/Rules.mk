@@ -25,6 +25,7 @@ FSOURCES := \
    map_str2dbl_m.f90  \
    map_str2int_m.f90  \
    meta_dof_m.f90     \
+   mlpf_io_m.f90      \
    mmap_m.f90         \
    modeutil_m.f90     \
    numutil_m.f90      \

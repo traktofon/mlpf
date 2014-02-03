@@ -9,7 +9,8 @@ module vtree_m
    public :: make_vleaf, make_vnode, make_vtree, dispose_vtree, &
              leaf_shape, set_maxnbasis, &
              dump_vtree_def, load_vtree_def, &
-             dump_vtree_data, load_vtree_data
+             dump_vtree_data, load_vtree_data, &
+             vleaf_modenum
 
    type :: vnode_t
       !--- Local node-related data ---
@@ -50,6 +51,26 @@ module vtree_m
    end type vtree_t
 
    contains
+
+
+   !--------------------------------------------------------------------
+   function vleaf_modenum(no) result(num)
+   ! Given a vnode _no_, returns _num_ such that _no_ is the
+   ! _num_'s leaf in the vtree, or zero.
+   !--------------------------------------------------------------------
+      type(vnode_t),intent(in) :: no
+      integer                  :: num
+      type(vtree_t),pointer    :: tree
+      integer                  :: m
+      tree => no%tree
+      num = 0
+      do m=1,tree%numleaves
+         if (tree%leaves(m)%p%num == no%num) then
+            num = m
+            return
+         endif
+      enddo
+   end function vleaf_modenum
 
 
    !--------------------------------------------------------------------
