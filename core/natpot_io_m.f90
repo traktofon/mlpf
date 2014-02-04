@@ -20,7 +20,7 @@ module natpot_io_m
       integer,intent(in)          :: modc    ! number of the contracted mode
       real(dbl),intent(in)        :: core(:) ! the contracted C-tensor
       integer                     :: lun,ierr,ndof,nmode,f,m,dimbef,dimaft
-      integer*4                   :: idum,lcount,modc1
+      integer*4                   :: idum,lcount
       integer*4,allocatable       :: onedpot(:),pdim(:)
       logical*4                   :: lpconm
       character(len=80)           :: line
@@ -51,7 +51,7 @@ module natpot_io_m
       ndof = size(dofs)
       allocate(onedpot(ndof))
       onedpot = 0
-      write(lun,err=500) modc1, (onedpot(f), f=1,ndof)
+      write(lun,err=500) INT(modc,4), (onedpot(f), f=1,ndof)
       deallocate(onedpot)
 
       ! are there combined modes?
