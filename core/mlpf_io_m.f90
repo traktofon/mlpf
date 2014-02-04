@@ -16,7 +16,7 @@ module mlpf_io_m
       character(len=*),intent(in) :: fname     ! the filename
       type(vtree_t),pointer       :: t         ! the MLPF tree
       type(dof_tp),pointer        :: dofs(:)   ! the DOF definitions
-      integer                     :: lun,ierr,m
+      integer                     :: lun,ierr,m,f
       type(vnode_t),pointer       :: no
       real(dbl)                   :: versnum
 
@@ -26,6 +26,9 @@ module mlpf_io_m
 
       read (lun) versnum
       dofs => rddvrdef(lun,versnum)
+      do f=1,size(dofs)
+         call dofs(f)%p%init
+      enddo
       t => load_vtree_def(lun)
       do m=1,t%numleaves
          no => t%leaves(m)%p
