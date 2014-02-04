@@ -175,8 +175,69 @@ module dof_io_m
       deallocate(leaves)
       return
 
-  500 call stopnow("rddvrdef: error reading dvr information")
+  500 call stopnow("rdgrddef: error reading grid information")
 
    end function rdgrddef
+
+
+
+   !--------------------------------------------------------------------
+   subroutine wrgrddef(lun,tree)
+   !--------------------------------------------------------------------
+      integer,intent(in)       :: lun
+      type(vtree_t),intent(in) :: tree
+      integer*4                :: ndof,nmode,ifalse
+      integer*4                :: dentype,nstate,npacket,npackts,feb,meb,fpb,mpb
+      integer*4,allocatable    :: dofspf(:)
+      integer                  :: m,f,i
+      type(vnode_t),pointer    :: no
+
+      ! density type = wavefunction
+      dentype = 0
+      write(lun,err=500) dentype
+      ! number of DOFs and primitive modes
+      ndof = tree%numdofs
+      nmode = tree%numleaves
+      write(lun,err=500) ndof,nmode
+      ! dummy data about electronic states and packets;
+      ! official natpot files seem to have zeroes here
+      nstate = 0
+      npacket = 0
+      npackts = 0
+      feb = 0
+      meb = 0
+      fpb = 0
+      mpb = 0
+      write(lun,err=500) nstate,npacket,npackts,feb,meb,fpb,mpb
+      ! DOF numbers for each mode
+      write(lun,err=500) (INT(tree%leaves(m)%p%nmodes,4), m=1,nmode)
+      do m=1,nmode
+         no => tree%leaves(m)%p
+         write(lun,err=500) (INT(no%dofnums(i),4), i=1,no%nmodes)
+      enddo
+      ! mode numbers for each DOF
+      allocate(dofspf(ndof))
+      do f=1,ndof
+         modeloop: do m=1,nmode
+            no => tree%leaves(m)%p
+            do i=1,no%nmodes
+               if (f == no%dofnums(i)) then
+                  dofspf(f) = m
+                  cycle modeloop
+               endif
+            enddo
+         enddo modeloop
+      enddo
+      write(lun,err=500) (dofspf(f), f=1,ndof)
+      deallocate(dofspf)
+      ! lmult, leb, lmulpack (as integers)
+      ifalse = 0
+      write(lun,err=500) ifalse,ifalse,ifalse
+
+      return
+
+  500 call stopnow("wrgrddef: error writing grid information")
+
+   end subroutine wrgrddef
 
 end module dof_io_m
