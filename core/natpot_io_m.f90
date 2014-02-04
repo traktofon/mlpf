@@ -75,11 +75,12 @@ module natpot_io_m
       do m=1,nmode
          no => tree%leaves(m)%p
          if (m == modc) then
-            pdim(m) = no%plen
+            pdim(m) = 1
          else
             pdim(m) = no%nbasis
          endif
       enddo
+      pdim(modc) = product(pdim)
       print *, "pdim = (",pdim,")" !!! DEBUG
       write(lun,err=500) (pdim(m), m=1,nmode)
 
