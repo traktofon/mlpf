@@ -4,6 +4,7 @@ local.mk
 tags
 *.swp
 *.orig
+dox/
 obj/
 main/mlpf
 vinfo/vinfo
