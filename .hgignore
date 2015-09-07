@@ -5,7 +5,5 @@ tags
 *.swp
 *.orig
 obj/
-main/mlpf
-vinfo/vinfo
-mlpf2npot/mlpf2npot
+bin/
 core/version_m.f90
