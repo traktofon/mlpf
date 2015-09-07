@@ -4,7 +4,7 @@
 TEMPLATEDIR=map
 SOURCEDIR=core
 
-bin/ftl-expand \
+tools/ftl-expand \
    mod='map_str2dbl' \
    key='character(len=*)' \
    key1='character(len=32)' \
@@ -15,7 +15,7 @@ bin/ftl-expand \
    > $SOURCEDIR/map_str2dbl_m.f90
 
 
-bin/ftl-expand \
+tools/ftl-expand \
    mod='map_str2int' \
    key='character(len=*)' \
    key1='character(len=32)' \
