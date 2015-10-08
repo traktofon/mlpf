@@ -64,4 +64,8 @@ However, there are currently two caveats:
 TREE-SECTION
 ------------
 
-This section defines 
+This section defines how the primitive modes are hierarchically combined
+into larger and larger modes, and (optionally) specifies how many "single-particle potentials"
+should be used for each mode.  So this section fulfills a similar role to the
+`ML-BASIS-SECTION` used in MCTDH for ML-MCTDH runs, but the syntax is rather different.
+
