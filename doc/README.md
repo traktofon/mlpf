@@ -5,10 +5,17 @@ This is an auxiliary program for the [Heidelberg MCTDH Package](http://mctdh.uni
 It converts a potential energy surface into MLPF format, which can be used by MCTDH as
 a multi-layer operator in ML-MCTDH runs.  Compared to potentials fitted by regular Potfit,
 MLPF potentials are much more compact, so that ML-MCTDH will run much more efficiently,
-especially if high-accuracy fits are used.
+especially if high-accuracy fits are used.  For more information and details, see
+[my paper](http://dx.doi.org/10.1063/1.4856135), also available on [arXiv](http://arxiv.org/abs/1309.5060).
 
 Support for MLPF in MCTDH exists currently in a development branch, and is planned to be
 released with version 8.6.
+
+If you use MLPF for your research, you are requested to cite the following paper:
+
+> Frank Otto,
+> "Multi-Layer Potfit: An Accurate Potential Representation for Efficient High-Dimensional Quantum Dynamics."
+> J. Chem. Phys. 140, 014106, (2014)
 
 
 Prerequisites
@@ -41,6 +48,4 @@ CPU cores you want to use.  This will create a number of executables in the subd
 
 Usage
 -----
-
-
 

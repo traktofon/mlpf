@@ -37,6 +37,31 @@ optional parameters.
 
 PRIMITIVE-BASIS-SECTION
 -----------------------
+(may be abbreviated to PBASIS-SECTION)
+
+This section defines the coordinate system, and which grid points to use for each coordinate.
+Each line describes one primitive coordinate, using the syntax
+
+    Modelabel   BasisType   Parameters...
+
+This is the same format as the corresponding section in MCTDH.  Therefore, please see the
+[corresponding MCTDH documentation](http://www.pci.uni-heidelberg.de/tc/usr/mctdh/doc/mctdh/input_docu.html#pbasiskey)
+for details of specifying the basis and parameters.
+
+The idea is that you can copy & paste your PBASIS-SECTION from your MCTDH input file.
+However, there are currently two caveats:
+
+* MLPF was written from scratch, so the input file parser may not reproduce all MCTDH quirks and bugs accurately.
+* At the moment, only a subset of primitive basis types are implemented by MLPF, namely:
+    * **HO** -- Harmonic oscillator (Hermite) DVR
+    * **Leg** -- Legendre DVR
+    * **sin** -- Sine (Chebychev) DVR
+    * **FFT** -- Fast Fourier transform collocation
+    * **exp** -- Exponential DVR (periodic boundary conditions)
+    * **K** -- magnetic quantum number basis
+
 
 TREE-SECTION
 ------------
+
+This section defines 
