@@ -7,6 +7,8 @@ BINDIR := bin
 
 include local.mk
 
+dir_guard = @mkdir -p $(@D)
+
 LINK := $(FC) $(LDFLAGS)
 
 PROGS :=
@@ -24,15 +26,18 @@ include $(dd)/Rules.mk
 # general build rules
 
 $(OBJDIR)/%.o: %.f90
+	$(dir_guard)
 	$(FC) $(FFLAGS) -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
 
 $(OBJDIR)/%.mod: $(OBJDIR)/%.o
 	@true
 
 $(OBJDIR)/%.o: %.f
+	$(dir_guard)
 	$(FC) $(FFLAGS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.c
+	$(dir_guard)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # other rules

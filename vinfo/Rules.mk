@@ -19,5 +19,6 @@ ALLSOURCES += $(SRC_$(dd))
 # build rule
 
 $(TGT): $(OBJS_vinfo) $(OBJS_core)
+	$(dir_guard)
 	$(LINK) -o $@ $+ $(LIBS)
 
