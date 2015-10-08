@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="common.css" type="text/css" />
+</head>
+<body>
+<h1 id="mlpf-input-file-syntax">MLPF Input File Syntax</h1>
+<p>Input files for MLPF use a syntax similar to MCTDH. Parameters are organized into sections, which are enclosed in directives like</p>
+<pre><code>XXX-SECTION
+END-XXX-SECTION</code></pre>
+<p>The file must end with the directive <code>END-INPUT</code>.</p>
+<p>The following describes the individual sections.</p>
+<h2 id="run-section">RUN-SECTION</h2>
+<p>This section controls parameters for input, output, and what exactly to compute. Directives are simply keywords, or of the form <code>keyword = parameter(s)</code>. The following table lists the available directives. <em>S</em> specifies a string, <em>I</em> an integer, and <em>R</em> a real-valued parameter, which might include a unit (in the same manner as MCTDH, e.g. &quot;1.0,eV&quot;). Square brackets indicate optional parameters.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Directive</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">name = <em>S</em></td>
+<td align="left">Output will be put into the directory <em>S</em>.</td>
+</tr>
+<tr class="even">
+<td align="left">gendvr</td>
+<td align="left">DVR information will be generated and stored it in the file <code>dvr</code>. This requires a PRIMITIVE-BASIS-SECTION to be present</td>
+</tr>
+<tr class="odd">
+<td align="left">readdvr [= <em>S</em>]</td>
+<td align="left">DVR information will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>dvr</code>.</td>
+</tr>
+<tr class="even">
+<td align="left">genpot</td>
+<td align="left">A full-grid potential will be computed and stored, in a format depending on <em>vpot-format</em>.</td>
+</tr>
+<tr class="odd">
+<td align="left">readvpot [= <em>S</em>]</td>
+<td align="left">A full-grid potential will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>vpot</code> or <code>vpot2</code>, depending on <em>vpot-format</em>.</td>
+</tr>
+<tr class="even">
+<td align="left">readnpot [= <em>S</em>]</td>
+<td align="left">A Potfit potential will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>natpot</code>.</td>
+</tr>
+<tr class="odd">
+<td align="left">vpot-format = <em>I</em></td>
+<td align="left">Format for full-grid potential. <em>I</em> must be 1 or 2.</td>
+</tr>
+<tr class="even">
+<td align="left">rmse = <em>R</em></td>
+<td align="left">Set the maximum allowed root-mean-square error of the fitted potential to <em>R</em>.</td>
+</tr>
+<tr class="odd">
+<td align="left">graphviz</td>
+<td align="left">Produce a file <code>tree.dot</code> which can be used to visualize the multi-layer tree using <a href="http://www.graphviz.org/">Graphviz</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="primitive-basis-section">PRIMITIVE-BASIS-SECTION</h2>
+<p>(may be abbreviated to PBASIS-SECTION)</p>
+<p>This section defines the coordinate system, and which grid points to use for each coordinate. Each line describes one primitive coordinate, using the syntax</p>
+<pre><code>Modelabel   BasisType   Parameters...</code></pre>
+<p>This is the same format as the corresponding section in MCTDH. Therefore, please see the <a href="http://www.pci.uni-heidelberg.de/tc/usr/mctdh/doc/mctdh/input_docu.html#pbasiskey">corresponding MCTDH documentation</a> for details of specifying the basis and parameters.</p>
+<p>The idea is that you can copy &amp; paste your PBASIS-SECTION from your MCTDH input file. However, there are currently two caveats:</p>
+<ul>
+<li>MLPF was written from scratch, so the input file parser may not reproduce all MCTDH quirks and bugs accurately.</li>
+<li>At the moment, only a subset of primitive basis types are implemented by MLPF, namely:
+<ul>
+<li><strong>HO</strong> -- Harmonic oscillator (Hermite) DVR</li>
+<li><strong>Leg</strong> -- Legendre DVR</li>
+<li><strong>sin</strong> -- Sine (Chebychev) DVR</li>
+<li><strong>FFT</strong> -- Fast Fourier transform collocation</li>
+<li><strong>exp</strong> -- Exponential DVR (periodic boundary conditions)</li>
+<li><strong>K</strong> -- magnetic quantum number basis</li>
+</ul></li>
+</ul>
+<h2 id="tree-section">TREE-SECTION</h2>
+<p>This section defines how the primitive modes are hierarchically combined into larger and larger modes, and (optionally) specifies how many &quot;single-particle potentials&quot; (SPPs) should be used for each mode. So this section fulfills a similar role to the <code>ML-BASIS-SECTION</code> used in MCTDH for ML-MCTDH runs, but the syntax is rather different. Instead, the syntax in the <code>TREE-SECTION</code> is a minimal extension of the syntax used in the <code>NATPOT-BASIS-SECTION</code> in Potfit and the <code>SPF-BASIS-SECTION</code> in MCTDH input files.</p>
+<p>The basic element in this section is a statement of the form</p>
+<pre><code>Modelabel1 [, Modelabel2 ... ] [ = nspp ]</code></pre>
+<p>which signifies that the given modelabels (which must have been present in the PBASIS-SECTION) are combined into a <em>primitive mode</em>, and that <em>nspp</em> SPPs should be employed for this mode. To combine the primitive modes into higher-layer modes, simply group the primitive modes together with parentheses. After the closing parenthesis, you can (optionally) specify the number of SPPs for the combined mode, again using <code>= nspp</code>. This mode grouping must be applied recursively, such that you eventually enclose the whole block by one final pair of parentheses.</p>
+<p>To give an example, suppose that your system contains five degrees of freedom, with modelabels R, RAB, RCD, AL, and BE. You want to organize the modes into the following hierarchy:</p>
+<div class="figure">
+<img src="tree.png" alt="" />
+
+</div>
+<p>Without specifying the number of SPPs, the corresponding TREE-SECTION is:</p>
+<pre><code>TREE-SECTION
+(
+  (
+    R
+    RAB,RCD
+  )
+  (
+    AL
+    BE
+  )
+)
+END-TREE-SECTION</code></pre>
+<p>Line-breaks are not significant here, so you might as well write:</p>
+<pre><code>TREE-SECTION
+( ( R  RAB,RCD )  ( AL BE ) )
+END-TREE-SECTION</code></pre>
+<h3 id="should-i-specify-the-number-of-spps">Should I specify the number of SPPs?</h3>
+<p>Most likely not. What you usually want is a potential fit which fulfills a certain accuracy criterium. MLPF supports this by setting the allowed global root-mean-square error of the fit with the <code>rmse</code> parameter in the <code>RUN-SECTION</code>. If this is supplied, and no SPP numbers are given in the <code>TREE-SECTION</code>, then the following strategy is applied:</p>
+<ol style="list-style-type: decimal">
+<li>The allowed RMSE is divided equally by the total number of modes. (In the above example, there are 7 modes. However, here the top mode has only two children, such that for the top mode, a regular SVD is used instead of a higher-order SVD. This allows a more optimistic error estimate, such that the effective number of modes -- as far as the RMSE is concerned -- is reduced by one.)</li>
+<li>Looking at the bottom layer, for each primitive mode the number of SPPs is chosen such that the RMSE contributed from this mode does not exceed the per-mode limit.</li>
+<li>The actual RMSE for each primitive mode is estimated (the estimate is a strict upper bound) and subtracted from the total RMSE budget.</li>
+<li>This updated RMSE budget is divided by the remaining number of modes, giving an updated per-mode limit.</li>
+<li>Steps 2--4 are repeated for the next higher layer, and so on, until the top is reached.</li>
+</ol>
+<p>If the TREE-SECTION specifies the number of SPPs for any mode, than that number is used, instead of the one which the above algorithm would choose. If the number of SPPs is only specified for some but not all modes, then the situation may arise that the RMSE budget is exhausted before the top is reached. In this case MLPF will produce a fit which is not truncated in the higher layers, which is far from optimal. Hence, if you specify the number of SPPs for any mode, you should do so for all modes, and live with whatever RMSE results from that.</p>
+<p>The (estimated) RMSE error for each mode, and the number of SPPs chosen, is written to the <code>log</code> file.</p>
+</body>
+</html>

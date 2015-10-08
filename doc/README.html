@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="common.css" type="text/css" />
+</head>
+<body>
+<h1 id="mlpf-multi-layer-potfit">MLPF: Multi-Layer Potfit</h1>
+<p>This is an auxiliary program for the <a href="http://mctdh.uni-hd.de/">Heidelberg MCTDH Package</a>. It converts a potential energy surface into MLPF format, which can be used by MCTDH as a multi-layer operator in ML-MCTDH runs. Compared to potentials fitted by regular Potfit, MLPF potentials are much more compact, so that ML-MCTDH will run much more efficiently, especially if high-accuracy fits are used. For more information and details, see <a href="http://dx.doi.org/10.1063/1.4856135">my paper</a>, also available on <a href="http://arxiv.org/abs/1309.5060">arXiv</a>.</p>
+<p>Support for MLPF in MCTDH exists currently in a development branch, and is planned to be released with version 8.6.</p>
+<p>If you use MLPF for your research, you are requested to cite the following paper:</p>
+<blockquote>
+<p>Frank Otto, &quot;Multi-Layer Potfit: An Accurate Potential Representation for Efficient High-Dimensional Quantum Dynamics.&quot; J. Chem. Phys. 140, 014106, (2014)</p>
+</blockquote>
+<h2 id="documentation">Documentation</h2>
+<p>This is the README for MLPF. It and the rest of the documentation are stored in the <code>doc/</code> subdirectory in Markdown format. For convenience, the documentation is also available in HTML format. Please point your web browser to the <code>README.html</code> inside <code>doc/</code>.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>If you are using MCTDH, chances are very high that all of the prerequisites are already installed. For reference, this is the software required to build MLPF:</p>
+<ul>
+<li>Compilers for C and Modern Fortran. Versions of <a href="http://gcc.gnu.org/">GCC</a> since 4.8 should work fine.</li>
+<li>An installation of BLAS (e.g. <a href="http://www.openblas.net/">OpenBLAS</a>) and LAPACK.</li>
+<li>GNU Make.</li>
+<li>Perl and Bash.</li>
+</ul>
+<h2 id="compilation">Compilation</h2>
+<p>Before first compiling, copy the file <code>local.mk.sample</code> into <code>local.mk</code> and edit it, following the comments inside. This is for specifying the compiler and its options, and how to link with BLAS/LAPACK on your system.</p>
+<p>To compile, simply run <code>make</code>. To compile faster, use <code>make -j N</code>, where N is the number of CPU cores you want to use. This will create a number of executables in the subdirectory <code>bin/</code>, namely:</p>
+<ul>
+<li><strong>mlpf</strong> -- the MLPF fitting program</li>
+<li><strong>mlpf2npot</strong> -- a program to convert an MLPF potential into a Potfit potential</li>
+<li><strong>vinfo</strong> -- a simple test/example program which prints out information about <em>vpot</em> or <em>vpot2</em> files, which are used to store full-grid potentials.</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<h3 id="mlpf">mlpf</h3>
+<p>To run the MLPF fitting program, use</p>
+<pre><code>mlpf inputfile</code></pre>
+<p>where the syntax of the <em>inputfile</em> is described in the <a href="input.html">input file documentation</a>. The generated output files are:</p>
+<ul>
+<li><code>mlpf.dat</code> -- a binary file containing the MLPF-format potential, which can be read by MCTDH using the <code>mlpf</code>-statement in the operator file.</li>
+<li><code>log</code> -- a log file, containing information about estimated errors and the number of single-particle potentials for each mode.</li>
+<li><code>tree.dot</code> -- (optional) an input file for Graphviz's dot utility, to display the mode hierarchy.</li>
+</ul>
+<h3 id="mlpf2npot">mlpf2npot</h3>
+<p>To convert a potential in MLPF format into Natpot format, use</p>
+<pre><code>mlpf2npot mlpf.dat modc</code></pre>
+<p>where <em>mlpf.dat</em> is the output file of <code>mlpf</code>, and <em>modc</em> is an integer which specifies the number of the contracted mode. It generates a file called <em>natpot</em> which can be used by several utilities in the MCTDH suite.</p>
+<h3 id="vinfo">vinfo</h3>
+<p>To get some information about a full-grid potential, stored in a <code>vpot</code> or <code>vpot2</code> file, use</p>
+<pre><code>vinfo vpotfile</code></pre>
+<p>where <em>vpotfile</em> is the filename of the full-grid potential. It prints out some statistical information about the potential: maximum, minimum, mean, standard deviation, and the L2 norm.</p>
+</body>
+</html>
