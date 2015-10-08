@@ -3,6 +3,7 @@
 all: targets
 
 OBJDIR := obj
+BINDIR := bin
 
 include local.mk
 
@@ -48,7 +49,7 @@ clean:
 -include Deps.mk
 
 dep: $(ALLSOURCES)
-	bin/mkdep $(OBJDIR) $(ALLSOURCES) > Deps.mk
+	tools/mkdep $(OBJDIR) $(ALLSOURCES) > Deps.mk
 
 # ctags
 
