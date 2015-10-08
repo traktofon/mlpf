@@ -8,3 +8,4 @@ dox/
 obj/
 bin/
 core/version_m.f90
+doc/*.html

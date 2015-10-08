@@ -1,0 +1,32 @@
+body {
+    font-family: sans;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid black;
+    padding: 2pt 5pt;
+}
+
+th {
+    background-color: #cccccc;
+}
+
+td {
+    background-color: #eeeeee;
+}
+
+blockquote, pre {
+    background-color: #eeeeee;
+    padding: 2pt 10pt;
+}
+
+code {
+    color: #cc3333;
+    font-size: 110%;
+}
