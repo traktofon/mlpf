@@ -65,7 +65,78 @@ TREE-SECTION
 ------------
 
 This section defines how the primitive modes are hierarchically combined
-into larger and larger modes, and (optionally) specifies how many "single-particle potentials"
+into larger and larger modes, and (optionally) specifies how many "single-particle potentials" (SPPs)
 should be used for each mode.  So this section fulfills a similar role to the
 `ML-BASIS-SECTION` used in MCTDH for ML-MCTDH runs, but the syntax is rather different.
+Instead, the syntax in the `TREE-SECTION` is a minimal extension of the syntax used
+in the `NATPOT-BASIS-SECTION` in Potfit and the `SPF-BASIS-SECTION` in MCTDH input files.
+
+The basic element in this section is a statement of the form
+
+    Modelabel1 [, Modelabel2 ... ] [ = nspp ]
+
+which signifies that the given modelabels (which must have been present in the PBASIS-SECTION)
+are combined into a _primitive mode_, and that _nspp_ SPPs should be
+employed for this mode.  To combine the primitive modes into higher-layer modes, simply group
+the primitive modes together with parentheses. After the closing parenthesis, you can (optionally)
+specify the number of SPPs for the combined mode, again using `= nspp`.
+This mode grouping must be applied recursively, such that you eventually enclose the whole block
+by one final pair of parentheses.
+
+To give an example, suppose that your system contains five degrees of freedom, with modelabels
+R, RAB, RCD, AL, and BE.  You want to organize the modes into the following hierarchy:
+
+![](tree.png)
+
+Without specifying the number of SPPs, the corresponding TREE-SECTION is:
+
+    TREE-SECTION
+    (
+      (
+        R
+        RAB,RCD
+      )
+      (
+        AL
+        BE
+      )
+    )
+    END-TREE-SECTION
+
+Line-breaks are not significant here, so you might as well write:
+
+    TREE-SECTION
+    ( ( R  RAB,RCD )  ( AL BE ) )
+    END-TREE-SECTION
+
+
+### Should I specify the number of SPPs? ###
+
+Most likely not. What you usually want is a potential fit which fulfills a certain
+accuracy criterium. MLPF supports this by setting the allowed global root-mean-square error
+of the fit with the `rmse` parameter in the `RUN-SECTION`.  If this is supplied, and no
+SPP numbers are given in the `TREE-SECTION`, then the following strategy is applied:
+
+1. The allowed RMSE is divided equally by the total number of modes. (In the above example,
+   there are 7 modes. However, here the top mode has only two children, such that for the
+   top mode, a regular SVD is used instead of a higher-order SVD. This allows a more
+   optimistic error estimate, such that the effective number of modes -- as far as the
+   RMSE is concerned -- is reduced by one.)
+2. Looking at the bottom layer, for each primitive mode the number of SPPs is chosen such
+   that the RMSE contributed from this mode does not exceed the per-mode limit.
+3. The actual RMSE for each primitive mode is estimated (the estimate is a strict upper
+   bound) and subtracted from the total RMSE budget.
+4. This updated RMSE budget is divided by the remaining number of modes, giving an updated
+   per-mode limit.
+5. Steps 2--4 are repeated for the next higher layer, and so on, until the top is reached.
+
+If the TREE-SECTION specifies the number of SPPs for any mode, than that number is used,
+instead of the one which the above algorithm would choose. If the number of SPPs is only
+specified for some but not all modes, then the situation may arise that the RMSE budget
+is exhausted before the top is reached. In this case MLPF will produce a fit which is not
+truncated in the higher layers, which is far from optimal. Hence, if you specify the number
+of SPPs for any mode, you should do so for all modes, and live with whatever RMSE results
+from that.
+
+The (estimated) RMSE error for each mode, and the number of SPPs chosen, is written to the `log` file.
 

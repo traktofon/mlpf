@@ -18,6 +18,14 @@ If you use MLPF for your research, you are requested to cite the following paper
 > J. Chem. Phys. 140, 014106, (2014)
 
 
+Documentation
+-------------
+
+This is the README for MLPF.  It and the rest of the documentation are stored in the `doc/`
+subdirectory in Markdown format.  For convenience, the documentation is also available in
+HTML format.  Please point your web browser to the `README.html` inside `doc/`.
+
+
 Prerequisites
 -------------
 
@@ -48,4 +56,41 @@ CPU cores you want to use.  This will create a number of executables in the subd
 
 Usage
 -----
+
+### mlpf ###
+
+To run the MLPF fitting program, use
+
+    mlpf inputfile
+
+where the syntax of the _inputfile_ is described in the [input file documentation](input.md).
+The generated output files are:
+
+* `mlpf.dat` -- a binary file containing the MLPF-format potential, which can
+  be read by MCTDH using the `mlpf`-statement in the operator file.
+* `log` -- a log file, containing information about estimated errors and
+  the number of single-particle potentials for each mode.
+* `tree.dot` -- (optional) an input file for Graphviz's dot utility, to
+  display the mode hierarchy.
+
+
+### mlpf2npot ###
+
+To convert a potential in MLPF format into Natpot format, use
+
+    mlpf2npot mlpf.dat modc
+
+where _mlpf.dat_ is the output file of `mlpf`, and _modc_ is an integer which specifies
+the number of the contracted mode.  It generates a file called _natpot_ which can be
+used by several utilities in the MCTDH suite.
+
+
+### vinfo ###
+
+To get some information about a full-grid potential, stored in a `vpot` or `vpot2` file, use
+
+    vinfo vpotfile
+
+where _vpotfile_ is the filename of the full-grid potential. It prints out some statistical
+information about the potential: maximum, minimum, mean, standard deviation, and the L2 norm.
 
