@@ -1,6 +1,6 @@
 # vim: set ts=8 noexpandtab :
 
-TGT := $(dd)/vinfo
+TGT := $(BINDIR)/vinfo
 
 vpath %.f90 $(dd)
 

@@ -9,17 +9,17 @@ program vinfo
    use genpot_m
    implicit none
 
-   character(len=240) :: fname
-   character(len=c5) :: arg
-   integer :: lun,ierr,vfmt
-   integer*4 :: nitems1,niobuf1
-   integer :: nitems,niobuf,nleft,nread
-   real(dbl) :: fver
-   type(dof_tp),pointer :: dofs(:)
-   integer :: ndof,f,j
-   integer*8 :: vlen
+   character(len=240)    :: fname
+   character(len=c5)     :: arg
+   integer               :: lun,ierr,vfmt
+   integer*4             :: nitems1,niobuf1
+   integer               :: nitems,niobuf,nleft,nread
+   real(dbl)             :: fver
+   type(dof_tp),pointer  :: dofs(:)
+   integer               :: ndof,f,j
+   integer*8             :: vlen
    real(dbl),allocatable :: buf(:)
-   real(dbl) :: v,vmin,vmax,vsum,v2sum
+   real(dbl)             :: v,vmin,vmax,vsum,v2sum
    
 
    call cmdline_init
