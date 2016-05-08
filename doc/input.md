@@ -27,7 +27,7 @@ optional parameters.
 | name = _S_        | Output will be put into the directory _S_.                                                                                  |
 | gendvr            | DVR information will be generated and stored it in the file `dvr`.  This requires a PRIMITIVE-BASIS-SECTION to be present   |
 | readdvr [= _S_]   | DVR information will be read from the file _S_. If unspecified, _S_ is `dvr`.                                               |
-| genpot            | A full-grid potential will be computed and stored, in a format depending on _vpot-format_.                                  |
+| genpot            | A full-grid potential will be computed and stored, in a format depending on _vpot-format_. (_not yet implemented_)          |
 | readvpot [= _S_]  | A full-grid potential will be read from the file _S_. If unspecified, _S_ is `vpot` or `vpot2`, depending on _vpot-format_. |
 | readnpot [= _S_]  | A Potfit potential will be read from the file _S_. If unspecified, _S_ is `natpot`.                                         |
 | vpot-format = _I_ | Format for full-grid potential. _I_ must be 1 or 2.                                                                         |
@@ -130,7 +130,7 @@ SPP numbers are given in the `TREE-SECTION`, then the following strategy is appl
    per-mode limit.
 5. Steps 2--4 are repeated for the next higher layer, and so on, until the top is reached.
 
-If the TREE-SECTION specifies the number of SPPs for any mode, than that number is used,
+If the TREE-SECTION specifies the number of SPPs for any mode, then that number is used,
 instead of the one which the above algorithm would choose. If the number of SPPs is only
 specified for some but not all modes, then the situation may arise that the RMSE budget
 is exhausted before the top is reached. In this case MLPF will produce a fit which is not
