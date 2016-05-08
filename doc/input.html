@@ -39,7 +39,7 @@ END-XXX-SECTION</code></pre>
 </tr>
 <tr class="even">
 <td align="left">genpot</td>
-<td align="left">A full-grid potential will be computed and stored, in a format depending on <em>vpot-format</em>.</td>
+<td align="left">A full-grid potential will be computed and stored, in a format depending on <em>vpot-format</em>. (<em>not yet implemented</em>)</td>
 </tr>
 <tr class="odd">
 <td align="left">readvpot [= <em>S</em>]</td>
@@ -88,8 +88,7 @@ END-XXX-SECTION</code></pre>
 <p>which signifies that the given modelabels (which must have been present in the PBASIS-SECTION) are combined into a <em>primitive mode</em>, and that <em>nspp</em> SPPs should be employed for this mode. To combine the primitive modes into higher-layer modes, simply group the primitive modes together with parentheses. After the closing parenthesis, you can (optionally) specify the number of SPPs for the combined mode, again using <code>= nspp</code>. This mode grouping must be applied recursively, such that you eventually enclose the whole block by one final pair of parentheses.</p>
 <p>To give an example, suppose that your system contains five degrees of freedom, with modelabels R, RAB, RCD, AL, and BE. You want to organize the modes into the following hierarchy:</p>
 <div class="figure">
-<img src="tree.png" alt="" />
-
+<img src="tree.png" />
 </div>
 <p>Without specifying the number of SPPs, the corresponding TREE-SECTION is:</p>
 <pre><code>TREE-SECTION
@@ -117,7 +116,7 @@ END-TREE-SECTION</code></pre>
 <li>This updated RMSE budget is divided by the remaining number of modes, giving an updated per-mode limit.</li>
 <li>Steps 2--4 are repeated for the next higher layer, and so on, until the top is reached.</li>
 </ol>
-<p>If the TREE-SECTION specifies the number of SPPs for any mode, than that number is used, instead of the one which the above algorithm would choose. If the number of SPPs is only specified for some but not all modes, then the situation may arise that the RMSE budget is exhausted before the top is reached. In this case MLPF will produce a fit which is not truncated in the higher layers, which is far from optimal. Hence, if you specify the number of SPPs for any mode, you should do so for all modes, and live with whatever RMSE results from that.</p>
+<p>If the TREE-SECTION specifies the number of SPPs for any mode, then that number is used, instead of the one which the above algorithm would choose. If the number of SPPs is only specified for some but not all modes, then the situation may arise that the RMSE budget is exhausted before the top is reached. In this case MLPF will produce a fit which is not truncated in the higher layers, which is far from optimal. Hence, if you specify the number of SPPs for any mode, you should do so for all modes, and live with whatever RMSE results from that.</p>
 <p>The (estimated) RMSE error for each mode, and the number of SPPs chosen, is written to the <code>log</code> file.</p>
 </body>
 </html>
