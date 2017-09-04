@@ -27,7 +27,7 @@ include $(dd)/Rules.mk
 
 $(OBJDIR)/%.o: %.f90
 	$(dir_guard)
-	$(FC) $(FFLAGS) -I$(OBJDIR) $(MODFLAG)$(OBJDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) -I $(OBJDIR) $(MODFLAG) $(OBJDIR) -c -o $@ $<
 
 $(OBJDIR)/%.mod: $(OBJDIR)/%.o
 	@true
