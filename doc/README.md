@@ -10,8 +10,8 @@ especially if high-accuracy fits are used.  For more information and details, se
 
 MCTDH version 8.5.7 or higher is required to make use of potentials in MLPF format.
 
-In case of problems with this software, please check the [Bitbucket repository](https://bitbucket.org/frankotto/mlpf)
-for a potentially updated version, or to [report issues](https://bitbucket.org/frankotto/mlpf/issues).
+In case of problems with this software, please check the [Github repository](https://github.com/traktofon/mlpf)
+for a potentially updated version, or to [report issues](https://github.com/traktofon/mlpf/issues).
 
 If you use MLPF for your research, you are requested to cite the following paper:
 

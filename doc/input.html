@@ -18,48 +18,52 @@ END-XXX-SECTION</code></pre>
 <h2 id="run-section">RUN-SECTION</h2>
 <p>This section controls parameters for input, output, and what exactly to compute. Directives are simply keywords, or of the form <code>keyword = parameter(s)</code>. The following table lists the available directives. <em>S</em> specifies a string, <em>I</em> an integer, and <em>R</em> a real-valued parameter, which might include a unit (in the same manner as MCTDH, e.g. &quot;1.0,eV&quot;). Square brackets indicate optional parameters.</p>
 <table>
+<colgroup>
+<col width="12%" />
+<col width="87%" />
+</colgroup>
 <thead>
 <tr class="header">
-<th align="left">Directive</th>
-<th align="left">Description</th>
+<th>Directive</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">name = <em>S</em></td>
-<td align="left">Output will be put into the directory <em>S</em>.</td>
+<td>name = <em>S</em></td>
+<td>Output will be put into the directory <em>S</em>.</td>
 </tr>
 <tr class="even">
-<td align="left">gendvr</td>
-<td align="left">DVR information will be generated and stored it in the file <code>dvr</code>. This requires a PRIMITIVE-BASIS-SECTION to be present</td>
+<td>gendvr</td>
+<td>DVR information will be generated and stored it in the file <code>dvr</code>. This requires a PRIMITIVE-BASIS-SECTION to be present</td>
 </tr>
 <tr class="odd">
-<td align="left">readdvr [= <em>S</em>]</td>
-<td align="left">DVR information will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>dvr</code>.</td>
+<td>readdvr [= <em>S</em>]</td>
+<td>DVR information will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>dvr</code>.</td>
 </tr>
 <tr class="even">
-<td align="left">genpot</td>
-<td align="left">A full-grid potential will be computed and stored, in a format depending on <em>vpot-format</em>. (<em>not yet implemented</em>)</td>
+<td>genpot</td>
+<td>A full-grid potential will be computed and stored, in a format depending on <em>vpot-format</em>. (<em>not yet implemented</em>)</td>
 </tr>
 <tr class="odd">
-<td align="left">readvpot [= <em>S</em>]</td>
-<td align="left">A full-grid potential will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>vpot</code> or <code>vpot2</code>, depending on <em>vpot-format</em>.</td>
+<td>readvpot [= <em>S</em>]</td>
+<td>A full-grid potential will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>vpot</code> or <code>vpot2</code>, depending on <em>vpot-format</em>.</td>
 </tr>
 <tr class="even">
-<td align="left">readnpot [= <em>S</em>]</td>
-<td align="left">A Potfit potential will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>natpot</code>.</td>
+<td>readnpot [= <em>S</em>]</td>
+<td>A Potfit potential will be read from the file <em>S</em>. If unspecified, <em>S</em> is <code>natpot</code>.</td>
 </tr>
 <tr class="odd">
-<td align="left">vpot-format = <em>I</em></td>
-<td align="left">Format for full-grid potential. <em>I</em> must be 1 or 2.</td>
+<td>vpot-format = <em>I</em></td>
+<td>Format for full-grid potential. <em>I</em> must be 1 or 2.</td>
 </tr>
 <tr class="even">
-<td align="left">rmse = <em>R</em></td>
-<td align="left">Set the maximum allowed root-mean-square error of the fitted potential to <em>R</em>.</td>
+<td>rmse = <em>R</em></td>
+<td>Set the maximum allowed root-mean-square error of the fitted potential to <em>R</em>.</td>
 </tr>
 <tr class="odd">
-<td align="left">graphviz</td>
-<td align="left">Produce a file <code>tree.dot</code> which can be used to visualize the multi-layer tree using <a href="http://www.graphviz.org/">Graphviz</a>.</td>
+<td>graphviz</td>
+<td>Produce a file <code>tree.dot</code> which can be used to visualize the multi-layer tree using <a href="http://www.graphviz.org/">Graphviz</a>.</td>
 </tr>
 </tbody>
 </table>
@@ -89,6 +93,7 @@ END-XXX-SECTION</code></pre>
 <p>To give an example, suppose that your system contains five degrees of freedom, with modelabels R, RAB, RCD, AL, and BE. You want to organize the modes into the following hierarchy:</p>
 <div class="figure">
 <img src="tree.png" />
+
 </div>
 <p>Without specifying the number of SPPs, the corresponding TREE-SECTION is:</p>
 <pre><code>TREE-SECTION
